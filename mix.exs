@@ -56,6 +56,8 @@ defmodule NexusDownfall.MixProject do
       {:oban, "~> 2.19"},
       # Redis client
       {:redix, "~> 1.5"},
+      # Password hashing
+      {:bcrypt_elixir, "~> 3.1"},
       # Code quality (dev/test only)
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},

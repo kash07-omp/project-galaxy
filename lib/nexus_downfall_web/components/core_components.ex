@@ -201,4 +201,164 @@ defmodule NexusDownfallWeb.CoreComponents do
     </header>
     """
   end
+
+  # ---------------------------------------------------------------------------
+  # Form helpers — label, input, simple_form
+  # ---------------------------------------------------------------------------
+
+  attr :for, :string, default: nil
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  def label(assigns) do
+    ~H"""
+    <label for={@for} class={["block text-sm font-medium text-gray-300 mb-1", @class]}>
+      <%= render_slot(@inner_block) %>
+    </label>
+    """
+  end
+
+  attr :id, :any, default: nil
+  attr :name, :any
+  attr :label, :string, default: nil
+  attr :value, :any
+
+  attr :type, :string,
+    default: "text",
+    values: ~w(checkbox color date datetime-local email file hidden month number
+               password range radio search select tel text textarea time url week)
+
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+  attr :errors, :list, default: []
+  attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
+  attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
+  attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
+  attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
+
+  attr :rest, :global,
+    include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
+                multiple pattern placeholder readonly required rows size step)
+
+  def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    errors = Enum.map(field.errors, &translate_error(&1))
+
+    assigns
+    |> assign(field: nil, id: assigns.id || field.id)
+    |> assign(:errors, errors)
+    |> assign_new(:name, fn -> if assigns[:multiple], do: field.name <> "[]", else: field.name end)
+    |> assign_new(:value, fn -> field.value end)
+    |> input()
+  end
+
+  def input(%{type: "checkbox"} = assigns) do
+    assigns = assign_new(assigns, :checked, fn ->
+      Phoenix.HTML.Form.normalize_value("checkbox", assigns[:value])
+    end)
+
+    ~H"""
+    <div>
+      <label class="flex items-center gap-4 text-sm leading-6 text-gray-300">
+        <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
+        <input
+          type="checkbox"
+          id={@id}
+          name={@name}
+          value="true"
+          checked={@checked}
+          class="rounded border-gray-600 bg-gray-800 text-cyan-500 focus:ring-cyan-500"
+          {@rest}
+        />
+        <%= @label %>
+      </label>
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  def input(%{type: "select"} = assigns) do
+    ~H"""
+    <div>
+      <.label :if={@label} for={@id}><%= @label %></.label>
+      <select
+        id={@id}
+        name={@name}
+        class="mt-1 block w-full rounded-md border border-gray-600 bg-gray-800 text-gray-100
+               shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm"
+        multiple={@multiple}
+        {@rest}
+      >
+        <option :if={@prompt} value=""><%= @prompt %></option>
+        <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
+      </select>
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  def input(%{type: "textarea"} = assigns) do
+    ~H"""
+    <div>
+      <.label :if={@label} for={@id}><%= @label %></.label>
+      <textarea
+        id={@id}
+        name={@name}
+        class={[
+          "mt-1 block w-full rounded-md border bg-gray-800 text-gray-100 shadow-sm sm:text-sm",
+          "min-h-[6rem] focus:ring-cyan-500",
+          @errors == [] && "border-gray-600 focus:border-cyan-500",
+          @errors != [] && "border-rose-500 focus:border-rose-500"
+        ]}
+        {@rest}
+      ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  def input(assigns) do
+    ~H"""
+    <div>
+      <.label :if={@label} for={@id}><%= @label %></.label>
+      <input
+        type={@type}
+        name={@name}
+        id={@id}
+        value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+        class={[
+          "mt-1 block w-full rounded-md border bg-gray-800 text-gray-100 shadow-sm sm:text-sm",
+          "focus:ring-cyan-500",
+          @errors == [] && "border-gray-600 focus:border-cyan-500",
+          @errors != [] && "border-rose-500 focus:border-rose-500"
+        ]}
+        {@rest}
+      />
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  @doc "Renders a validation error message."
+  slot :inner_block, required: true
+
+  def error(assigns) do
+    ~H"""
+    <p class="mt-1 flex gap-1 text-sm leading-6 text-rose-400">
+      <%= render_slot(@inner_block) %>
+    </p>
+    """
+  end
+
+  # ---------------------------------------------------------------------------
+  # Translation helper (required by input/1)
+  # ---------------------------------------------------------------------------
+
+  defp translate_error({msg, opts}) do
+    if count = opts[:count] do
+      Gettext.dngettext(NexusDownfallWeb.Gettext, "errors", msg, msg, count, opts)
+    else
+      Gettext.dgettext(NexusDownfallWeb.Gettext, "errors", msg, opts)
+    end
+  end
 end

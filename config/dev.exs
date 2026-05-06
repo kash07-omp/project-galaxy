@@ -36,7 +36,7 @@ config :nexus_downfall, NexusDownfallWeb.Endpoint,
 # Enable dev routes (live_dashboard, etc.)
 config :nexus_downfall, dev_routes: true
 
-config :nexus_downfall, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+config :nexus_downfall, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY") || :ignore
 
 config :logger, :console, format: "[$level] $message\n"
 
@@ -50,3 +50,6 @@ config :phoenix_live_view,
 
 # Redis connection URL for dev
 config :nexus_downfall, :redis_url, "redis://localhost:6379"
+
+# Swoosh: disable hackney API client (not needed with local adapter in dev)
+config :swoosh, :api_client, false

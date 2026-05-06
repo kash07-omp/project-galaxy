@@ -66,7 +66,13 @@ defmodule NexusDownfallWeb.Telemetry do
       summary("vm.memory.total", unit: {:byte, :kilobyte}),
       summary("vm.total_run_queue_lengths.total"),
       summary("vm.total_run_queue_lengths.cpu"),
-      summary("vm.total_run_queue_lengths.io")
+      summary("vm.total_run_queue_lengths.io"),
+
+      # Phase 1 — Accounts domain events
+      counter("nexus_downfall.accounts.user_registered.count"),
+      counter("nexus_downfall.accounts.user_logged_in.count"),
+      counter("nexus_downfall.accounts.universe_joined.count"),
+      counter("nexus_downfall.universe.created.count")
     ]
   end
 

@@ -37,16 +37,16 @@ Tener un monorepo operativo con CI, entorno local reproducible y estándares de 
 Que un usuario pueda crear cuenta, entrar y tener su primer planeta inicial.
 
 ### Tareas
-- [ ] Implementar autenticación (registro/login/logout).
-- [ ] Modelo de usuario global + relación con usuarios por universo.
-- [ ] Flujo “unirse a universo” y creación de planeta inicial.
-- [ ] UI base sci-fi (Tailwind) para dashboard inicial.
-- [ ] Telemetría básica de eventos clave (alta, login, creación planeta).
+- [x] Implementar autenticación (registro/login/logout).
+- [x] Modelo de usuario global + relación con usuarios por universo.
+- [x] Flujo "unirse a universo" y creación de planeta inicial.
+- [x] UI base sci-fi (Tailwind) para dashboard inicial.
+- [x] Telemetría básica de eventos clave (alta, login, creación planeta).
 
 ### Tests obligatorios
-- [ ] Tests de autenticación y autorización.
-- [ ] Tests de creación de usuario/universe-user/planeta inicial.
-- [ ] Tests de permisos de acceso por universo.
+- [x] Tests de autenticación y autorización.
+- [x] Tests de creación de usuario/universe-user/planeta inicial.
+- [x] Tests de permisos de acceso por universo.
 
 ---
 
