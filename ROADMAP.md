@@ -17,17 +17,17 @@ Este roadmap está ordenado por prioridad para entregar valor rápido sin compro
 Tener un monorepo operativo con CI, entorno local reproducible y estándares de calidad.
 
 ### Tareas
-- [ ] Inicializar proyecto base con Elixir + Phoenix + LiveView.
-- [ ] Configurar PostgreSQL, Oban y Redis en `docker-compose` para entorno local.
-- [ ] Definir estructura modular de dominios (`Accounts`, `Universe`, `Planets`, `Fleets`, `Combat`, `Diplomacy`).
-- [ ] Configurar lint/format/checks (`mix format`, `credo`, `dialyzer` opcional inicial).
-- [ ] Configurar pipeline CI (test + lint + build).
-- [ ] Preparar sistema de seeds para universo de desarrollo.
+- [x] Inicializar proyecto base con Elixir + Phoenix + LiveView.
+- [x] Configurar PostgreSQL, Oban y Redis en `docker-compose` para entorno local.
+- [x] Definir estructura modular de dominios (`Accounts`, `Universe`, `Planets`, `Fleets`, `Combat`, `Diplomacy`).
+- [x] Configurar lint/format/checks (`mix format`, `credo`, `dialyzer` opcional inicial).
+- [x] Configurar pipeline CI (test + lint + build).
+- [x] Preparar sistema de seeds para universo de desarrollo.
 
 ### Tests obligatorios
-- [ ] Smoke tests de arranque de app.
-- [ ] Test de conexión a BD + migraciones.
-- [ ] Test de encolado/ejecución de job en Oban.
+- [x] Smoke tests de arranque de app.
+- [x] Test de conexión a BD + migraciones.
+- [x] Test de encolado/ejecución de job en Oban.
 
 ---
 

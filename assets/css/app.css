@@ -1,0 +1,32 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* ============================================================
+   Nexus: Downfall — Global Styles
+   Sci-fi dark theme built on top of Tailwind.
+   Design tokens and custom utilities go here.
+   ============================================================ */
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: theme("colors.gray.900");
+}
+::-webkit-scrollbar-thumb {
+  background: theme("colors.cyan.800");
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: theme("colors.cyan.600");
+}
+
+/* LiveView loading states */
+.phx-click-loading,
+.phx-submit-loading {
+  opacity: 0.7;
+  pointer-events: none;
+}

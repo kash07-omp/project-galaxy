@@ -1,0 +1,35 @@
+
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md
+
+# Elixir/Mix build artifacts
+/_build/
+/cover/
+/deps/
+/doc/
+/.fetch
+
+# Generated static assets (built by esbuild/tailwind)
+/priv/static/assets/
+
+# Test coverage
+cover/
+
+# Misc Erlang/Elixir
+*.ez
+*.beam
+erl_crash.dump
+
+# Environment secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# Editor
+.elixir_ls/
+.idea/
+*.swp
+*.swo
+.DS_Store
+

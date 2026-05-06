@@ -57,3 +57,22 @@ Entregar un MVP práctico y rápido, iterando por prioridad y manteniendo estabi
 - Tests pasando.
 - Documentación breve de lo implementado.
 - Checklist de regresión ejecutado.
+
+## Flujo de trabajo con el Roadmap (obligatorio)
+
+> Todo agente o desarrollador **debe** seguir este flujo antes y después de implementar cualquier tarea.
+
+1. **Antes de empezar**: Leer `README.md`, `AGENTS.md` y `ROADMAP.md` completos.
+2. **Seleccionar tarea**: Identificar en `ROADMAP.md` la siguiente tarea sin completar en la fase activa.
+3. **Marcar en progreso**: Cambiar `- [ ]` a `- [~]` en la tarea correspondiente del `ROADMAP.md` mientras se trabaja.
+4. **Implementar**: Escribir código + tests + documentación mínima según los entregables.
+5. **Verificar Definition of Done**: Confirmar que se cumplen todos los criterios del apartado "Definición de Done".
+6. **Marcar completada**: Cambiar `- [~]` a `- [x]` en `ROADMAP.md` al terminar la tarea.
+7. **Regresión**: Ejecutar `mix test` completo antes de cerrar la tarea.
+8. **Commit atómico**: Un commit por tarea completada con mensaje descriptivo.
+
+### Convenciones de estado en ROADMAP.md
+
+- `- [ ]` → Pendiente
+- `- [~]` → En progreso (no commitear con este estado salvo WIP explícito)
+- `- [x]` → Completada
