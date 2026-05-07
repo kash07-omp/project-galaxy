@@ -78,6 +78,13 @@ defmodule NexusDownfall.Accounts do
   @doc "Gets a user by id. Raises if not found."
   def get_user!(id), do: Repo.get!(User, id)
 
+  @doc "Updates the user's locale preference. Accepts \"es\" or \"en\"."
+  def update_user_locale(%User{} = user, locale) do
+    user
+    |> User.locale_changeset(%{locale: locale})
+    |> Repo.update()
+  end
+
   # ---------------------------------------------------------------------------
   # Session tokens
   # ---------------------------------------------------------------------------

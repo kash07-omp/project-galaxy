@@ -53,6 +53,7 @@ defmodule NexusDownfallWeb.Router do
       live "/universes", UniverseListLive, :index
       live "/universes/:slug/join", UniverseJoinLive, :new
       live "/planets/:id", PlanetLive, :show
+      live "/users/settings", UserSettingsLive, :edit
     end
   end
 

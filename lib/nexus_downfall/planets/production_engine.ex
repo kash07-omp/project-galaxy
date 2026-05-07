@@ -21,16 +21,26 @@ defmodule NexusDownfall.Planets.ProductionEngine do
   # Each entry: {resource_produced, per_hour_per_level, energy_consumed_per_level}
   # energy_balance is handled separately via :energy_produce key
 
+  # Each building entry:
+  #   resource_key: base units produced per level per hour (before formula)
+  #   energy_consume: base energy consumed per level per hour
+  #   energy_produce: base energy produced per level per hour (generators only)
+  #
+  # Formula: base * level * (1.1 ^ level)  [README: MultiplicadorBase * Nivel * (1.1^Nivel)]
+  # Level 0 buildings produce/consume nothing.
   @defs %{
-    "command_center"     => %{energy_consume: 2},
-    "mine_raw"           => %{raw_materials: 20, energy_consume: 5},
-    "microchip_factory"  => %{microchips: 15, energy_consume: 7},
-    "hydrogen_extractor" => %{hydrogen: 15, energy_consume: 6},
-    "farm"               => %{food: 20, energy_consume: 3},
-    "power_plant"        => %{energy_produce: 30},
-    "residential"        => %{population: 10, energy_consume: 2},
-    "laboratory"         => %{energy_consume: 8},
-    "spaceport"          => %{energy_consume: 10}
+    "command_center"     => %{energy_consume: 5},
+    "mine_raw"           => %{raw_materials: 200,  energy_consume: 15},
+    "microchip_factory"  => %{microchips: 170,     energy_consume: 20},
+    "hydrogen_extractor" => %{hydrogen: 140,        energy_consume: 18},
+    "farm"               => %{food: 150,            energy_consume: 10},
+    "power_plant"        => %{energy_produce: 75},
+    "nuclear_reactor"    => %{energy_produce: 120},
+    "residential"        => %{population: 10,       energy_consume: 5},
+    "laboratory"         => %{energy_consume: 12},
+    "spaceport"          => %{energy_consume: 15},
+    "defense_center"     => %{energy_consume: 20},
+    "component_factory"  => %{microchips: 120,     energy_consume: 25}
   }
 
   # ---------------------------------------------------------------------------
@@ -44,11 +54,14 @@ defmodule NexusDownfall.Planets.ProductionEngine do
     "mine_raw"           => %{raw_materials: 100},
     "microchip_factory"  => %{raw_materials: 130, microchips: 40},
     "hydrogen_extractor" => %{raw_materials: 120},
-    "farm"               => %{raw_materials: 80, food: 20},
+    "farm"               => %{raw_materials: 80,  food: 20},
     "power_plant"        => %{raw_materials: 160, microchips: 30},
+    "nuclear_reactor"    => %{raw_materials: 250, microchips: 80, hydrogen: 50},
     "residential"        => %{raw_materials: 100, food: 50},
     "laboratory"         => %{raw_materials: 220, microchips: 120},
-    "spaceport"          => %{raw_materials: 350, microchips: 180}
+    "spaceport"          => %{raw_materials: 350, microchips: 180},
+    "defense_center"     => %{raw_materials: 300, microchips: 150},
+    "component_factory"  => %{raw_materials: 180, microchips: 60}
   }
 
   # Base seconds at level 1. Scales linearly with target level.
@@ -59,9 +72,12 @@ defmodule NexusDownfall.Planets.ProductionEngine do
     "hydrogen_extractor" => 75,
     "farm"               => 60,
     "power_plant"        => 100,
+    "nuclear_reactor"    => 180,
     "residential"        => 75,
     "laboratory"         => 150,
-    "spaceport"          => 200
+    "spaceport"          => 200,
+    "defense_center"     => 200,
+    "component_factory"  => 120
   }
 
   @max_offline_hours 24
@@ -76,7 +92,8 @@ defmodule NexusDownfall.Planets.ProductionEngine do
 
   Returns a map:
     %{raw_materials: f, microchips: f, hydrogen: f, food: f,
-      population: i, energy_balance: f, efficiency: f}
+      population: i, energy_balance: f, energy_produce: f,
+      energy_consume: f, efficiency: f}
   """
   def calculate_rates(buildings) do
     active = Enum.filter(buildings, &(&1.level > 0))
@@ -92,8 +109,19 @@ defmodule NexusDownfall.Planets.ProductionEngine do
       food:           sum_for(active, :food) * efficiency,
       population:     round(sum_for(active, :population) * efficiency),
       energy_balance: energy_produce - energy_consume,
+      energy_produce: energy_produce,
+      energy_consume: energy_consume,
       efficiency:     Float.round(efficiency, 3)
     }
+  end
+
+  @doc """
+  Returns the energy produced by a single building of the given type at the
+  given level. Returns 0.0 for buildings that do not produce energy.
+  """
+  def energy_produce_for(building_type, level) do
+    base = get_in(@defs, [building_type, :energy_produce]) || 0
+    production_rate(base, level)
   end
 
   @doc """
@@ -160,9 +188,13 @@ defmodule NexusDownfall.Planets.ProductionEngine do
 
   defp sum_for(buildings, key) do
     Enum.reduce(buildings, 0.0, fn b, acc ->
-      def_map = Map.get(@defs, b.type, %{})
-      rate = Map.get(def_map, key, 0)
-      acc + rate * b.level
+      base = get_in(@defs, [b.type, key]) || 0
+      acc + production_rate(base, b.level)
     end)
   end
+
+  # README formula: MultiplicadorBase * Nivel * (1.1 ^ Nivel)
+  # Level 0 always yields 0 regardless of base.
+  defp production_rate(_base, 0), do: 0.0
+  defp production_rate(base, level), do: base * level * :math.pow(1.1, level)
 end

@@ -17,9 +17,12 @@ defmodule NexusDownfall.Planets.Building do
     hydrogen_extractor
     farm
     power_plant
+    nuclear_reactor
     residential
     laboratory
     spaceport
+    defense_center
+    component_factory
   )
 
   def building_types, do: @building_types

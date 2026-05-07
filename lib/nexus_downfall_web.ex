@@ -31,7 +31,7 @@ defmodule NexusDownfallWeb do
         layouts: [html: NexusDownfallWeb.Layouts]
 
       import Plug.Conn
-      import NexusDownfallWeb.Gettext
+      use Gettext, backend: NexusDownfallWeb.Gettext
       unquote(verified_routes())
     end
   end
@@ -67,7 +67,7 @@ defmodule NexusDownfallWeb do
   defp html_helpers do
     quote do
       import NexusDownfallWeb.CoreComponents
-      import NexusDownfallWeb.Gettext
+      use Gettext, backend: NexusDownfallWeb.Gettext
 
       alias Phoenix.LiveView.JS
 

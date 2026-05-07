@@ -1,0 +1,185 @@
+## This file is a PO Template file.
+##
+## `msgid`s here are often extracted from source code.
+## Add new translations manually or run `mix gettext.extract` to update it.
+##
+## Run `mix gettext.merge priv/gettext` to regenerate PO files.
+
+msgid ""
+msgstr ""
+
+## Navigation
+msgid "Galaxia"
+msgstr ""
+
+msgid "Ciudades"
+msgstr ""
+
+msgid "Investigación"
+msgstr ""
+
+msgid "Leyes"
+msgstr ""
+
+msgid "Comercio"
+msgstr ""
+
+msgid "Diplomacia"
+msgstr ""
+
+msgid "Clanes"
+msgstr ""
+
+msgid "Cartas"
+msgstr ""
+
+msgid "Flota"
+msgstr ""
+
+msgid "Ranking"
+msgstr ""
+
+msgid "Tienda"
+msgstr ""
+
+## User menu
+msgid "Ajustes"
+msgstr ""
+
+msgid "Cerrar sesión"
+msgstr ""
+
+## Building names
+msgid "Mina de Hidrógeno"
+msgstr ""
+
+msgid "Fábrica de Chips"
+msgstr ""
+
+msgid "Puerto Espacial"
+msgstr ""
+
+msgid "Zona Residencial"
+msgstr ""
+
+msgid "Centro de Mando"
+msgstr ""
+
+msgid "Mina de Recursos"
+msgstr ""
+
+msgid "Granja"
+msgstr ""
+
+msgid "Centro de Investigación"
+msgstr ""
+
+msgid "Generador de Energía"
+msgstr ""
+
+msgid "Reactor Nuclear"
+msgstr ""
+
+msgid "Centro de Defensa"
+msgstr ""
+
+msgid "Fábrica de Componentes"
+msgstr ""
+
+## Modal tabs
+msgid "Información"
+msgstr ""
+
+msgid "Específico"
+msgstr ""
+
+msgid "Especialización"
+msgstr ""
+
+## Energy section
+msgid "Producción de Energía"
+msgstr ""
+
+msgid "Este edificio produce"
+msgstr ""
+
+msgid "energía al nivel actual"
+msgstr ""
+
+msgid "Balance del planeta"
+msgstr ""
+
+msgid "producida"
+msgstr ""
+
+msgid "consumida"
+msgstr ""
+
+msgid "eficiencia"
+msgstr ""
+
+## Production stats
+msgid "Producción de Hidrógeno"
+msgstr ""
+
+msgid "Producción de Microchips"
+msgstr ""
+
+msgid "Producción de Materias Primas"
+msgstr ""
+
+msgid "Producción de Alimentos"
+msgstr ""
+
+msgid "Por minuto"
+msgstr ""
+
+msgid "Por hora"
+msgstr ""
+
+msgid "Por día"
+msgstr ""
+
+msgid "Por semana"
+msgstr ""
+
+## Upgrade section
+msgid "Construcción inicial"
+msgstr ""
+
+msgid "Mejora → Nivel"
+msgstr ""
+
+msgid "Construcción en curso"
+msgstr ""
+
+msgid "Mejorando a nivel"
+msgstr ""
+
+msgid "restantes"
+msgstr ""
+
+msgid "Construir"
+msgstr ""
+
+msgid "Ya hay una construcción en progreso en este planeta."
+msgstr ""
+
+## Settings page
+msgid "Ajustes de Cuenta"
+msgstr ""
+
+msgid "Idioma"
+msgstr ""
+
+msgid "Guardar"
+msgstr ""
+
+msgid "Volver al mapa"
+msgstr ""
+
+msgid "Idioma actualizado correctamente."
+msgstr ""
+
+msgid "Error al guardar el idioma."
+msgstr ""

@@ -20,12 +20,24 @@ defmodule NexusDownfall.Planets do
   # Phase 1 — basic CRUD
   # ---------------------------------------------------------------------------
 
-  @doc "Creates the initial planet for a new `UniverseUser`."
+  @doc "Creates the initial planet for a new `UniverseUser`, including starter buildings."
   def create_initial_planet(attrs) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
     attrs = Map.put_new(attrs, :last_tick_at, now)
 
-    %Planet{} |> Planet.initial_changeset(attrs) |> Repo.insert()
+    with {:ok, planet} <- %Planet{} |> Planet.initial_changeset(attrs) |> Repo.insert() do
+      {:ok, _} = ensure_building_slots(planet.id)
+
+      # Pre-build command_center + power_plant at level 1 (starter infrastructure).
+      # This gives the planet energy immediately so mines/farms can produce from day 1.
+      Repo.update_all(
+        from(b in Building,
+          where: b.planet_id == ^planet.id and b.type in ^["command_center", "power_plant"]),
+        set: [level: 1]
+      )
+
+      {:ok, planet}
+    end
   end
 
   @doc "Returns all planets belonging to `universe_user_id`, with buildings preloaded."
@@ -162,4 +174,3 @@ defmodule NexusDownfall.Planets do
     |> Repo.update()
   end
 end
-

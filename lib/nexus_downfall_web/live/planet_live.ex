@@ -9,17 +9,20 @@ defmodule NexusDownfallWeb.PlanetLive do
   @ui_tick_ms 1_000
   @db_persist_secs 60
 
-  # {db_type, image_file, display_name, {left_pct, top_pct}}
+  # {db_type, image_file, {left_pct, top_pct}}
   @building_layout [
-    {"hydrogen_extractor", "hydrogen-mine.png",      "Mina de Hidrógeno",  {22, 12}},
-    {"microchip_factory",  "microchip-factory.png",  "Fábrica de Chips",   {50, 18}},
-    {"spaceport",          "spaceport.png",           "Puerto Espacial",    {72, 16}},
-    {"residential",        "residential-area.png",    "Zona Residencial",   {20, 43}},
-    {"command_center",     "city-hall.png",           "Centro de Mando",    {46, 50}},
-    {"mine_raw",           "raw-material-mine.png",   "Mina de Recursos",   {64, 40}},
-    {"farm",               "farmland.png",            "Granja",             {9, 62}},
-    {"laboratory",         "research-center.png",     "Centro de Investigación", {58, 70}},
-    {"power_plant",        "energy-generator.png",    "Generador",          {80, 54}}
+    {"hydrogen_extractor", "hydrogen-mine.png",      {22, 12}},
+    {"microchip_factory",  "microchip-factory.png",  {50, 18}},
+    {"spaceport",          "spaceport.png",           {72, 16}},
+    {"residential",        "residential-area.png",    {20, 43}},
+    {"command_center",     "city-hall.png",           {46, 50}},
+    {"mine_raw",           "raw-material-mine.png",   {64, 40}},
+    {"farm",               "farmland.png",            {9,  62}},
+    {"laboratory",         "research-center.png",     {58, 70}},
+    {"power_plant",        "energy-generator.png",    {80, 54}},
+    {"nuclear_reactor",    "nuclear-reactor.png",     {92, 70}},
+    {"defense_center",     "defense-center.png",      {35, 82}},
+    {"component_factory",  "microchip-factory.png",   {65, 80}}
   ]
 
   on_mount {NexusDownfallWeb.UserAuth, :ensure_authenticated}
@@ -45,6 +48,7 @@ defmodule NexusDownfallWeb.PlanetLive do
      |> assign(:now, DateTime.utc_now())
      |> assign(:selected, nil)
      |> assign(:selected_tab, "info")
+     |> assign(:show_user_menu, false)
      |> assign(:error, nil)}
   end
 
@@ -72,24 +76,47 @@ defmodule NexusDownfallWeb.PlanetLive do
         </.link>
 
         <div class="flex items-center gap-0.5 text-[11px] font-medium overflow-x-auto px-2">
-          <.nav_tab href={~p"/dashboard"} label="Galaxia" active={false} />
-          <.nav_tab href={~p"/planets/#{@planet.id}"} label="Ciudades" active={true} />
-          <.nav_tab href="#" label="Investigación" active={false} />
-          <.nav_tab href="#" label="Leyes" active={false} />
-          <.nav_tab href="#" label="Comercio" active={false} />
-          <.nav_tab href="#" label="Diplomacia" active={false} />
-          <.nav_tab href="#" label="Clanes" active={false} />
-          <.nav_tab href="#" label="Cartas" active={false} />
-          <.nav_tab href="#" label="Flota" active={false} />
-          <.nav_tab href="#" label="Ranking" active={false} />
-          <.nav_tab href="#" label="Tienda" active={false} />
+          <.nav_tab href={~p"/dashboard"} label={gettext("Galaxy")} active={false} />
+          <.nav_tab href={~p"/planets/#{@planet.id}"} label={gettext("Cities")} active={true} />
+          <.nav_tab href="#" label={gettext("Research")} active={false} />
+          <.nav_tab href="#" label={gettext("Laws")} active={false} />
+          <.nav_tab href="#" label={gettext("Trade")} active={false} />
+          <.nav_tab href="#" label={gettext("Diplomacy")} active={false} />
+          <.nav_tab href="#" label={gettext("Clans")} active={false} />
+          <.nav_tab href="#" label={gettext("Cards")} active={false} />
+          <.nav_tab href="#" label={gettext("Fleet")} active={false} />
+          <.nav_tab href="#" label={gettext("Ranking")} active={false} />
+          <.nav_tab href="#" label={gettext("Store")} active={false} />
         </div>
 
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="relative flex items-center gap-2 shrink-0">
           <span class="text-gray-400 text-xs hidden sm:block">{player_name(@current_user)}</span>
-          <div class="w-7 h-7 rounded-full bg-cyan-800 border-2 border-cyan-600 flex items-center justify-center text-xs font-bold text-white uppercase">
+          <button
+            phx-click="toggle_user_menu"
+            class="w-7 h-7 rounded-full bg-cyan-800 border-2 border-cyan-600 flex items-center justify-center text-xs font-bold text-white uppercase hover:bg-cyan-700 transition"
+          >
             {String.first(player_name(@current_user))}
-          </div>
+          </button>
+          <%= if @show_user_menu do %>
+            <div class="fixed inset-0 z-40" phx-click="toggle_user_menu" />
+            <div class="absolute top-9 right-0 z-50 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden">
+              <.link
+                navigate={~p"/users/settings"}
+                phx-click="toggle_user_menu"
+                class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition"
+              >
+                ⚙️ {gettext("Settings")}
+              </.link>
+              <div class="border-t border-gray-800" />
+              <.link
+                href={~p"/users/log_out"}
+                method="delete"
+                class="flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300 transition"
+              >
+                🚪 {gettext("Sign out")}
+              </.link>
+            </div>
+          <% end %>
         </div>
       </nav>
 
@@ -104,7 +131,10 @@ defmodule NexusDownfallWeb.PlanetLive do
         <div class={["flex items-center gap-1 shrink-0 font-semibold",
           if(@rates.energy_balance >= 0, do: "text-emerald-400", else: "text-red-400")]}>
           <span>⚡</span>
-          <span>{format_rate(@rates.energy_balance)}/h</span>
+          <span>{if @rates.energy_balance >= 0, do: "+", else: ""}{round(@rates.energy_balance * 1.0)}</span>
+          <%= if @rates.efficiency < 1.0 do %>
+            <span class="text-orange-400 font-normal text-[10px]">({round(@rates.efficiency * 100)}%)</span>
+          <% end %>
         </div>
         <div class="flex items-center gap-1 text-purple-300 shrink-0">
           <span>👥</span>
@@ -115,9 +145,9 @@ defmodule NexusDownfallWeb.PlanetLive do
           <span class="text-cyan-400 font-bold">{@planet.name}</span>
           <%= if @any_constructing do %>
             <% busy = Enum.find(@buildings, & &1.construction_finish_at != nil) %>
-            <% {_, _, busy_label, _} = Enum.find(@building_layout, fn {t, _, _, _} -> t == busy.type end) || {"", "", busy.type, {0, 0}} %>
+            <% {_, _, _} = Enum.find(@building_layout, fn {t, _, _} -> t == busy.type end) || {"", "", {0, 0}} %>
             <% rem_secs = max(0, DateTime.diff(busy.construction_finish_at, @now, :second)) %>
-            <span class="text-yellow-400 animate-pulse">⏳ {busy_label} → {format_duration(rem_secs)}</span>
+            <span class="text-yellow-400 animate-pulse">⏳ {building_name(busy.type)} → {format_duration(rem_secs)}</span>
           <% end %>
         </div>
       </div>
@@ -129,7 +159,7 @@ defmodule NexusDownfallWeb.PlanetLive do
              draggable="false" />
         <div class="absolute inset-0 bg-black/15" />
 
-        <%= for {type, img, label, {left, top}} <- @building_layout do %>
+        <%= for {type, img, {left, top}} <- @building_layout do %>
           <% b = Map.get(@buildings_by_type, type) %>
           <% level = if b, do: b.level, else: 0 %>
           <% is_constructing = b && b.construction_finish_at != nil %>
@@ -165,7 +195,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                 do: "bg-cyan-700/95 text-white ring-1 ring-cyan-400",
                 else: "bg-black/75 text-gray-200 group-hover:bg-black/90")
             ]}>
-              {label} ({level})
+              {building_name(type)} ({level})
             </span>
           </button>
         <% end %>
@@ -175,9 +205,10 @@ defmodule NexusDownfallWeb.PlanetLive do
       <%= if @selected do %>
         <%
           sel_b = Map.get(@buildings_by_type, @selected)
-          {_, sel_img, sel_label, _} =
-            Enum.find(@building_layout, fn {t, _, _, _} -> t == @selected end) ||
-              {@selected, "unconstructed.png", @selected, {0, 0}}
+          {_, sel_img, _} =
+            Enum.find(@building_layout, fn {t, _, _} -> t == @selected end) ||
+              {@selected, "unconstructed.png", {0, 0}}
+          sel_label        = building_name(@selected)
           sel_level        = if sel_b, do: sel_b.level, else: 0
           sel_next         = sel_level + 1
           sel_constructing = sel_b && sel_b.construction_finish_at != nil
@@ -187,6 +218,7 @@ defmodule NexusDownfallWeb.PlanetLive do
           sel_rem          = if sel_constructing, do: max(0, DateTime.diff(sel_b.construction_finish_at, @now, :second)), else: 0
           sel_total        = if sel_constructing, do: max(1, ProductionEngine.build_time_seconds(@selected, sel_next)), else: 1
           sel_pct          = if sel_constructing, do: trunc((1 - sel_rem / sel_total) * 100), else: 0
+          sel_energy_prod  = ProductionEngine.energy_produce_for(@selected, sel_level)
         %>
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" phx-click="close_panel" />
@@ -207,9 +239,9 @@ defmodule NexusDownfallWeb.PlanetLive do
                 <div>
                   <h2 class="text-white font-bold text-lg leading-tight drop-shadow">{sel_label}</h2>
                   <div class="flex items-center gap-2 mt-0.5">
-                    <span class="text-cyan-400 text-sm font-semibold">Nivel {sel_level}</span>
+                    <span class="text-cyan-400 text-sm font-semibold">{gettext("Level")} {sel_level}</span>
                     <%= if sel_constructing do %>
-                      <span class="text-yellow-300 text-xs font-medium animate-pulse">⏳ Mejorando → Lv {sel_next}</span>
+                      <span class="text-yellow-300 text-xs font-medium animate-pulse">⏳ {gettext("Upgrading to level")} {sel_next}</span>
                     <% end %>
                   </div>
                 </div>
@@ -229,9 +261,9 @@ defmodule NexusDownfallWeb.PlanetLive do
 
             <!-- Tabs -->
             <div class="flex border-b border-gray-800 shrink-0 bg-gray-900">
-              <.modal_tab tab="info" selected={@selected_tab} label="Información" />
-              <.modal_tab tab="specific" selected={@selected_tab} label="Específico" />
-              <.modal_tab tab="specialization" selected={@selected_tab} label="Especialización" />
+              <.modal_tab tab="info" selected={@selected_tab} label={gettext("Information")} />
+              <.modal_tab tab="specific" selected={@selected_tab} label={gettext("Specific")} />
+              <.modal_tab tab="specialization" selected={@selected_tab} label={gettext("Specialization")} />
             </div>
 
             <!-- Tab Content -->
@@ -241,52 +273,58 @@ defmodule NexusDownfallWeb.PlanetLive do
               <%= if @selected_tab == "info" do %>
                 <p class="text-gray-400 text-sm leading-relaxed mb-4">{building_description(@selected)}</p>
 
-                <!-- Production stats for resource mines / farms -->
-                <%= if @selected in ["hydrogen_extractor", "microchip_factory", "mine_raw", "farm"] do %>
+                <!-- Production stats for resource mines / farms / component_factory -->
+                <%= if @selected in ["hydrogen_extractor", "microchip_factory", "mine_raw", "farm", "component_factory"] do %>
                   <% {prod_icon, prod_label, prod_rate} = production_stats(@selected, @rates) %>
                   <div class="bg-gray-800/60 rounded-xl p-3 mb-4 border border-gray-700/60">
                     <h4 class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">{prod_label}</h4>
                     <div class="grid grid-cols-4 gap-2 text-center">
                       <div class="bg-gray-900/60 rounded-lg p-2">
-                        <div class="text-[10px] text-gray-500 mb-1">Por minuto</div>
+                        <div class="text-[10px] text-gray-500 mb-1">{gettext("Per minute")}</div>
                         <div class="text-sm font-bold text-emerald-400">{prod_icon} {Float.round(prod_rate / 60.0, 2)}</div>
                       </div>
                       <div class="bg-gray-900/60 rounded-lg p-2">
-                        <div class="text-[10px] text-gray-500 mb-1">Por hora</div>
+                        <div class="text-[10px] text-gray-500 mb-1">{gettext("Per hour")}</div>
                         <div class="text-sm font-bold text-emerald-400">{prod_icon} {Float.round(prod_rate * 1.0, 1)}</div>
                       </div>
                       <div class="bg-gray-900/60 rounded-lg p-2">
-                        <div class="text-[10px] text-gray-500 mb-1">Por día</div>
+                        <div class="text-[10px] text-gray-500 mb-1">{gettext("Per day")}</div>
                         <div class="text-sm font-bold text-emerald-400">{prod_icon} {Float.round(prod_rate * 24.0, 1)}</div>
                       </div>
                       <div class="bg-gray-900/60 rounded-lg p-2">
-                        <div class="text-[10px] text-gray-500 mb-1">Por semana</div>
+                        <div class="text-[10px] text-gray-500 mb-1">{gettext("Per week")}</div>
                         <div class="text-sm font-bold text-emerald-400">{prod_icon} {Float.round(prod_rate * 168.0, 0)}</div>
                       </div>
                     </div>
                   </div>
                 <% end %>
 
-                <!-- Energy stats for power_plant -->
-                <%= if @selected == "power_plant" do %>
+                <!-- Energy stats for generators (static balance, not flowing resource) -->
+                <%= if @selected in ["power_plant", "nuclear_reactor"] do %>
                   <div class="bg-gray-800/60 rounded-xl p-3 mb-4 border border-gray-700/60">
-                    <h4 class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Balance Energético del Planeta</h4>
-                    <div class="grid grid-cols-4 gap-2 text-center">
-                      <div class="bg-gray-900/60 rounded-lg p-2">
-                        <div class="text-[10px] text-gray-500 mb-1">Por minuto</div>
-                        <div class="text-sm font-bold text-yellow-400">⚡ {Float.round(@rates.energy_balance / 60.0, 2)}</div>
+                    <h4 class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-3">{gettext("Energy Production")}</h4>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                      <div class="bg-gray-900/60 rounded-lg p-2.5 text-center">
+                        <div class="text-[10px] text-gray-500 mb-1">{gettext("This building produces")}</div>
+                        <div class="text-xl font-bold text-yellow-400">⚡ {round(sel_energy_prod)}</div>
+                        <div class="text-[10px] text-gray-500 mt-0.5">{gettext("energy at current level")}</div>
                       </div>
-                      <div class="bg-gray-900/60 rounded-lg p-2">
-                        <div class="text-[10px] text-gray-500 mb-1">Por hora</div>
-                        <div class="text-sm font-bold text-yellow-400">⚡ {Float.round(@rates.energy_balance * 1.0, 1)}</div>
+                      <div class="bg-gray-900/60 rounded-lg p-2.5 text-center">
+                        <div class="text-[10px] text-gray-500 mb-1">{gettext("Planet Balance")}</div>
+                        <div class={["text-xl font-bold", if(@rates.energy_balance >= 0, do: "text-emerald-400", else: "text-red-400")]}>
+                          {if @rates.energy_balance >= 0, do: "+", else: ""}{round(@rates.energy_balance)}
+                        </div>
+                        <div class="text-[10px] text-gray-500 mt-0.5">{round(@rates.efficiency * 100)}% {gettext("efficiency")}</div>
                       </div>
-                      <div class="bg-gray-900/60 rounded-lg p-2">
-                        <div class="text-[10px] text-gray-500 mb-1">Por día</div>
-                        <div class="text-sm font-bold text-yellow-400">⚡ {Float.round(@rates.energy_balance * 24.0, 1)}</div>
+                    </div>
+                    <div class="bg-gray-900/60 rounded-lg px-3 py-2 flex items-center justify-between text-xs">
+                      <div>
+                        <span class="text-emerald-400 font-semibold">+{round(@rates.energy_produce)}</span>
+                        <span class="text-gray-500 ml-1">{gettext("produced")}</span>
                       </div>
-                      <div class="bg-gray-900/60 rounded-lg p-2">
-                        <div class="text-[10px] text-gray-500 mb-1">Por semana</div>
-                        <div class="text-sm font-bold text-yellow-400">⚡ {Float.round(@rates.energy_balance * 168.0, 0)}</div>
+                      <div>
+                        <span class="text-red-400 font-semibold">-{round(@rates.energy_consume)}</span>
+                        <span class="text-gray-500 ml-1">{gettext("consumed")}</span>
                       </div>
                     </div>
                   </div>
@@ -295,17 +333,17 @@ defmodule NexusDownfallWeb.PlanetLive do
                 <!-- Upgrade section -->
                 <div class="border-t border-gray-800 pt-4">
                   <h4 class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                    {if sel_level == 0, do: "Construcción inicial", else: "Mejora → Nivel #{sel_next}"}
+                    {if sel_level == 0, do: gettext("Initial Construction"), else: "#{gettext("Upgrade → Level")} #{sel_next}"}
                   </h4>
                   <%= if sel_constructing do %>
                     <div class="flex items-center justify-between bg-yellow-950/40 rounded-xl px-4 py-3 border border-yellow-800/50">
                       <div>
-                        <p class="text-yellow-300 text-sm font-semibold">⏳ Construcción en curso</p>
-                        <p class="text-yellow-600 text-xs mt-0.5">Mejorando a nivel {sel_next}</p>
+                        <p class="text-yellow-300 text-sm font-semibold">⏳ {gettext("Construction in progress")}</p>
+                        <p class="text-yellow-600 text-xs mt-0.5">{gettext("Upgrading to level")} {sel_next}</p>
                       </div>
                       <div class="text-right">
                         <p class="text-yellow-200 text-2xl font-mono font-bold tabular-nums">{format_duration(sel_rem)}</p>
-                        <p class="text-yellow-700 text-[10px]">restantes</p>
+                        <p class="text-yellow-700 text-[10px]">{gettext("remaining")}</p>
                       </div>
                     </div>
                   <% else %>
@@ -323,7 +361,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                       <% end %>
                     </div>
                     <%= if @any_constructing do %>
-                      <p class="text-yellow-500 text-xs">⚠ Ya hay una construcción en progreso en este planeta.</p>
+                      <p class="text-yellow-500 text-xs">⚠ {gettext("A construction is already in progress on this planet.")}</p>
                     <% else %>
                       <button
                         phx-click="build"
@@ -336,7 +374,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                             else: "bg-gray-800 text-gray-600 cursor-not-allowed")
                         ]}
                       >
-                        {if sel_level == 0, do: "Construir", else: "Mejorar a Lv #{sel_next}"}
+                        {if sel_level == 0, do: gettext("Build"), else: "#{gettext("Upgrade → Level")} #{sel_next}"}
                       </button>
                     <% end %>
                     <%= if @error do %>
@@ -350,7 +388,7 @@ defmodule NexusDownfallWeb.PlanetLive do
               <%= if @selected_tab == "specific" do %>
                 <div class="flex flex-col items-center justify-center h-36 text-center gap-2">
                   <span class="text-4xl">🔧</span>
-                  <p class="text-gray-500 text-sm">Información específica de esta estructura próximamente.</p>
+                  <p class="text-gray-500 text-sm">{gettext("Specific structure information coming soon.")}</p>
                 </div>
               <% end %>
 
@@ -358,7 +396,7 @@ defmodule NexusDownfallWeb.PlanetLive do
               <%= if @selected_tab == "specialization" do %>
                 <div class="flex flex-col items-center justify-center h-36 text-center gap-2">
                   <span class="text-4xl">⭐</span>
-                  <p class="text-gray-500 text-sm">Sistema de especialización próximamente.</p>
+                  <p class="text-gray-500 text-sm">{gettext("Specialization system coming soon.")}</p>
                 </div>
               <% end %>
 
@@ -404,7 +442,7 @@ defmodule NexusDownfallWeb.PlanetLive do
     ~H"""
     <div class="flex items-center gap-1 shrink-0">
       <span>{@icon}</span>
-      <span class={["font-semibold tabular-nums", @color]}>{@value |> round()}</span>
+      <span class={["font-semibold tabular-nums", @color]}>{format_resource(@value)}</span>
       <span class={["text-[10px]", if(@rate > 0, do: "text-emerald-500", else: "text-gray-600")]}>
         {format_rate(@rate)}/h
       </span>
@@ -450,6 +488,10 @@ defmodule NexusDownfallWeb.PlanetLive do
     {:noreply, assign(socket, :selected_tab, tab)}
   end
 
+  def handle_event("toggle_user_menu", _params, socket) do
+    {:noreply, assign(socket, :show_user_menu, !socket.assigns.show_user_menu)}
+  end
+
   def handle_event("build", %{"type" => building_type}, socket) do
     planet_id = socket.assigns.planet.id
 
@@ -468,13 +510,13 @@ defmodule NexusDownfallWeb.PlanetLive do
          |> assign(:error, nil)}
 
       {:error, :already_constructing} ->
-        {:noreply, assign(socket, :error, "Este edificio ya está siendo mejorado.")}
+        {:noreply, assign(socket, :error, gettext("A construction is already in progress on this planet."))}
 
       {:error, :planet_busy} ->
-        {:noreply, assign(socket, :error, "Ya hay una construcción en progreso en este planeta.")}
+        {:noreply, assign(socket, :error, gettext("A construction is already in progress on this planet."))}
 
       {:error, :insufficient_resources} ->
-        {:noreply, assign(socket, :error, "Recursos insuficientes para iniciar la construcción.")}
+        {:noreply, assign(socket, :error, gettext("Insufficient resources to start construction."))}
 
       {:error, reason} ->
         {:noreply, assign(socket, :error, "Error: #{inspect(reason)}")}
@@ -555,16 +597,21 @@ defmodule NexusDownfallWeb.PlanetLive do
     if r >= 0, do: "+#{Float.round(r, 1)}", else: "#{Float.round(r, 1)}"
   end
 
+  defp format_resource(v) when v >= 1_000_000, do: "#{Float.round(v / 1_000_000.0, 1)}M"
+  defp format_resource(v) when v >= 10_000,    do: "#{round(v / 1_000)}k"
+  defp format_resource(v) when v >= 100,       do: "#{round(v * 1.0)}"
+  defp format_resource(v),                     do: "#{Float.round(v * 1.0, 1)}"
+
   defp format_duration(secs) when secs <= 0, do: "0s"
   defp format_duration(secs) when secs < 60, do: "#{secs}s"
   defp format_duration(secs) when secs < 3600, do: "#{div(secs, 60)}m #{rem(secs, 60)}s"
   defp format_duration(secs), do: "#{div(secs, 3600)}h #{div(rem(secs, 3600), 60)}m"
 
-  defp resource_label(:raw_materials), do: "Recursos"
-  defp resource_label(:microchips), do: "Chips"
-  defp resource_label(:hydrogen), do: "Hidrógeno"
-  defp resource_label(:food), do: "Comida"
-  defp resource_label(:credits), do: "Créditos"
+  defp resource_label(:raw_materials), do: gettext("Raw Materials")
+  defp resource_label(:microchips), do: gettext("Chips")
+  defp resource_label(:hydrogen), do: gettext("Hydrogen")
+  defp resource_label(:food), do: gettext("Food")
+  defp resource_label(:credits), do: gettext("Credits")
   defp resource_label(other), do: other |> to_string() |> String.capitalize()
 
   # Return a level-0 placeholder image for buildings not yet built
@@ -572,20 +619,38 @@ defmodule NexusDownfallWeb.PlanetLive do
   defp building_img_level0("residential"), do: "unconstructed3.png"
   defp building_img_level0(_), do: "unconstructed.png"
 
-  defp building_description("hydrogen_extractor"), do: "Extrae hidrógeno de las capas atmosféricas mediante separadores moleculares avanzados. El hidrógeno es vital para propulsar flotas y alimentar reactores de fusión."
-  defp building_description("microchip_factory"),  do: "Fabrica microchips cuánticos de alta precisión para la construcción de naves y tecnologías avanzadas. Mayor nivel = mayor rendimiento y menor tasa de defectos."
-  defp building_description("spaceport"),          do: "Centro de operaciones de flotas espaciales. Gestiona lanzamientos, aterrizajes y mantenimiento. Habilita rutas comerciales, misiones de exploración y operaciones de combate."
-  defp building_description("residential"),        do: "Zona habitacional que alberga a la población del planeta. A mayor nivel, mayor capacidad y calidad de vida, atrayendo nuevos colonos al sistema."
-  defp building_description("command_center"),     do: "El centro neurálgico del planeta. Coordina todas las operaciones administrativas, militares y civiles. Su nivel determina los límites de expansión del resto de estructuras."
-  defp building_description("mine_raw"),           do: "Extrae materias primas del subsuelo planetario con taladros de plasma de alta energía. Recurso fundamental para toda construcción e investigación."
-  defp building_description("farm"),               do: "Cultivos hidropónicos y biorreactores que producen alimentos para la población. Sin suministro suficiente, la eficiencia productiva global decrece."
-  defp building_description("laboratory"),         do: "Centro de investigación científica y tecnológica. Acelera el desarrollo de nuevas tecnologías y desbloquea mejoras sinérgicas para otras estructuras."
-  defp building_description("power_plant"),        do: "Genera la energía necesaria para mantener todas las estructuras del planeta operativas. Un balance energético negativo reduce la eficiencia productiva global."
-  defp building_description(_),                    do: "Estructura planetaria."
+  defp building_description("hydrogen_extractor"), do: gettext("Extracts hydrogen from atmospheric layers using advanced molecular separators. Hydrogen is vital for propelling fleets and powering fusion reactors.")
+  defp building_description("microchip_factory"),  do: gettext("Manufactures high-precision quantum microchips for ship construction and advanced technologies. Higher level means better performance and lower defect rate.")
+  defp building_description("spaceport"),          do: gettext("Fleet operations center. Manages launches, landings and maintenance. Enables trade routes, exploration missions and combat operations.")
+  defp building_description("residential"),        do: gettext("Residential zone housing the planet's population. Higher levels increase capacity and quality of life, attracting new colonists to the system.")
+  defp building_description("command_center"),     do: gettext("The planet's nerve center. Coordinates all administrative, military and civilian operations. Its level determines the expansion limits of other structures.")
+  defp building_description("mine_raw"),           do: gettext("Extracts raw materials from the planetary subsoil with high-energy plasma drills. A fundamental resource for all construction and research.")
+  defp building_description("farm"),               do: gettext("Hydroponic crops and bioreactors that produce food for the population. Without sufficient supply, overall productive efficiency decreases.")
+  defp building_description("laboratory"),         do: gettext("Scientific and technological research center. Accelerates the development of new technologies and unlocks synergistic improvements for other structures.")
+  defp building_description("power_plant"),        do: gettext("Generates the energy needed to keep all planetary structures operational. A negative energy balance reduces overall productive efficiency.")
+  defp building_description("nuclear_reactor"),    do: gettext("High-efficiency nuclear fission reactor. Produces more energy per level than the conventional generator, ideal for planets with high industrial demand.")
+  defp building_description("defense_center"),     do: gettext("Planetary defense coordination center. Manages turrets, shields and early warning systems to protect the planet from external attacks.")
+  defp building_description("component_factory"),  do: gettext("Factory specialized in advanced electronic components. Complements microchip production with a higher-precision manufacturing chain.")
+  defp building_description(_),                    do: gettext("Planetary structure.")
 
-  defp production_stats("hydrogen_extractor", rates), do: {"\u{1F4A7}", "Producción de Hidrógeno",       rates.hydrogen * 1.0}
-  defp production_stats("microchip_factory",  rates), do: {"\u{1F4BE}", "Producción de Microchips",        rates.microchips * 1.0}
-  defp production_stats("mine_raw",           rates), do: {"\u26CF\uFE0F",  "Producción de Materias Primas",  rates.raw_materials * 1.0}
-  defp production_stats("farm",               rates), do: {"\u{1F33E}", "Producción de Alimentos",          rates.food * 1.0}
-  defp production_stats(_,                    _rates), do: {"\u{1F4E6}", "Producción",                       0.0}
+  defp production_stats("hydrogen_extractor", rates), do: {"\u{1F4A7}", gettext("Hydrogen Production"),         rates.hydrogen * 1.0}
+  defp production_stats("microchip_factory",  rates), do: {"\u{1F4BE}", gettext("Microchip Production"),          rates.microchips * 1.0}
+  defp production_stats("mine_raw",           rates), do: {"\u26CF\uFE0F",  gettext("Raw Materials Production"),   rates.raw_materials * 1.0}
+  defp production_stats("farm",               rates), do: {"\u{1F33E}", gettext("Food Production"),                rates.food * 1.0}
+  defp production_stats("component_factory",  rates), do: {"\u{1F4BE}", gettext("Microchip Production"),          rates.microchips * 1.0}
+  defp production_stats(_,                    _rates), do: {"\u{1F4E6}", gettext("Production"),                    0.0}
+
+  defp building_name("hydrogen_extractor"), do: gettext("Hydrogen Mine")
+  defp building_name("microchip_factory"),  do: gettext("Chip Factory")
+  defp building_name("spaceport"),          do: gettext("Spaceport")
+  defp building_name("residential"),        do: gettext("Residential Area")
+  defp building_name("command_center"),     do: gettext("Command Center")
+  defp building_name("mine_raw"),           do: gettext("Raw Material Mine")
+  defp building_name("farm"),               do: gettext("Farm")
+  defp building_name("laboratory"),         do: gettext("Research Center")
+  defp building_name("power_plant"),        do: gettext("Energy Generator")
+  defp building_name("nuclear_reactor"),    do: gettext("Nuclear Reactor")
+  defp building_name("defense_center"),     do: gettext("Defense Center")
+  defp building_name("component_factory"),  do: gettext("Component Factory")
+  defp building_name(type),                 do: type
 end

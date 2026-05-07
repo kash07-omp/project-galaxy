@@ -106,6 +106,7 @@ defmodule NexusDownfallWeb.UserAuth do
     socket = mount_current_user(session, socket)
 
     if socket.assigns.current_user do
+      Gettext.put_locale(NexusDownfallWeb.Gettext, socket.assigns.current_user.locale || "en")
       {:cont, socket}
     else
       socket =

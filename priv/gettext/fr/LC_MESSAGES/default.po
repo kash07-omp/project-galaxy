@@ -1,0 +1,262 @@
+## Locale: fr (French)
+## Translations from English (msgid) to French.
+
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+## Navigation
+msgid "Galaxy"
+msgstr "Galaxie"
+
+msgid "Cities"
+msgstr "Villes"
+
+msgid "Research"
+msgstr "Recherche"
+
+msgid "Laws"
+msgstr "Lois"
+
+msgid "Trade"
+msgstr "Commerce"
+
+msgid "Diplomacy"
+msgstr "Diplomatie"
+
+msgid "Clans"
+msgstr "Clans"
+
+msgid "Cards"
+msgstr "Cartes"
+
+msgid "Fleet"
+msgstr "Flotte"
+
+msgid "Ranking"
+msgstr "Classement"
+
+msgid "Store"
+msgstr "Boutique"
+
+## User menu
+msgid "Settings"
+msgstr "Paramètres"
+
+msgid "Sign out"
+msgstr "Se déconnecter"
+
+## Building names
+msgid "Hydrogen Mine"
+msgstr "Mine d'Hydrogène"
+
+msgid "Chip Factory"
+msgstr "Usine de Puces"
+
+msgid "Spaceport"
+msgstr "Port Spatial"
+
+msgid "Residential Area"
+msgstr "Zone Résidentielle"
+
+msgid "Command Center"
+msgstr "Centre de Commandement"
+
+msgid "Raw Material Mine"
+msgstr "Mine de Matières Premières"
+
+msgid "Farm"
+msgstr "Ferme"
+
+msgid "Research Center"
+msgstr "Centre de Recherche"
+
+msgid "Energy Generator"
+msgstr "Générateur d'Énergie"
+
+msgid "Nuclear Reactor"
+msgstr "Réacteur Nucléaire"
+
+msgid "Defense Center"
+msgstr "Centre de Défense"
+
+msgid "Component Factory"
+msgstr "Usine de Composants"
+
+## Building descriptions
+msgid "Extracts hydrogen from atmospheric layers using advanced molecular separators. Hydrogen is vital for propelling fleets and powering fusion reactors."
+msgstr "Extrait l'hydrogène des couches atmosphériques grâce à des séparateurs moléculaires avancés. L'hydrogène est vital pour propulser les flottes et alimenter les réacteurs à fusion."
+
+msgid "Manufactures high-precision quantum microchips for ship construction and advanced technologies. Higher level means better performance and lower defect rate."
+msgstr "Fabrique des micropuces quantiques de haute précision pour la construction de vaisseaux et les technologies avancées. Un niveau plus élevé signifie de meilleures performances et un taux de défauts réduit."
+
+msgid "Fleet operations center. Manages launches, landings and maintenance. Enables trade routes, exploration missions and combat operations."
+msgstr "Centre des opérations de flotte spatiale. Gère les lancements, les atterrissages et la maintenance. Active les routes commerciales, les missions d'exploration et les opérations de combat."
+
+msgid "Residential zone housing the planet's population. Higher levels increase capacity and quality of life, attracting new colonists to the system."
+msgstr "Zone résidentielle abritant la population de la planète. Des niveaux plus élevés augmentent la capacité et la qualité de vie, attirant de nouveaux colons dans le système."
+
+msgid "The planet's nerve center. Coordinates all administrative, military and civilian operations. Its level determines the expansion limits of other structures."
+msgstr "Le centre névralgique de la planète. Coordonne toutes les opérations administratives, militaires et civiles. Son niveau détermine les limites d'expansion des autres structures."
+
+msgid "Extracts raw materials from the planetary subsoil with high-energy plasma drills. A fundamental resource for all construction and research."
+msgstr "Extrait des matières premières du sous-sol planétaire avec des foreuses à plasma haute énergie. Une ressource fondamentale pour toute construction et recherche."
+
+msgid "Hydroponic crops and bioreactors that produce food for the population. Without sufficient supply, overall productive efficiency decreases."
+msgstr "Cultures hydroponiques et bioréacteurs qui produisent de la nourriture pour la population. Sans approvisionnement suffisant, l'efficacité productive globale diminue."
+
+msgid "Scientific and technological research center. Accelerates the development of new technologies and unlocks synergistic improvements for other structures."
+msgstr "Centre de recherche scientifique et technologique. Accélère le développement de nouvelles technologies et débloque des améliorations synergiques pour d'autres structures."
+
+msgid "Generates the energy needed to keep all planetary structures operational. A negative energy balance reduces overall productive efficiency."
+msgstr "Génère l'énergie nécessaire pour maintenir toutes les structures planétaires opérationnelles. Un bilan énergétique négatif réduit l'efficacité productive globale."
+
+msgid "High-efficiency nuclear fission reactor. Produces more energy per level than the conventional generator, ideal for planets with high industrial demand."
+msgstr "Réacteur à fission nucléaire haute efficacité. Produit plus d'énergie par niveau que le générateur conventionnel, idéal pour les planètes à forte demande industrielle."
+
+msgid "Planetary defense coordination center. Manages turrets, shields and early warning systems to protect the planet from external attacks."
+msgstr "Centre de coordination des défenses planétaires. Gère les tourelles, les boucliers et les systèmes d'alerte précoce pour protéger la planète des attaques extérieures."
+
+msgid "Factory specialized in advanced electronic components. Complements microchip production with a higher-precision manufacturing chain."
+msgstr "Usine spécialisée dans les composants électroniques avancés. Complète la production de micropuces avec une chaîne de fabrication de plus grande précision."
+
+msgid "Planetary structure."
+msgstr "Structure planétaire."
+
+## Modal tabs
+msgid "Information"
+msgstr "Informations"
+
+msgid "Specific"
+msgstr "Spécifique"
+
+msgid "Specialization"
+msgstr "Spécialisation"
+
+## Tab content placeholders
+msgid "Specific structure information coming soon."
+msgstr "Informations spécifiques sur cette structure bientôt disponibles."
+
+msgid "Specialization system coming soon."
+msgstr "Système de spécialisation bientôt disponible."
+
+## Energy section
+msgid "Energy Production"
+msgstr "Production d'Énergie"
+
+msgid "This building produces"
+msgstr "Ce bâtiment produit"
+
+msgid "energy at current level"
+msgstr "énergie au niveau actuel"
+
+msgid "Planet Balance"
+msgstr "Bilan Planétaire"
+
+msgid "produced"
+msgstr "produite"
+
+msgid "consumed"
+msgstr "consommée"
+
+msgid "efficiency"
+msgstr "efficacité"
+
+## Production stats
+msgid "Hydrogen Production"
+msgstr "Production d'Hydrogène"
+
+msgid "Microchip Production"
+msgstr "Production de Micropuces"
+
+msgid "Raw Materials Production"
+msgstr "Production de Matières Premières"
+
+msgid "Food Production"
+msgstr "Production Alimentaire"
+
+msgid "Production"
+msgstr "Production"
+
+msgid "Per minute"
+msgstr "Par minute"
+
+msgid "Per hour"
+msgstr "Par heure"
+
+msgid "Per day"
+msgstr "Par jour"
+
+msgid "Per week"
+msgstr "Par semaine"
+
+## Upgrade section
+msgid "Level"
+msgstr "Niveau"
+
+msgid "Initial Construction"
+msgstr "Construction initiale"
+
+msgid "Upgrade → Level"
+msgstr "Améliorer → Niveau"
+
+msgid "Construction in progress"
+msgstr "Construction en cours"
+
+msgid "Upgrading to level"
+msgstr "Amélioration vers le niveau"
+
+msgid "remaining"
+msgstr "restants"
+
+msgid "Build"
+msgstr "Construire"
+
+msgid "A construction is already in progress on this planet."
+msgstr "Une construction est déjà en cours sur cette planète."
+
+msgid "Insufficient resources to start construction."
+msgstr "Ressources insuffisantes pour démarrer la construction."
+
+## Resource labels
+msgid "Raw Materials"
+msgstr "Matières Premières"
+
+msgid "Chips"
+msgstr "Puces"
+
+msgid "Hydrogen"
+msgstr "Hydrogène"
+
+msgid "Food"
+msgstr "Nourriture"
+
+msgid "Credits"
+msgstr "Crédits"
+
+## Settings page
+msgid "Account Settings"
+msgstr "Paramètres du Compte"
+
+msgid "Language"
+msgstr "Langue"
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Account"
+msgstr "Compte"
+
+msgid "Back to map"
+msgstr "Retour à la carte"
+
+msgid "Language updated successfully."
+msgstr "Langue mise à jour avec succès."
+
+msgid "Error saving language."
+msgstr "Erreur lors de l'enregistrement de la langue."
+
+msgid "Invalid language."
+msgstr "Langue invalide."

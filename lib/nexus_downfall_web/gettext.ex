@@ -1,11 +1,11 @@
 defmodule NexusDownfallWeb.Gettext do
   @moduledoc """
-  Gettext module for NexusDownfallWeb.
+  Gettext backend for NexusDownfallWeb.
 
-  Usage:
-      import NexusDownfallWeb.Gettext
+  Usage in templates / LiveViews (via html_helpers):
+      use Gettext, backend: NexusDownfallWeb.Gettext
       gettext("Hello world")
   """
 
-  use Gettext, otp_app: :nexus_downfall
+  use Gettext.Backend, otp_app: :nexus_downfall
 end
