@@ -28,6 +28,8 @@ defmodule NexusDownfall.Planets.Planet do
     belongs_to :solar_system, NexusDownfall.Universe.SolarSystem
     belongs_to :universe_user, NexusDownfall.Accounts.UniverseUser
     has_many :buildings, NexusDownfall.Planets.Building
+    has_many :home_fleets, NexusDownfall.Fleets.Fleet, foreign_key: :home_planet_id
+    has_many :shipyard_queue_items, NexusDownfall.Fleets.ShipyardQueueItem
 
     timestamps(type: :utc_datetime)
   end

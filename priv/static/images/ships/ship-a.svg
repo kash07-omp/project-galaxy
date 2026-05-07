@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none">
+  <rect width="320" height="180" rx="24" fill="#08111f"/>
+  <path d="M48 94L146 48L266 88L156 132L48 94Z" fill="#1cc6e8" fill-opacity="0.18" stroke="#54ddff" stroke-width="6"/>
+  <path d="M88 92L154 68L232 90L158 114L88 92Z" fill="#9ef3ff" fill-opacity="0.5"/>
+  <circle cx="240" cy="91" r="11" fill="#ffb84d"/>
+  <path d="M38 86L62 94L38 102V86Z" fill="#39f0b2"/>
+  <text x="26" y="156" fill="#d7f7ff" font-family="Arial, sans-serif" font-size="24" font-weight="700">SHIP A</text>
+</svg>

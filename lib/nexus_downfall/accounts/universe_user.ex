@@ -21,6 +21,7 @@ defmodule NexusDownfall.Accounts.UniverseUser do
     belongs_to :user, NexusDownfall.Accounts.User
     belongs_to :universe, NexusDownfall.Universe.UniverseRecord, foreign_key: :universe_id
     has_many :planets, NexusDownfall.Planets.Planet
+    has_many :fleets, NexusDownfall.Fleets.Fleet
 
     timestamps(type: :utc_datetime)
   end

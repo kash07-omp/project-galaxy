@@ -1,0 +1,379 @@
+defmodule NexusDownfallWeb.FleetLive do
+  @moduledoc "Fleet command screen - create fleets and inspect their composition."
+
+  use NexusDownfallWeb, :live_view
+
+  alias NexusDownfall.Fleets
+  alias Phoenix.LiveView.JS
+
+  on_mount {NexusDownfallWeb.UserAuth, :ensure_authenticated}
+
+  def mount(_params, _session, socket) do
+    {:ok, assign_fleet_page(socket)}
+  end
+
+  def render(assigns) do
+    ~H"""
+    <div class="flex min-h-screen flex-col overflow-hidden bg-[#050912] font-sans select-none">
+      <.topbar
+        current_user={@current_user}
+        show_user_menu={@show_user_menu}
+        active_tab="fleet"
+      />
+
+      <main class="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_16%_12%,#12385f_0%,#071426_28%,#050912_55%,#03060d_100%)] p-3 md:p-5">
+        <div class="mx-auto max-w-[1500px]">
+          <section class="relative mb-4 overflow-hidden rounded-2xl border border-cyan-500/25 bg-[#071325]/70 shadow-[0_18px_60px_rgba(8,145,178,0.2)]">
+            <div class="absolute inset-0 bg-[linear-gradient(115deg,rgba(56,189,248,0.12),transparent_35%,rgba(34,197,94,0.08)_62%,transparent_78%)]" />
+            <div class="relative flex flex-wrap items-end justify-between gap-4 px-4 py-4 md:px-5">
+              <div>
+                <p class="text-[10px] uppercase tracking-[0.22em] text-cyan-300/80"><%= gettext("Fleet Operations") %></p>
+                <h1 class="mt-1 text-xl font-bold text-white md:text-2xl"><%= gettext("Fleet Management") %></h1>
+                <p class="mt-1 text-xs text-cyan-100/80 md:text-sm"><%= gettext("Monitor each fleet, inspect every ship class and prepare mission dispatches.") %></p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-right md:grid-cols-4">
+                <div class="rounded-lg border border-cyan-500/30 bg-[#04101d]/80 px-3 py-2">
+                  <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Fleets") %></p>
+                  <p class="text-lg font-bold text-cyan-200"><%= @fleet_metrics.total_fleets %></p>
+                </div>
+                <div class="rounded-lg border border-cyan-500/30 bg-[#04101d]/80 px-3 py-2">
+                  <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Ships") %></p>
+                  <p class="text-lg font-bold text-cyan-200"><%= @fleet_metrics.total_ships %></p>
+                </div>
+                <div class="rounded-lg border border-cyan-500/30 bg-[#04101d]/80 px-3 py-2">
+                  <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Worlds") %></p>
+                  <p class="text-lg font-bold text-cyan-200"><%= @fleet_metrics.home_worlds %></p>
+                </div>
+                <div class="rounded-lg border border-cyan-500/30 bg-[#04101d]/80 px-3 py-2">
+                  <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Ready") %></p>
+                  <p class="text-lg font-bold text-emerald-300"><%= @fleet_metrics.ready_fleets %></p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <%= if @fleet_notice do %>
+            <div class="mb-4 rounded-xl border border-emerald-700 bg-emerald-950/50 px-4 py-3 text-sm text-emerald-300"><%= @fleet_notice %></div>
+          <% end %>
+
+          <div class="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+            <aside class="space-y-4 xl:sticky xl:top-4 xl:self-start">
+              <section class="overflow-hidden rounded-2xl border border-cyan-500/25 bg-[#0a1528]/95 shadow-[0_18px_44px_rgba(2,8,22,0.62)]">
+                <div class="border-b border-cyan-500/15 bg-[linear-gradient(170deg,rgba(8,145,178,0.22),rgba(8,145,178,0.03))] px-4 py-3">
+                  <h2 class="text-lg font-bold text-white"><%= gettext("Fleet Management") %></h2>
+                  <p class="mt-1 text-xs text-cyan-100/80"><%= gettext("Create and organize your operational fleets.") %></p>
+                </div>
+
+                <div class="p-4">
+                  <button phx-click="open_create_fleet_modal" class="w-full rounded-xl bg-[linear-gradient(90deg,#0ea5e9,#22d3ee)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(14,165,233,0.45)] transition hover:brightness-110">
+                    + <%= gettext("New Fleet") %>
+                  </button>
+
+                  <div class="mt-3 grid grid-cols-2 gap-2">
+                    <div class="rounded-lg border border-cyan-500/20 bg-[#060d18]/70 px-3 py-2">
+                      <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Fleets") %></p>
+                      <p class="text-base font-bold text-cyan-200"><%= @fleet_metrics.total_fleets %></p>
+                    </div>
+                    <div class="rounded-lg border border-cyan-500/20 bg-[#060d18]/70 px-3 py-2">
+                      <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Ships") %></p>
+                      <p class="text-base font-bold text-cyan-200"><%= @fleet_metrics.total_ships %></p>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 rounded-xl border border-cyan-500/20 bg-[#050f1d]/80 p-3">
+                    <div class="mb-2 flex items-center justify-between gap-2">
+                      <h3 class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300"><%= gettext("Fleet Filters") %></h3>
+                      <span class="rounded-full border border-amber-600/60 bg-amber-900/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300"><%= gettext("PRO") %></span>
+                    </div>
+
+                    <div class={[
+                      "space-y-2 transition",
+                      if(!@premium_access, do: "pointer-events-none opacity-45 grayscale-[0.35]", else: "opacity-100")
+                    ]}>
+                      <div>
+                        <label class="mb-1 block text-[11px] uppercase tracking-wide text-gray-500"><%= gettext("Mission") %></label>
+                        <select class="w-full rounded-lg border border-gray-700 bg-[#060d18] px-2.5 py-2 text-xs text-gray-300">
+                          <option><%= gettext("All missions") %></option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label class="mb-1 block text-[11px] uppercase tracking-wide text-gray-500"><%= gettext("Planet") %></label>
+                        <select class="w-full rounded-lg border border-gray-700 bg-[#060d18] px-2.5 py-2 text-xs text-gray-300">
+                          <option><%= gettext("All planets") %></option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label class="mb-1 block text-[11px] uppercase tracking-wide text-gray-500"><%= gettext("Search") %></label>
+                        <input type="text" class="w-full rounded-lg border border-gray-700 bg-[#060d18] px-2.5 py-2 text-xs text-gray-300" placeholder={gettext("Fleet name...")} />
+                      </div>
+                    </div>
+
+                    <button :if={!@premium_access} type="button" class="mt-3 w-full rounded-lg border border-amber-500/70 bg-amber-900/35 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-amber-200 transition hover:bg-amber-900/55">
+                      <%= gettext("Unlock with PRO") %>
+                    </button>
+                  </div>
+
+                  <p class="mt-3 text-[11px] text-gray-500"><%= gettext("Advanced filters are visible but restricted to PRO commanders.") %></p>
+                </div>
+              </section>
+            </aside>
+
+            <section class="rounded-2xl border border-cyan-500/20 bg-[#081225]/90 p-3 shadow-[0_18px_44px_rgba(2,8,22,0.62)] md:p-4">
+              <div class="mb-3 hidden grid-cols-[260px_220px_180px_minmax(0,1fr)_180px] items-center gap-2 rounded-xl border border-cyan-500/15 bg-[#050e1c]/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-cyan-300/70 xl:grid">
+                <span><%= gettext("Fleet") %></span>
+                <span><%= gettext("Location") %></span>
+                <span><%= gettext("Mission") %></span>
+                <span><%= gettext("Ship Manifest") %></span>
+                <span class="text-right"><%= gettext("Actions") %></span>
+              </div>
+
+              <%= if @fleets == [] do %>
+                <div class="rounded-2xl border border-dashed border-cyan-600/30 bg-[#060d18]/80 px-6 py-12 text-center">
+                  <p class="text-lg font-semibold text-white"><%= gettext("No fleets registered yet.") %></p>
+                  <p class="mx-auto mt-2 max-w-xl text-sm text-gray-400"><%= gettext("Create a fleet to start assigning ships from the spaceport queue.") %></p>
+                  <button phx-click="open_create_fleet_modal" class="mt-5 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-500"><%= gettext("Create new fleet") %></button>
+                </div>
+              <% else %>
+                <div class="space-y-2">
+                  <%= for fleet <- @fleets do %>
+                    <article class="rounded-xl border border-cyan-500/20 bg-[linear-gradient(145deg,#081423,#050d18)] px-3 py-3 shadow-[0_10px_28px_rgba(8,145,178,0.1)] transition hover:border-cyan-400/45">
+                      <div class="grid gap-3 xl:grid-cols-[260px_220px_180px_minmax(0,1fr)_180px] xl:items-center">
+                        <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
+                          <div class="flex items-center gap-2">
+                            <h3 class="truncate text-sm font-bold text-white"><%= fleet.name %></h3>
+                            <span class={fleet_status_badge_class(fleet.status)}><%= fleet_status_label(fleet.status) %></span>
+                          </div>
+                          <p class="mt-1 truncate text-[11px] text-gray-400"><%= gettext("Admiral") %>: <%= admiral_option_label(fleet.admiral_name) %></p>
+                        </div>
+
+                        <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
+                          <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Planet") %></p>
+                          <p class="truncate text-sm font-semibold text-white"><%= fleet.home_planet.name %></p>
+                          <p class="text-[11px] text-gray-400"><%= gettext("System") %> <%= fleet.home_planet.solar_system.number %></p>
+                        </div>
+
+                        <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
+                          <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Current mission") %></p>
+                          <p class="text-sm font-semibold text-cyan-200"><%= fleet_status_label(fleet.status) %></p>
+                          <p class="text-[11px] text-gray-400"><%= gettext("Power") %>: <%= fleet_power(fleet, @ship_catalog) %></p>
+                        </div>
+
+                        <div>
+                          <p class="mb-1.5 text-[10px] uppercase tracking-wide text-gray-500 xl:hidden"><%= gettext("Ship Manifest") %></p>
+                          <div class="flex flex-wrap gap-1.5">
+                            <%= for ship <- @ship_catalog do %>
+                              <div class="flex min-w-[104px] items-center gap-1.5 rounded-lg border border-cyan-500/15 bg-[#030914]/85 px-2 py-1">
+                                <img src={"/images/ships/#{ship.type}.svg"} onerror="this.style.display='none'" alt={translate_dynamic(ship.name)} class="h-7 w-7 rounded bg-black/30 p-1 object-contain" draggable="false" />
+                                <div class="min-w-0">
+                                  <p class="truncate text-[10px] text-gray-300"><%= translate_dynamic(ship.name) %></p>
+                                  <p class="text-sm font-bold leading-none text-white"><%= Fleets.ship_quantity(fleet, ship.type) %></p>
+                                </div>
+                              </div>
+                            <% end %>
+                          </div>
+                        </div>
+
+                        <div class="flex justify-end xl:justify-end">
+                          <button type="button" class="w-full rounded-lg border border-emerald-500/60 bg-emerald-900/35 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-200 transition hover:bg-emerald-800/45 xl:w-auto">
+                            <%= gettext("Send mission") %>
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  <% end %>
+                </div>
+              <% end %>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      <.modal id="create-fleet-modal" show={@show_create_modal} on_cancel={JS.push("close_create_fleet_modal")}>
+        <div class="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-[#0c1422]">
+          <div class="relative h-32 overflow-hidden">
+            <img src="/images/planet-images/barraks.jpg" class="absolute inset-0 h-full w-full object-cover" draggable="false" />
+            <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-black/90" />
+            <div class="absolute bottom-3 left-4">
+              <h2 id="create-fleet-modal-title" class="text-xl font-bold text-white"><%= gettext("Create fleet") %></h2>
+              <p id="create-fleet-modal-description" class="mt-1 text-xs text-gray-300"><%= gettext("Create a named fleet, assign its home planet and optionally an admiral card.") %></p>
+            </div>
+          </div>
+
+          <div class="space-y-4 p-5">
+            <%= if @fleet_error do %>
+              <div class="rounded-xl border border-red-700 bg-red-950/40 px-3 py-2 text-sm text-red-300"><%= @fleet_error %></div>
+            <% end %>
+
+            <form phx-submit="create_fleet" class="space-y-4">
+              <div>
+                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500"><%= gettext("Fleet name") %></label>
+                <input type="text" name="name" value={@fleet_form.name} placeholder={gettext("Choose a name for your new fleet")} class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500"><%= gettext("Home planet") %></label>
+                <select name="planet_id" class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none">
+                  <option value=""><%= gettext("Select one of your planets") %></option>
+                  <%= for planet <- @planets do %>
+                    <option value={planet.id} selected={to_string(planet.id) == @fleet_form.planet_id}><%= planet_option_label(planet) %></option>
+                  <% end %>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500"><%= gettext("Assigned admiral") %></label>
+                <select name="admiral_name" class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none">
+                  <%= for admiral <- @admiral_options do %>
+                    <option value={admiral} selected={admiral == @fleet_form.admiral_name}><%= admiral_option_label(admiral) %></option>
+                  <% end %>
+                </select>
+              </div>
+
+              <div class="flex flex-col-reverse gap-3 border-t border-gray-800 pt-4 sm:flex-row sm:justify-end">
+                <button type="button" phx-click="close_create_fleet_modal" class="rounded-lg border border-gray-700 bg-gray-950 px-4 py-2.5 text-sm font-medium text-gray-200 transition hover:border-gray-500"><%= gettext("Cancel") %></button>
+                <button type="submit" class="rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-500"><%= gettext("Create fleet") %></button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </.modal>
+    </div>
+    """
+  end
+
+  def handle_event("create_fleet", params, socket) do
+    case Fleets.create_fleet_for_user(socket.assigns.current_user.id, params) do
+      {:ok, _fleet} ->
+        {:noreply,
+         socket
+         |> assign_fleet_page()
+         |> assign(:fleet_form, %{name: "", planet_id: "", admiral_name: ""})
+         |> assign(:show_create_modal, false)
+         |> assign(:fleet_notice, gettext("Fleet created successfully."))
+         |> assign(:fleet_error, nil)}
+
+      {:error, :invalid_fleet} ->
+        {:noreply,
+         socket
+         |> assign(:fleet_form, fleet_form_from_params(params))
+         |> assign(:show_create_modal, true)
+         |> assign(:fleet_error, gettext("Invalid fleet data."))
+         |> assign(:fleet_notice, nil)}
+
+      {:error, :not_found} ->
+        {:noreply,
+         socket
+         |> assign(:fleet_form, fleet_form_from_params(params))
+         |> assign(:show_create_modal, true)
+         |> assign(:fleet_error, gettext("Home planet not found."))
+         |> assign(:fleet_notice, nil)}
+
+      {:error, _reason} ->
+        {:noreply,
+         socket
+         |> assign(:fleet_form, fleet_form_from_params(params))
+         |> assign(:show_create_modal, true)
+         |> assign(:fleet_error, gettext("Could not create the fleet."))
+         |> assign(:fleet_notice, nil)}
+    end
+  end
+
+  def handle_event("open_create_fleet_modal", _, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_create_modal, true)
+     |> assign(:fleet_error, nil)}
+  end
+
+  def handle_event("close_create_fleet_modal", _, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_create_modal, false)
+     |> assign(:fleet_error, nil)}
+  end
+
+  def handle_event("toggle_user_menu", _, socket), do: {:noreply, update(socket, :show_user_menu, &(!&1))}
+  def handle_event("close_menu", _, socket), do: {:noreply, assign(socket, :show_user_menu, false)}
+
+  defp assign_fleet_page(socket) do
+    user_id = socket.assigns.current_user.id
+    planets = Fleets.list_planets_for_user(user_id)
+    fleets = Fleets.list_fleets_for_user(user_id)
+
+    socket
+    |> assign(:planets, planets)
+    |> assign(:fleets, fleets)
+    |> assign(:fleet_metrics, fleet_metrics(fleets, planets))
+    |> assign(:premium_access, premium_access?(socket.assigns.current_user))
+    |> assign(:ship_catalog, Fleets.ship_catalog())
+    |> assign(:admiral_options, Fleets.admiral_options())
+    |> assign_new(:fleet_form, fn -> %{name: "", planet_id: "", admiral_name: ""} end)
+    |> assign_new(:fleet_error, fn -> nil end)
+    |> assign_new(:fleet_notice, fn -> nil end)
+    |> assign_new(:show_create_modal, fn -> false end)
+    |> assign(:show_user_menu, socket.assigns[:show_user_menu] || false)
+  end
+
+  defp fleet_form_from_params(params) do
+    %{
+      name: Map.get(params, "name", ""),
+      planet_id: Map.get(params, "planet_id", ""),
+      admiral_name: Map.get(params, "admiral_name", "")
+    }
+  end
+
+  defp planet_option_label(planet) do
+    "#{planet.name} - #{gettext("System")} #{planet.solar_system.number}"
+  end
+
+  defp admiral_option_label(nil), do: gettext("No admiral")
+  defp admiral_option_label(""), do: gettext("No admiral")
+  defp admiral_option_label(admiral), do: translate_dynamic(admiral)
+
+  defp fleet_metrics(fleets, planets) do
+    %{
+      total_fleets: length(fleets),
+      total_ships: Enum.reduce(fleets, 0, fn fleet, acc -> acc + Fleets.total_ships(fleet) end),
+      home_worlds: length(planets),
+      ready_fleets: Enum.count(fleets, &(&1.status == "idle"))
+    }
+  end
+
+  defp fleet_status_label(nil), do: gettext("Idle")
+  defp fleet_status_label("idle"), do: gettext("Idle")
+  defp fleet_status_label(status), do: translate_dynamic(status)
+
+  defp fleet_status_badge_class(status) do
+    base = "inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+
+    if status in [nil, "idle"] do
+      base <> " border-emerald-700 bg-emerald-950/50 text-emerald-200"
+    else
+      base <> " border-gray-700 bg-gray-900 text-gray-300"
+    end
+  end
+
+  defp fleet_power(fleet, ship_catalog) do
+    ship_catalog
+    |> Enum.reduce(0, fn ship, acc ->
+      quantity = Fleets.ship_quantity(fleet, ship.type)
+      acc + quantity * ship.attack + quantity * ship.hull
+    end)
+  end
+
+  defp premium_access?(user) do
+    cond do
+      Map.get(user, :premium, false) -> true
+      Map.get(user, :is_premium, false) -> true
+      Map.get(user, :premium_active, false) -> true
+      Map.get(user, :premium_subscription, false) -> true
+      Map.get(user, :subscription_tier) in ["premium", "pro", "elite"] -> true
+      true -> false
+    end
+  end
+
+  defp translate_dynamic(msgid), do: Gettext.gettext(NexusDownfallWeb.Gettext, msgid)
+end

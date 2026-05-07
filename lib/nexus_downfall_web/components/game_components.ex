@@ -58,7 +58,7 @@ defmodule NexusDownfallWeb.GameComponents do
         <.game_nav_tab href="#" label={gettext("Diplomacy")} active={false} />
         <.game_nav_tab href="#" label={gettext("Clans")} active={false} />
         <.game_nav_tab href="#" label={gettext("Cards")} active={false} />
-        <.game_nav_tab href="#" label={gettext("Fleet")} active={false} />
+        <.game_nav_tab href={~p"/fleet"} label={gettext("Fleet")} active={@active_tab == "fleet"} />
         <.game_nav_tab href="#" label={gettext("Ranking")} active={false} />
         <.game_nav_tab href="#" label={gettext("Store")} active={false} />
         <%= if @context_label do %>

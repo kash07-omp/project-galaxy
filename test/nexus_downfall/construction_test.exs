@@ -257,5 +257,26 @@ defmodule NexusDownfall.Planets.ConstructionTest do
       assert updated.level == 1
       assert is_nil(updated.construction_finish_at)
     end
+
+    test "reconcile_due_constructions/1 completes expired work when async job is still pending", %{planet: planet} do
+      building =
+        Oban.Testing.with_testing_mode(:manual, fn ->
+          {:ok, b} = Planets.start_construction(planet.id, "mine_raw")
+          b
+        end)
+
+      past_time = DateTime.utc_now() |> DateTime.add(-5, :second) |> DateTime.truncate(:second)
+
+      Repo.update_all(
+        from(b in Building, where: b.id == ^building.id),
+        set: [construction_finish_at: past_time]
+      )
+
+      assert :ok = Planets.reconcile_due_constructions(planet.id)
+
+      updated = Repo.get!(Building, building.id)
+      assert updated.level == 1
+      assert is_nil(updated.construction_finish_at)
+    end
   end
 end

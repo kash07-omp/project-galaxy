@@ -78,5 +78,267 @@ msgstr "Lava"
 msgid "Desert"
 msgstr "Desert"
 
+## Fleets / Shipyard
+msgid "Fleet command"
+msgstr "Fleet command"
+
+msgid "Command bridge"
+msgstr "Command bridge"
+
+msgid "Fleet command center"
+msgstr "Fleet command center"
+
+msgid "Deploy and supervise your task forces from a tactical roster."
+msgstr "Deploy and supervise your task forces from a tactical roster."
+
+msgid "Fleet list"
+msgstr "Fleet list"
+
+msgid "No fleets registered yet."
+msgstr "No fleets registered yet."
+
+msgid "Create a fleet to start assigning ships from the spaceport queue."
+msgstr "Create a fleet to start assigning ships from the spaceport queue."
+
+msgid "Create new fleet"
+msgstr "Create new fleet"
+
+msgid "Ships in fleet"
+msgstr "Ships in fleet"
+
+msgid "Total power"
+msgstr "Total power"
+
+msgid "Fleet filters"
+msgstr "Fleet filters"
+
+msgid "Premium required"
+msgstr "Premium required"
+
+msgid "Advanced fleet filters are available with Premium command subscription."
+msgstr "Advanced fleet filters are available with Premium command subscription."
+
+msgid "Filter by total power"
+msgstr "Filter by total power"
+
+msgid "Filter by total ships"
+msgstr "Filter by total ships"
+
+msgid "Filter by solar system"
+msgstr "Filter by solar system"
+
+msgid "Feature coming soon"
+msgstr "Feature coming soon"
+
+msgid "Create fleet"
+msgstr "Create fleet"
+
+msgid "Fleet control nexus"
+msgstr "Fleet control nexus"
+
+msgid "Organize your fleets before missions go live. The roster remains central, while creation stays one click away in a guided modal."
+msgstr "Organize your fleets before missions go live. The roster remains central, while creation stays one click away in a guided modal."
+
+msgid "New fleet"
+msgstr "New fleet"
+
+msgid "Fleet roster"
+msgstr "Fleet roster"
+
+msgid "Review your home fleets, commanders and hangar counts from one place."
+msgstr "Review your home fleets, commanders and hangar counts from one place."
+
+msgid "No fleets on standby"
+msgstr "No fleets on standby"
+
+msgid "Create your first fleet to unlock ship assignments from the spaceport and prepare future missions."
+msgstr "Create your first fleet to unlock ship assignments from the spaceport and prepare future missions."
+
+msgid "Open fleet creation"
+msgstr "Open fleet creation"
+
+msgid "No ships assigned yet."
+msgstr "No ships assigned yet."
+
+msgid "Operational overview"
+msgstr "Operational overview"
+
+msgid "Home worlds"
+msgstr "Home worlds"
+
+msgid "Ready fleets"
+msgstr "Ready fleets"
+
+msgid "All fleets are currently docked and awaiting mission controls."
+msgstr "All fleets are currently docked and awaiting mission controls."
+
+msgid "Fleet creation workflow"
+msgstr "Fleet creation workflow"
+
+msgid "Creation stays in a modal so the roster remains visible while you plan your next command slot."
+msgstr "Creation stays in a modal so the roster remains visible while you plan your next command slot."
+
+msgid "Creation requests still require a valid name and one of your planets."
+msgstr "Creation requests still require a valid name and one of your planets."
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Create a named fleet, assign its home planet and optionally an admiral card."
+msgstr "Create a named fleet, assign its home planet and optionally an admiral card."
+
+msgid "Fleet name"
+msgstr "Fleet name"
+
+msgid "Choose a name for your new fleet"
+msgstr "Choose a name for your new fleet"
+
+msgid "Home planet"
+msgstr "Home planet"
+
+msgid "Select one of your planets"
+msgstr "Select one of your planets"
+
+msgid "Assigned admiral"
+msgstr "Assigned admiral"
+
+msgid "No admiral"
+msgstr "No admiral"
+
+msgid "Admiral Alpha Card"
+msgstr "Admiral Alpha Card"
+
+msgid "Admiral Beta Card"
+msgstr "Admiral Beta Card"
+
+msgid "Launch-ready fleet roster"
+msgstr "Launch-ready fleet roster"
+
+msgid "Fleets created here will later handle missions, routes and transports."
+msgstr "Fleets created here will later handle missions, routes and transports."
+
+msgid "fleets"
+msgstr "fleets"
+
+msgid "No fleets created yet."
+msgstr "No fleets created yet."
+
+msgid "Base planet"
+msgstr "Base planet"
+
+msgid "Total ships"
+msgstr "Total ships"
+
+msgid "Admiral"
+msgstr "Admiral"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Idle"
+msgstr "Idle"
+
+msgid "Ships"
+msgstr "Ships"
+
+msgid "units"
+msgstr "units"
+
+msgid "Fleet created successfully."
+msgstr "Fleet created successfully."
+
+msgid "Invalid fleet data."
+msgstr "Invalid fleet data."
+
+msgid "Home planet not found."
+msgstr "Home planet not found."
+
+msgid "Could not create the fleet."
+msgstr "Could not create the fleet."
+
+msgid "Shipyard"
+msgstr "Shipyard"
+
+msgid "Queue ship construction from this spaceport and assign each batch to a destination fleet."
+msgstr "Queue ship construction from this spaceport and assign each batch to a destination fleet."
+
+msgid "No fleets available. Create one first from Fleet."
+msgstr "No fleets available. Create one first from Fleet."
+
+msgid "Open Fleet command"
+msgstr "Open Fleet command"
+
+msgid "Build time"
+msgstr "Build time"
+
+msgid "Attack"
+msgstr "Attack"
+
+msgid "Hull"
+msgstr "Hull"
+
+msgid "Cargo"
+msgstr "Cargo"
+
+msgid "Speed"
+msgstr "Speed"
+
+msgid "Cost"
+msgstr "Cost"
+
+msgid "Target fleet"
+msgstr "Target fleet"
+
+msgid "Quantity"
+msgstr "Quantity"
+
+msgid "Queue ships"
+msgstr "Queue ships"
+
+msgid "Shipyard queue"
+msgstr "Shipyard queue"
+
+msgid "No ships queued on this planet."
+msgstr "No ships queued on this planet."
+
+msgid "In progress"
+msgstr "In progress"
+
+msgid "Queued"
+msgstr "Queued"
+
+msgid "Completed"
+msgstr "Completed"
+
+msgid "Ship construction queued."
+msgstr "Ship construction queued."
+
+msgid "Spaceport level 1 is required to build ships."
+msgstr "Spaceport level 1 is required to build ships."
+
+msgid "Insufficient resources to queue ships."
+msgstr "Insufficient resources to queue ships."
+
+msgid "Fleet not found."
+msgstr "Fleet not found."
+
+msgid "Selected fleet is not available from this planet."
+msgstr "Selected fleet is not available from this planet."
+
+msgid "Invalid shipyard request."
+msgstr "Invalid shipyard request."
+
+msgid "Ship A"
+msgstr "Ship A"
+
+msgid "Ship B"
+msgstr "Ship B"
+
+msgid "Fast corvette prototype for early escort and interception tasks."
+msgstr "Fast corvette prototype for early escort and interception tasks."
+
+msgid "Heavier frigate placeholder with better hull and transport capacity."
+msgstr "Heavier frigate placeholder with better hull and transport capacity."
+
 msgid "Planet not found."
 msgstr "Planet not found."

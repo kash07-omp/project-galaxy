@@ -82,7 +82,7 @@ Permitir creación de flotas y viajes entre sistemas conectados.
 - [x] Modelo de galaxia/sistemas/hipervías y planetas.
 - [x] Pathfinding A* para rutas de flota.
 - [ ] Límite de flotas activas (base + mejor espaciopuerto).
-- [ ] Creación de flota desde `/Fleet` y desde detalle de planeta.
+- [x] Creación de flota desde `/Fleet` y desde detalle de planeta.
 - [ ] Misión de transporte (ida, entrega, retorno, consumo de hidrógeno).
 - [ ] Programación temporal de misiones con Oban.
 

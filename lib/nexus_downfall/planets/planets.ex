@@ -119,6 +119,49 @@ defmodule NexusDownfall.Planets do
     Repo.all(from b in Building, where: b.planet_id == ^planet_id, order_by: b.type)
   end
 
+  @doc "Completes any building constructions that are already due for `planet_id`."
+  def reconcile_due_constructions(planet_id) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    due_buildings =
+      Repo.all(
+        from b in Building,
+          where:
+            b.planet_id == ^planet_id and
+              not is_nil(b.construction_finish_at) and
+              b.construction_finish_at <= ^now,
+          lock: "FOR UPDATE"
+      )
+
+    Enum.each(due_buildings, fn building ->
+      {updated_count, _} =
+        Repo.update_all(
+          from(b in Building,
+            where:
+              b.id == ^building.id and
+                not is_nil(b.construction_finish_at) and
+                b.construction_finish_at <= ^now
+          ),
+          set: [
+            level: building.level + 1,
+            construction_finish_at: nil,
+            oban_job_id: nil,
+            updated_at: now
+          ]
+        )
+
+      if updated_count > 0 do
+        :telemetry.execute(
+          [:nexus_downfall, :planets, :construction_completed],
+          %{count: 1},
+          %{planet_id: building.planet_id, building_type: building.type}
+        )
+      end
+    end)
+
+    :ok
+  end
+
   @doc """
   Ensures all canonical building types exist for `planet_id`, inserting them
   at level 0 if they are missing. Returns {:ok, buildings_list} | {:error, reason}.
@@ -206,6 +249,39 @@ defmodule NexusDownfall.Planets do
 
       error ->
         error
+    end
+  end
+
+  @doc "Sets a high resource floor on a user-owned planet to speed up manual testing."
+  def grant_test_resources_for_user(planet_id, user_id, floor_amount \\ 50_000_000)
+      when is_integer(floor_amount) and floor_amount > 0 do
+    Repo.transaction(fn ->
+      planet =
+        Repo.one(
+          from p in Planet,
+            join: uu in assoc(p, :universe_user),
+            where: p.id == ^planet_id and uu.user_id == ^user_id,
+            lock: "FOR UPDATE"
+        )
+
+      if is_nil(planet), do: Repo.rollback(:not_found)
+
+      attrs = %{
+        raw_materials: max(planet.raw_materials, floor_amount),
+        microchips: max(planet.microchips, floor_amount),
+        hydrogen: max(planet.hydrogen, floor_amount),
+        food: max(planet.food, floor_amount),
+        credits: max(planet.credits, floor_amount),
+        updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+      }
+
+      planet
+      |> Ecto.Changeset.cast(attrs, Map.keys(attrs))
+      |> Repo.update!()
+    end)
+    |> case do
+      {:ok, planet} -> {:ok, planet}
+      {:error, reason} -> {:error, reason}
     end
   end
 
