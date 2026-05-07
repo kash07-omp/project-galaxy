@@ -1,0 +1,8 @@
+{
+  "name": "nexus-downfall-assets",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "pixi.js": "^7.4.2"
+  }
+}

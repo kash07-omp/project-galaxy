@@ -17,7 +17,7 @@ defmodule NexusDownfall.Universe do
   import Ecto.Query
 
   alias NexusDownfall.Repo
-  alias NexusDownfall.Universe.{Galaxy, SolarSystem}
+  alias NexusDownfall.Universe.{Galaxy, Hyperlink, SolarSystem}
   alias NexusDownfall.Universe.UniverseRecord, as: UniverseSchema
 
   @doc "Lists all universes with `status: open`."
@@ -47,9 +47,55 @@ defmodule NexusDownfall.Universe do
     Repo.one(query)
   end
 
+  @doc "Gets a galaxy with all its solar systems and their planets."
+  def get_galaxy_with_systems!(galaxy_id) do
+    Repo.one!(
+      from g in Galaxy,
+        where: g.id == ^galaxy_id,
+        preload: [solar_systems: [planets: [:universe_user]]]
+    )
+  end
+
+  @doc """
+  Returns all hyperlinks in a galaxy (both directions), with systems preloaded.
+  Each hyperlink has :system_a and :system_b preloaded.
+  """
+  def list_hyperlinks_for_galaxy(galaxy_id) do
+    system_ids =
+      from(s in SolarSystem, where: s.galaxy_id == ^galaxy_id, select: s.id)
+
+    Repo.all(
+      from h in Hyperlink,
+        where: h.system_a_id in subquery(system_ids),
+        preload: [:system_a, :system_b]
+    )
+  end
+
+  @doc """
+  Gets a solar system with its planets preloaded (including universe_user and user).
+  """
+  def get_system_with_planets!(system_id) do
+    Repo.one!(
+      from s in SolarSystem,
+        where: s.id == ^system_id,
+        preload: [
+          galaxy: [],
+          planets: [universe_user: [:user]]
+        ]
+    )
+  end
+
+  @doc "Creates a hyperlink between two solar systems."
+  def create_hyperlink(system_a_id, system_b_id) do
+    {a, b} = if system_a_id < system_b_id, do: {system_a_id, system_b_id}, else: {system_b_id, system_a_id}
+
+    %Hyperlink{}
+    |> Hyperlink.changeset(%{system_a_id: a, system_b_id: b})
+    |> Repo.insert()
+  end
+
   @doc "Creates a universe."
-  def create_universe(attrs) do
-    result = %UniverseSchema{} |> UniverseSchema.creation_changeset(attrs) |> Repo.insert()
+  def create_universe(attrs) do    result = %UniverseSchema{} |> UniverseSchema.creation_changeset(attrs) |> Repo.insert()
 
     case result do
       {:ok, universe} ->

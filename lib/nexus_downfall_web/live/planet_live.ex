@@ -5,6 +5,8 @@ defmodule NexusDownfallWeb.PlanetLive do
 
   alias NexusDownfall.Planets
   alias NexusDownfall.Planets.ProductionEngine
+  alias NexusDownfall.Repo
+  alias NexusDownfall.Universe.SolarSystem
 
   @ui_tick_ms 1_000
   @db_persist_secs 60
@@ -36,6 +38,10 @@ defmodule NexusDownfallWeb.PlanetLive do
     {:ok, planet} = Planets.apply_production_tick(Planets.get_planet!(planet_id))
     rates = ProductionEngine.calculate_rates(buildings)
 
+    # Load galaxy_id for nav link
+    system = Repo.get!(SolarSystem, planet.solar_system_id)
+    galaxy_id = system.galaxy_id
+
     if connected?(socket), do: schedule_ui_tick()
 
     {:ok,
@@ -49,6 +55,7 @@ defmodule NexusDownfallWeb.PlanetLive do
      |> assign(:selected, nil)
      |> assign(:selected_tab, "info")
      |> assign(:show_user_menu, false)
+     |> assign(:galaxy_id, galaxy_id)
      |> assign(:error, nil)}
   end
 
@@ -67,58 +74,13 @@ defmodule NexusDownfallWeb.PlanetLive do
     <div class="flex flex-col h-screen bg-gray-950 font-sans overflow-hidden select-none">
 
       <!-- ══════ TOP NAV ══════ -->
-      <nav class="flex items-center justify-between bg-gray-900/95 border-b border-gray-800 px-3 h-10 shrink-0 z-30 backdrop-blur">
-        <.link navigate={~p"/dashboard"} class="flex items-center gap-1.5 shrink-0">
-          <span class="text-cyan-400 text-base">⬡</span>
-          <span class="text-white font-bold tracking-widest text-xs uppercase">Nexus</span>
-          <span class="text-cyan-400 font-bold text-xs">:</span>
-          <span class="text-cyan-300 font-bold tracking-widest text-xs uppercase">Downfall</span>
-        </.link>
-
-        <div class="flex items-center gap-0.5 text-[11px] font-medium overflow-x-auto px-2">
-          <.nav_tab href={~p"/dashboard"} label={gettext("Galaxy")} active={false} />
-          <.nav_tab href={~p"/planets/#{@planet.id}"} label={gettext("Cities")} active={true} />
-          <.nav_tab href="#" label={gettext("Research")} active={false} />
-          <.nav_tab href="#" label={gettext("Laws")} active={false} />
-          <.nav_tab href="#" label={gettext("Trade")} active={false} />
-          <.nav_tab href="#" label={gettext("Diplomacy")} active={false} />
-          <.nav_tab href="#" label={gettext("Clans")} active={false} />
-          <.nav_tab href="#" label={gettext("Cards")} active={false} />
-          <.nav_tab href="#" label={gettext("Fleet")} active={false} />
-          <.nav_tab href="#" label={gettext("Ranking")} active={false} />
-          <.nav_tab href="#" label={gettext("Store")} active={false} />
-        </div>
-
-        <div class="relative flex items-center gap-2 shrink-0">
-          <span class="text-gray-400 text-xs hidden sm:block">{player_name(@current_user)}</span>
-          <button
-            phx-click="toggle_user_menu"
-            class="w-7 h-7 rounded-full bg-cyan-800 border-2 border-cyan-600 flex items-center justify-center text-xs font-bold text-white uppercase hover:bg-cyan-700 transition"
-          >
-            {String.first(player_name(@current_user))}
-          </button>
-          <%= if @show_user_menu do %>
-            <div class="fixed inset-0 z-40" phx-click="toggle_user_menu" />
-            <div class="absolute top-9 right-0 z-50 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden">
-              <.link
-                navigate={~p"/users/settings"}
-                phx-click="toggle_user_menu"
-                class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition"
-              >
-                ⚙️ {gettext("Settings")}
-              </.link>
-              <div class="border-t border-gray-800" />
-              <.link
-                href={~p"/users/log_out"}
-                method="delete"
-                class="flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300 transition"
-              >
-                🚪 {gettext("Sign out")}
-              </.link>
-            </div>
-          <% end %>
-        </div>
-      </nav>
+      <.topbar
+        current_user={@current_user}
+        show_user_menu={@show_user_menu}
+        active_tab="cities"
+        galaxy_id={@galaxy_id}
+        planet_id={@planet.id}
+      />
 
       <!-- ══════ RESOURCE BAR ══════ -->
       <div class="flex items-center gap-3 bg-gray-950/95 border-b border-gray-800 px-4 h-9 shrink-0 z-20 text-[11px] overflow-x-auto">
@@ -412,27 +374,6 @@ defmodule NexusDownfallWeb.PlanetLive do
   # Components
   # ---------------------------------------------------------------------------
 
-  attr :href, :string, required: true
-  attr :label, :string, required: true
-  attr :active, :boolean, required: true
-
-  defp nav_tab(assigns) do
-    ~H"""
-    <.link
-      href={@href}
-      class={[
-        "px-2 py-1 rounded-sm transition-colors whitespace-nowrap",
-        if(@active,
-          do: "text-white bg-cyan-800/60 border-b-2 border-cyan-400",
-          else: "text-gray-400 hover:text-gray-200 hover:bg-gray-800"
-        )
-      ]}
-    >
-      {@label}
-    </.link>
-    """
-  end
-
   attr :icon, :string, required: true
   attr :value, :float, required: true
   attr :rate, :float, required: true
@@ -586,10 +527,6 @@ defmodule NexusDownfallWeb.PlanetLive do
       credits:       planet.credits       * 1.0,
       population:    planet.population    * 1.0
     }
-  end
-
-  defp player_name(user) do
-    user.email |> String.split("@") |> List.first()
   end
 
   defp format_rate(rate) when is_float(rate) or is_integer(rate) do

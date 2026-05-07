@@ -11,6 +11,8 @@ defmodule NexusDownfall.Universe.SolarSystem do
 
     belongs_to :galaxy, NexusDownfall.Universe.Galaxy
     has_many :planets, NexusDownfall.Planets.Planet
+    has_many :hyperlinks_a, NexusDownfall.Universe.Hyperlink, foreign_key: :system_a_id
+    has_many :hyperlinks_b, NexusDownfall.Universe.Hyperlink, foreign_key: :system_b_id
 
     timestamps(type: :utc_datetime)
   end

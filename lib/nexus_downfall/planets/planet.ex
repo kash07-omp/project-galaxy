@@ -14,6 +14,8 @@ defmodule NexusDownfall.Planets.Planet do
     field :name, :string
     field :orbit_position, :integer
     field :region, :integer, default: 1
+    field :slot_type, :string, default: "planet"
+    field :planet_subtype, :string
     field :raw_materials, :float, default: 500.0
     field :microchips, :float, default: 500.0
     field :hydrogen, :float, default: 500.0
@@ -36,12 +38,17 @@ defmodule NexusDownfall.Planets.Planet do
       :name,
       :orbit_position,
       :region,
+      :slot_type,
+      :planet_subtype,
       :solar_system_id,
       :universe_user_id,
       :last_tick_at
     ])
-    |> validate_required([:name, :orbit_position, :region, :solar_system_id, :last_tick_at])
-    |> validate_length(:name, min: 2, max: 50)
+    |> validate_required([:orbit_position, :region, :slot_type, :solar_system_id])
+    |> validate_inclusion(:slot_type, ["planet", "asteroid_ring"])
+    |> validate_inclusion(:planet_subtype, ["rocky", "gas_giant", "ice", "ocean", "lava", "desert"],
+      allow_nil: true)
+    |> validate_length(:name, min: 2, max: 50, allow_nil: true)
     |> validate_number(:orbit_position, greater_than: 0, less_than_or_equal_to: 15)
     |> validate_number(:region, greater_than: 0, less_than_or_equal_to: 3)
     |> unique_constraint([:solar_system_id, :orbit_position, :region])

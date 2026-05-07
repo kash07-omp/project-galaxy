@@ -63,13 +63,13 @@ Bucle principal: construir/mejorar edificios y generar recursos con reglas energ
 - [x] Sistema de consumo/penalización por energía insuficiente (balance estático, no flujo).
 - [x] Cola de construcción de edificios con finalización por tiempo (Oban).
 - [x] Vista planetaria LiveView con actualización en tiempo real.
-- [x] Sistema i18n: Gettext con locales ES/EN, campo `locale` en User, página de ajustes, submenú de avatar.
+- [x] Sistema i18n: Gettext con locales ES/EN/FR, campo `locale` en User, página de ajustes, submenú de avatar.
 
 ### Tests obligatorios
-- [ ] Property tests/fuzz sobre fórmulas de producción.
-- [ ] Tests de borde de energía (umbrales y penalizaciones).
-- [ ] Tests de cola de construcción (inicio, cancelación, finalización).
-- [ ] Tests de regresión de economía (snapshot fixtures).
+- [x] Property tests/fuzz sobre fórmulas de producción.
+- [x] Tests de borde de energía (umbrales y penalizaciones).
+- [x] Tests de cola de construcción (inicio, cancelación, finalización).
+- [x] Tests de regresión de economía (snapshot fixtures).
 
 ---
 
@@ -79,7 +79,7 @@ Bucle principal: construir/mejorar edificios y generar recursos con reglas energ
 Permitir creación de flotas y viajes entre sistemas conectados.
 
 ### Tareas
-- [ ] Modelo de galaxia/sistemas/hipervías y planetas.
+- [x] Modelo de galaxia/sistemas/hipervías y planetas.
 - [ ] Pathfinding A* para rutas de flota.
 - [ ] Límite de flotas activas (base + mejor espaciopuerto).
 - [ ] Creación de flota desde `/Fleet` y desde detalle de planeta.

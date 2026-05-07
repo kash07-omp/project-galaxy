@@ -67,6 +67,7 @@ defmodule NexusDownfallWeb do
   defp html_helpers do
     quote do
       import NexusDownfallWeb.CoreComponents
+      import NexusDownfallWeb.GameComponents
       use Gettext, backend: NexusDownfallWeb.Gettext
 
       alias Phoenix.LiveView.JS

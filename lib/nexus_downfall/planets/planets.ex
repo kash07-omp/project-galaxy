@@ -40,6 +40,56 @@ defmodule NexusDownfall.Planets do
     end
   end
 
+  @doc """
+  Claims the first available (unoccupied) planet slot in `solar_system_id` for a user.
+
+  Finds a pre-seeded slot with `slot_type: "planet"` and `universe_user_id: nil`,
+  assigns the user, creates building slots, and pre-builds starter infrastructure.
+  Returns `{:error, :no_available_slots}` if all slots are taken.
+  """
+  def claim_planet_slot(solar_system_id, universe_user_id, name) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    case Repo.one(
+           from p in Planet,
+             where:
+               p.solar_system_id == ^solar_system_id and
+                 p.slot_type == "planet" and
+                 is_nil(p.universe_user_id),
+             order_by: p.orbit_position,
+             limit: 1
+         ) do
+      nil ->
+        {:error, :no_available_slots}
+
+      planet ->
+        planet
+        |> Ecto.Changeset.change(%{
+          name: name,
+          universe_user_id: universe_user_id,
+          last_tick_at: now
+        })
+        |> Repo.update()
+        |> case do
+          {:ok, updated_planet} ->
+            {:ok, _} = ensure_building_slots(updated_planet.id)
+
+            Repo.update_all(
+              from(b in Building,
+                where:
+                  b.planet_id == ^updated_planet.id and
+                    b.type in ^["command_center", "power_plant"]),
+              set: [level: 1]
+            )
+
+            {:ok, updated_planet}
+
+          error ->
+            error
+        end
+    end
+  end
+
   @doc "Returns all planets belonging to `universe_user_id`, with buildings preloaded."
   def list_planets_for_user(universe_user_id) do
     Repo.all(
@@ -148,6 +198,14 @@ defmodule NexusDownfall.Planets do
             existing
         end
 
+      # Mark building as under construction BEFORE inserting the Oban job
+      # so that inline test mode (which runs the job synchronously) sees the
+      # correct state when BuildCompleteWorker reads the building.
+      saved_building =
+        saved_building
+        |> Building.changeset(%{construction_finish_at: finish_at})
+        |> Repo.update!()
+
       {:ok, job} =
         BuildCompleteWorker.new(
           %{"building_id" => saved_building.id},
@@ -155,9 +213,17 @@ defmodule NexusDownfall.Planets do
         )
         |> Oban.insert()
 
+      # Store the job reference as a best-effort update; if the job already ran
+      # inline (test env) the building may already be at the next level — that
+      # is fine, we just skip re-marking it.
+      Repo.update_all(
+        Ecto.Query.from(b in Building,
+          where: b.id == ^saved_building.id and not is_nil(b.construction_finish_at)
+        ),
+        set: [oban_job_id: job.id]
+      )
+
       saved_building
-      |> Building.changeset(%{construction_finish_at: finish_at, oban_job_id: job.id})
-      |> Repo.update!()
     end)
   end
 
