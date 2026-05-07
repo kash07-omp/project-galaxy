@@ -24,6 +24,7 @@ defmodule NexusDownfall.Planets.Planet do
 
     belongs_to :solar_system, NexusDownfall.Universe.SolarSystem
     belongs_to :universe_user, NexusDownfall.Accounts.UniverseUser
+    has_many :buildings, NexusDownfall.Planets.Building
 
     timestamps(type: :utc_datetime)
   end

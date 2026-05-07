@@ -56,12 +56,12 @@ Que un usuario pueda crear cuenta, entrar y tener su primer planeta inicial.
 Bucle principal: construir/mejorar edificios y generar recursos con reglas energéticas.
 
 ### Tareas
-- [ ] Modelar recursos base: Materia Prima, Microchips, Hidrógeno, Comida, Energía, Créditos, Población.
-- [ ] Implementar edificios MVP: Centro de mando, minas base, generador, granjas, residencial, laboratorio, espaciopuerto.
-- [ ] Motor de producción por hora (incluyendo tramos por mejoras durante desconexión).
-- [ ] Sistema de consumo/penalización por energía insuficiente.
-- [ ] Cola de construcción de edificios con finalización por tiempo (Oban).
-- [ ] Vista planetaria LiveView con actualización en tiempo real.
+- [x] Modelar recursos base: Materia Prima, Microchips, Hidrógeno, Comida, Energía, Créditos, Población.
+- [x] Implementar edificios MVP: Centro de mando, minas base, generador, granjas, residencial, laboratorio, espaciopuerto.
+- [x] Motor de producción por hora (incluyendo tramos por mejoras durante desconexión).
+- [x] Sistema de consumo/penalización por energía insuficiente.
+- [x] Cola de construcción de edificios con finalización por tiempo (Oban).
+- [x] Vista planetaria LiveView con actualización en tiempo real.
 
 ### Tests obligatorios
 - [ ] Property tests/fuzz sobre fórmulas de producción.

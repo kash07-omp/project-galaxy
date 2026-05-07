@@ -4,6 +4,7 @@ defmodule NexusDownfallWeb.UniverseListLive do
   use NexusDownfallWeb, :live_view
 
   alias NexusDownfall.Universe
+  alias NexusDownfall.Accounts
 
   on_mount {NexusDownfallWeb.UserAuth, :ensure_authenticated}
 
@@ -24,12 +25,21 @@ defmodule NexusDownfallWeb.UniverseListLive do
                 <p class="text-cyan-300 font-semibold">{universe.name}</p>
                 <p class="text-xs text-gray-500 mt-1">slug: {universe.slug}</p>
               </div>
-              <.link
-                navigate={~p"/universes/#{universe.slug}/join"}
-                class="px-3 py-1 rounded bg-cyan-700 hover:bg-cyan-600 text-sm text-white font-medium"
-              >
-                Join
-              </.link>
+              <%= if MapSet.member?(@joined_ids, universe.id) do %>
+                <.link
+                  navigate={~p"/dashboard"}
+                  class="px-3 py-1 rounded bg-emerald-700 hover:bg-emerald-600 text-sm text-white font-medium"
+                >
+                  Enter
+                </.link>
+              <% else %>
+                <.link
+                  navigate={~p"/universes/#{universe.slug}/join"}
+                  class="px-3 py-1 rounded bg-cyan-700 hover:bg-cyan-600 text-sm text-white font-medium"
+                >
+                  Join
+                </.link>
+              <% end %>
             </li>
           <% end %>
         </ul>
@@ -46,6 +56,8 @@ defmodule NexusDownfallWeb.UniverseListLive do
 
   def mount(_params, _session, socket) do
     universes = Universe.list_open_universes()
-    {:ok, assign(socket, universes: universes)}
+    memberships = Accounts.list_universe_memberships(socket.assigns.current_user.id)
+    joined_ids = MapSet.new(memberships, & &1.universe_id)
+    {:ok, assign(socket, universes: universes, joined_ids: joined_ids)}
   end
 end

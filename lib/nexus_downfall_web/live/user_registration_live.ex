@@ -70,7 +70,7 @@ defmodule NexusDownfallWeb.UserRegistrationLive do
   end
 
   def handle_event("validate", %{"user" => user_params}, socket) do
-    changeset = Accounts.change_user_registration(%User{}, user_params)
+    changeset = Accounts.change_user_registration(%User{}, user_params) |> Map.put(:action, :validate)
     {:noreply, assign(socket, form: to_form(changeset, as: "user"))}
   end
 

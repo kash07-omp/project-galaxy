@@ -92,7 +92,7 @@ defmodule NexusDownfall.AccountsTest do
       refute Accounts.get_user_by_session_token(token)
     end
 
-    test "expired tokens return nil" do
+    test "expired tokens return nil", %{user: user} do
       # Force-insert a token with an old timestamp.
       token = :crypto.strong_rand_bytes(32)
       hashed = :crypto.hash(:sha256, token)

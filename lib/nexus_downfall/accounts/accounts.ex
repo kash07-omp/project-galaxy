@@ -126,8 +126,10 @@ defmodule NexusDownfall.Accounts do
   Emits `[:nexus_downfall, :accounts, :universe_joined]` on success.
   """
   def join_universe(user, universe, attrs) do
+    string_attrs = Map.new(attrs, fn {k, v} -> {to_string(k), v} end)
+
     merged =
-      Map.merge(attrs, %{
+      Map.merge(string_attrs, %{
         "user_id" => user.id,
         "universe_id" => universe.id,
         "joined_at" => DateTime.utc_now() |> DateTime.truncate(:second)

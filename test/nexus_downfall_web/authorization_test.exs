@@ -5,7 +5,7 @@ defmodule NexusDownfallWeb.AuthorizationTest do
 
   import Phoenix.LiveViewTest
 
-  @protected_routes [~p"/dashboard", ~p"/universes"]
+  @protected_routes ["/dashboard", "/universes"]
 
   describe "unauthenticated access" do
     for route <- @protected_routes do

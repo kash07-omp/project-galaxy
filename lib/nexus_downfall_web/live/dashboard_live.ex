@@ -4,6 +4,7 @@ defmodule NexusDownfallWeb.DashboardLive do
   use NexusDownfallWeb, :live_view
 
   alias NexusDownfall.Accounts
+  alias NexusDownfall.Planets
 
   on_mount {NexusDownfallWeb.UserAuth, :ensure_authenticated}
 
@@ -42,8 +43,18 @@ defmodule NexusDownfallWeb.DashboardLive do
         <% else %>
           <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <%= for uu <- @memberships do %>
-              <li class="rounded-lg border border-gray-800 bg-gray-900 p-4 space-y-1">
-                <p class="text-cyan-300 font-semibold">{uu.universe.name}</p>
+              <li class="rounded-lg border border-gray-800 bg-gray-900 p-4 space-y-2">
+                <div class="flex items-center justify-between">
+                  <p class="text-cyan-300 font-semibold">{uu.universe.name}</p>
+                  <%= if first_planet = List.first(uu.planets) do %>
+                    <.link
+                      navigate={~p"/planets/#{first_planet.id}"}
+                      class="px-2 py-0.5 rounded bg-cyan-800 hover:bg-cyan-700 text-xs text-white font-medium"
+                    >
+                      View Planet
+                    </.link>
+                  <% end %>
+                </div>
                 <p class="text-xs text-gray-500">
                   alias: <span class="text-gray-300">{uu.username}</span>
                 </p>
@@ -60,7 +71,14 @@ defmodule NexusDownfallWeb.DashboardLive do
   end
 
   def mount(_params, _session, socket) do
-    memberships = Accounts.list_universe_memberships(socket.assigns.current_user.id)
+    memberships =
+      socket.assigns.current_user.id
+      |> Accounts.list_universe_memberships()
+      |> Enum.map(fn uu ->
+        planets = Planets.list_planets_for_user(uu.id)
+        Map.put(uu, :planets, planets)
+      end)
+
     {:ok, assign(socket, memberships: memberships)}
   end
 end

@@ -48,7 +48,8 @@ defmodule NexusDownfall.UniverseUserTest do
       u2 = create_user()
       {:ok, _} = Accounts.join_universe(u1, universe, %{username: "Samename"})
       assert {:error, cs} = Accounts.join_universe(u2, universe, %{username: "Samename"})
-      assert %{username: [_]} = errors_on(cs)
+      # Ecto maps the unique constraint to the first listed field (universe_id)
+      assert %{universe_id: [_]} = errors_on(cs)
     end
 
     test "allows same username in different universes" do
