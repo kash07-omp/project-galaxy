@@ -9,6 +9,13 @@ defmodule NexusDownfallWeb.FleetLive do
   on_mount {NexusDownfallWeb.UserAuth, :ensure_authenticated}
 
   def mount(_params, _session, socket) do
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(
+        NexusDownfall.PubSub,
+        Fleets.fleet_updates_topic_for_user(socket.assigns.current_user.id)
+      )
+    end
+
     {:ok, assign_fleet_page(socket)}
   end
 
@@ -297,6 +304,10 @@ defmodule NexusDownfallWeb.FleetLive do
 
   def handle_event("toggle_user_menu", _, socket), do: {:noreply, update(socket, :show_user_menu, &(!&1))}
   def handle_event("close_menu", _, socket), do: {:noreply, assign(socket, :show_user_menu, false)}
+
+  def handle_info({:fleet_ship_built, _payload}, socket) do
+    {:noreply, assign_fleet_page(socket)}
+  end
 
   defp assign_fleet_page(socket) do
     user_id = socket.assigns.current_user.id

@@ -419,10 +419,10 @@ defmodule NexusDownfall.Fleets do
 
       cond do
         is_nil(item) ->
-          :ok
+          :noop
 
         item.status != "building" or is_nil(item.finish_at) ->
-          :ok
+          :noop
 
         true ->
           :ok = ensure_ship_slots(item.fleet_id)
@@ -444,6 +444,13 @@ defmodule NexusDownfall.Fleets do
             %{planet_id: item.planet_id, fleet_id: item.fleet_id, ship_type: item.ship_type}
           )
 
+          event_payload = %{
+            fleet_id: item.fleet_id,
+            ship_type: item.ship_type,
+            fleet_ship_quantity: ship_row.quantity + 1,
+            planet_id: item.planet_id
+          }
+
           if item.quantity > 1 do
             now = DateTime.utc_now() |> DateTime.truncate(:second)
 
@@ -458,7 +465,7 @@ defmodule NexusDownfall.Fleets do
               |> Repo.update!()
 
             case schedule_queue_item(next_cycle_item) do
-              {:ok, _scheduled_item} -> :ok
+              {:ok, _scheduled_item} -> {:notify, event_payload}
               {:error, reason} -> Repo.rollback(reason)
             end
           else
@@ -467,12 +474,18 @@ defmodule NexusDownfall.Fleets do
             |> Repo.update!()
 
             start_next_queue_item!(item.planet_id)
-            :ok
+            {:notify, event_payload}
           end
       end
     end)
     |> case do
-      {:ok, :ok} -> :ok
+      {:ok, {:notify, payload}} ->
+        :ok = notify_fleet_ship_built(payload)
+        :ok
+
+      {:ok, :noop} ->
+        :ok
+
       {:error, reason} -> reason
     end
   end
@@ -485,6 +498,10 @@ defmodule NexusDownfall.Fleets do
     fleet.ships
     |> List.wrap()
     |> Enum.find_value(0, fn ship -> if ship.ship_type == ship_type, do: ship.quantity end)
+  end
+
+  def fleet_updates_topic_for_user(user_id) when is_integer(user_id) do
+    "fleet_updates:user:" <> Integer.to_string(user_id)
   end
 
   defp ensure_ship_slots(fleet_id) do
@@ -546,6 +563,27 @@ defmodule NexusDownfall.Fleets do
       {:error, _changeset} ->
         {:error, :queue_scheduling_failed}
     end
+  end
+
+  defp notify_fleet_ship_built(payload) do
+    user_id =
+      Repo.one(
+        from uu in NexusDownfall.Accounts.UniverseUser,
+          join: f in Fleet,
+          on: f.universe_user_id == uu.id,
+          where: f.id == ^payload.fleet_id,
+          select: uu.user_id
+      )
+
+    if is_integer(user_id) do
+      Phoenix.PubSub.broadcast(
+        NexusDownfall.PubSub,
+        fleet_updates_topic_for_user(user_id),
+        {:fleet_ship_built, payload}
+      )
+    end
+
+    :ok
   end
 
   defp refresh_planet_resources!(planet) do

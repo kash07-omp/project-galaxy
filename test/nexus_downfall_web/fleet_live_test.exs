@@ -5,6 +5,7 @@ defmodule NexusDownfallWeb.FleetLiveTest do
   import Phoenix.LiveViewTest
 
   alias NexusDownfall.Accounts
+  alias NexusDownfall.Fleets
   alias NexusDownfall.Fleets.Fleet
   alias NexusDownfall.Planets
   alias NexusDownfall.Repo
@@ -126,5 +127,37 @@ defmodule NexusDownfallWeb.FleetLiveTest do
 
     # Ensure the initialized ship slots exist so the roster can render quantities immediately.
     assert Repo.exists?(from fs in NexusDownfall.Fleets.FleetShip, where: fs.fleet_id == ^fleet.id)
+  end
+
+  test "fleet live refreshes on ship-built pubsub event", %{conn: conn, user: user, planet: planet} do
+    {:ok, fleet} =
+      Fleets.create_fleet_for_user(user.id, %{
+        "name" => "Realtime Fleet",
+        "planet_id" => planet.id,
+        "admiral_name" => ""
+      })
+
+    {:ok, live_view, html} = live(conn, ~p"/fleet")
+    assert html =~ "Realtime Fleet"
+    assert html =~ ">0<"
+
+    # Simulate the persisted state that FleetLive reloads after receiving the event.
+    Repo.update_all(
+      from(fs in NexusDownfall.Fleets.FleetShip,
+        where: fs.fleet_id == ^fleet.id and fs.ship_type == "light_fighter"
+      ),
+      set: [quantity: 1]
+    )
+
+    Phoenix.PubSub.broadcast(
+      NexusDownfall.PubSub,
+      Fleets.fleet_updates_topic_for_user(user.id),
+      {:fleet_ship_built,
+       %{fleet_id: fleet.id, ship_type: "light_fighter", fleet_ship_quantity: 1, planet_id: planet.id}}
+    )
+
+    refreshed = render(live_view)
+    assert refreshed =~ "Realtime Fleet"
+    assert refreshed =~ ">1<"
   end
 end
