@@ -13,6 +13,10 @@ alias NexusDownfall.Planets
 alias NexusDownfall.Planets.{Planet, Building}
 alias NexusDownfall.Accounts
 import Ecto.Query
+alias NexusDownfall.Cards
+alias NexusDownfall.Cards.Card
+alias NexusDownfall.Fleets
+alias NexusDownfall.Fleets.Fleet
 
 # ---------------------------------------------------------------------------
 # Universe: Alpha
@@ -229,6 +233,88 @@ unless System.get_env("MIX_ENV") == "prod" do
 end
 
 IO.puts("[seeds] Done.")
+
+# ---------------------------------------------------------------------------
+# Global card catalog
+# ---------------------------------------------------------------------------
+cards_catalog = [
+  %{
+    type: "admiral",
+    slug: "queen",
+    name: "Queen",
+    description:
+      "Ex-pirate captain renowned for lightning guerrilla tactics. Her instinctive reading of chaotic engagements grants all light fighters, heavy fighters and corvettes under her command a 5% evasion advantage.",
+    image_path: "cards/admiral-0.jpg",
+    rarity: "rare",
+    bonuses: %{
+      "effects" => [
+        %{
+          "type" => "stat_bonus",
+          "stat" => "evasion",
+          "ship_types" => ["light_fighter", "heavy_fighter", "corvette"],
+          "modifier" => "percentage",
+          "value" => 5
+        }
+      ]
+    }
+  }
+]
+
+Enum.each(cards_catalog, fn attrs ->
+  case Repo.get_by(Card, slug: attrs.slug) do
+    nil ->
+      {:ok, card} = %Card{} |> Card.changeset(attrs) |> Repo.insert()
+      IO.puts("[seeds] Created card: #{card.name} (#{card.slug})")
+
+    existing ->
+      IO.puts("[seeds] Card exists: #{existing.name} (#{existing.slug})")
+  end
+end)
+
+# ---------------------------------------------------------------------------
+# Give Queen card to dev user and assign to first fleet
+# ---------------------------------------------------------------------------
+unless System.get_env("MIX_ENV") == "prod" do
+  dev_email = "dev@nexus.local"
+
+  with dev_user when not is_nil(dev_user) <- Accounts.get_user_by_email(dev_email),
+       universe_user when not is_nil(universe_user) <-
+         Repo.get_by(UniverseUser, user_id: dev_user.id),
+       queen_card when not is_nil(queen_card) <- Repo.get_by(Card, slug: "queen") do
+    {:ok, _} = Cards.give_card_to_universe_user(universe_user.id, queen_card.id)
+    IO.puts("[seeds] Gave Queen card to dev user #{dev_user.email}")
+
+    first_fleet =
+      Repo.one(from f in Fleet, where: f.universe_user_id == ^universe_user.id, limit: 1)
+
+    fleet =
+      if first_fleet do
+        first_fleet
+      else
+        first_planet =
+          Repo.one(from p in Planet, where: p.universe_user_id == ^universe_user.id, limit: 1)
+
+        if first_planet do
+          {:ok, created_fleet} =
+            Fleets.create_fleet_for_user(dev_user.id, %{
+              "name" => "Dev Fleet",
+              "planet_id" => first_planet.id,
+              "admiral_name" => ""
+            })
+
+          IO.puts("[seeds] Created dev fleet '#{created_fleet.name}'")
+          created_fleet
+        end
+      end
+
+    if fleet do
+      {:ok, _} = Fleets.assign_admiral_to_fleet(fleet.id, dev_user.id, queen_card.id)
+      IO.puts("[seeds] Assigned Queen to fleet '#{fleet.name}'")
+    end
+  else
+    _ -> IO.puts("[seeds] Skipped Queen assignment (no dev user or fleet yet)")
+  end
+end
 
 # ---------------------------------------------------------------------------
 # Dev planet: ensure starter buildings at level 1

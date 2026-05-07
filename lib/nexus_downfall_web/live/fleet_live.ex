@@ -5,6 +5,7 @@ defmodule NexusDownfallWeb.FleetLive do
 
   alias NexusDownfall.Fleets
   alias Phoenix.LiveView.JS
+  alias NexusDownfall.Cards
 
   on_mount {NexusDownfallWeb.UserAuth, :ensure_authenticated}
 
@@ -129,12 +130,14 @@ defmodule NexusDownfallWeb.FleetLive do
             </aside>
 
             <section class="rounded-2xl border border-cyan-500/20 bg-[#081225]/90 p-3 shadow-[0_18px_44px_rgba(2,8,22,0.62)] md:p-4">
-              <div class="mb-3 hidden grid-cols-[260px_220px_180px_minmax(0,1fr)_180px] items-center gap-2 rounded-xl border border-cyan-500/15 bg-[#050e1c]/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-cyan-300/70 xl:grid">
-                <span><%= gettext("Fleet") %></span>
-                <span><%= gettext("Location") %></span>
-                <span><%= gettext("Mission") %></span>
-                <span><%= gettext("Ship Manifest") %></span>
-                <span class="text-right"><%= gettext("Actions") %></span>
+              <div class="mb-3 hidden items-center gap-2 rounded-xl border border-cyan-500/15 bg-[#050e1c]/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-cyan-300/70 xl:flex">
+                <div class="w-[72px] shrink-0"><%= gettext("Admiral") %></div>
+                <div class="flex-1 grid grid-cols-[minmax(0,1fr)_200px_180px_auto] gap-2 items-center">
+                  <span><%= gettext("Fleet") %></span>
+                  <span><%= gettext("Location") %></span>
+                  <span><%= gettext("Mission") %></span>
+                  <span class="text-right"><%= gettext("Actions") %></span>
+                </div>
               </div>
 
               <%= if @fleets == [] do %>
@@ -146,48 +149,137 @@ defmodule NexusDownfallWeb.FleetLive do
               <% else %>
                 <div class="space-y-2">
                   <%= for fleet <- @fleets do %>
-                    <article class="rounded-xl border border-cyan-500/20 bg-[linear-gradient(145deg,#081423,#050d18)] px-3 py-3 shadow-[0_10px_28px_rgba(8,145,178,0.1)] transition hover:border-cyan-400/45">
-                      <div class="grid gap-3 xl:grid-cols-[260px_220px_180px_minmax(0,1fr)_180px] xl:items-center">
-                        <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
-                          <div class="flex items-center gap-2">
-                            <h3 class="truncate text-sm font-bold text-white"><%= fleet.name %></h3>
-                            <span class={fleet_status_badge_class(fleet.status)}><%= fleet_status_label(fleet.status) %></span>
-                          </div>
-                          <p class="mt-1 truncate text-[11px] text-gray-400"><%= gettext("Admiral") %>: <%= admiral_option_label(fleet.admiral_name) %></p>
-                        </div>
-
-                        <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
-                          <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Planet") %></p>
-                          <p class="truncate text-sm font-semibold text-white"><%= fleet.home_planet.name %></p>
-                          <p class="text-[11px] text-gray-400"><%= gettext("System") %> <%= fleet.home_planet.solar_system.number %></p>
-                        </div>
-
-                        <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
-                          <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Current mission") %></p>
-                          <p class="text-sm font-semibold text-cyan-200"><%= fleet_status_label(fleet.status) %></p>
-                          <p class="text-[11px] text-gray-400"><%= gettext("Power") %>: <%= fleet_power(fleet, @ship_catalog) %></p>
-                        </div>
-
-                        <div>
-                          <p class="mb-1.5 text-[10px] uppercase tracking-wide text-gray-500 xl:hidden"><%= gettext("Ship Manifest") %></p>
-                          <div class="flex flex-wrap gap-1.5">
-                            <%= for ship <- @ship_catalog do %>
-                              <div class="flex min-w-[104px] items-center gap-1.5 rounded-lg border border-cyan-500/15 bg-[#030914]/85 px-2 py-1">
-                                <img src={"/images/ships/#{ship.type}.svg"} onerror="this.style.display='none'" alt={translate_dynamic(ship.name)} class="h-7 w-7 rounded bg-black/30 p-1 object-contain" draggable="false" />
-                                <div class="min-w-0">
-                                  <p class="truncate text-[10px] text-gray-300"><%= translate_dynamic(ship.name) %></p>
-                                  <p class="text-sm font-bold leading-none text-white"><%= Fleets.ship_quantity(fleet, ship.type) %></p>
-                                </div>
+                    <article class="rounded-xl border border-cyan-500/20 bg-[linear-gradient(145deg,#081423,#050d18)] p-3 shadow-[0_10px_28px_rgba(8,145,178,0.1)] transition hover:border-cyan-400/45">
+                      <div class="relative flex gap-3">
+                        <%!-- Admiral card - spans both rows height --%>
+                        <div class="relative w-[110px] shrink-0 self-stretch overflow-hidden rounded-xl border border-cyan-500/20 bg-[#030a15]">
+                          <%= if fleet.admiral_card do %>
+                            <%!-- Assigned admiral card - show full art --%>
+                            <img
+                              src={"/images/#{fleet.admiral_card.image_path}"}
+                              alt={fleet.admiral_card.name}
+                              class="absolute inset-0 h-full w-full object-cover object-top"
+                              draggable="false"
+                            />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
+                            <div class="absolute bottom-0 left-0 right-0 p-2">
+                              <p class="text-center text-[9px] font-bold leading-tight text-white drop-shadow"><%= fleet.admiral_card.name %></p>
+                              <button
+                                type="button"
+                                phx-click="open_assign_admiral"
+                                phx-value-fleet_id={fleet.id}
+                                class="mt-1 w-full rounded border border-cyan-500/50 bg-cyan-900/50 px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-cyan-200 transition hover:bg-cyan-800/60"
+                              >
+                                <%= gettext("Change") %>
+                              </button>
+                            </div>
+                          <% else %>
+                            <%!-- No admiral - show placeholder and assign button --%>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 p-2">
+                              <div class="flex h-10 w-10 items-center justify-center rounded-full border border-gray-700/50 bg-gray-900/50">
+                                <span class="text-2xl opacity-20">★</span>
                               </div>
-                            <% end %>
+                              <p class="text-center text-[8px] text-gray-600"><%= gettext("No admiral") %></p>
+                              <button
+                                type="button"
+                                phx-click="open_assign_admiral"
+                                phx-value-fleet_id={fleet.id}
+                                class="w-full rounded border border-cyan-600/50 bg-cyan-900/30 px-1 py-1 text-[8px] font-semibold uppercase tracking-wide text-cyan-300 transition hover:bg-cyan-800/40"
+                              >
+                                <%= gettext("Assign") %>
+                              </button>
+                            </div>
+                          <% end %>
+                        </div>
+
+                        <%!-- Right side: row 1 (info) + row 2 (ships) --%>
+                        <div class="flex min-w-0 flex-1 flex-col gap-2">
+                          <%!-- Row 1: fleet name | planet | mission/power | send mission --%>
+                          <div class="flex flex-wrap items-stretch gap-2 xl:grid xl:grid-cols-[minmax(0,1fr)_200px_180px_auto] xl:items-center">
+                            <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
+                              <div class="flex items-center gap-2">
+                                <h3 class="truncate text-sm font-bold text-white"><%= fleet.name %></h3>
+                                <span class={fleet_status_badge_class(fleet.status)}><%= fleet_status_label(fleet.status) %></span>
+                              </div>
+                            </div>
+
+                            <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
+                              <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Planet") %></p>
+                              <p class="truncate text-sm font-semibold text-white"><%= fleet.home_planet.name %></p>
+                              <p class="text-[11px] text-gray-400"><%= gettext("System") %> <%= fleet.home_planet.solar_system.number %></p>
+                            </div>
+
+                            <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
+                              <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Current mission") %></p>
+                              <p class="text-sm font-semibold text-cyan-200"><%= fleet_status_label(fleet.status) %></p>
+                              <p class="text-[11px] text-gray-400"><%= gettext("Power") %>: <%= fleet_power(fleet, @ship_catalog) %></p>
+                            </div>
+
+                            <div class="flex items-center justify-end">
+                              <button type="button" class="rounded-lg border border-emerald-500/60 bg-emerald-900/35 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-200 transition hover:bg-emerald-800/45">
+                                <%= gettext("Send mission") %>
+                              </button>
+                            </div>
+                          </div>
+
+                          <%!-- Row 2: ship manifest - full width below fleet info --%>
+                          <div class="rounded-lg border border-cyan-500/10 bg-[#030a15]/60 p-2">
+                            <p class="mb-1.5 text-[9px] uppercase tracking-widest text-gray-600"><%= gettext("Ship Manifest") %></p>
+                            <div class="flex flex-wrap gap-1.5">
+                              <%= for ship <- @ship_catalog do %>
+                                <div class="flex min-w-[90px] items-center gap-1.5 rounded-lg border border-cyan-500/15 bg-[#030914]/85 px-2 py-1">
+                                  <img src={"/images/ships/#{ship.type}.svg"} onerror="this.style.display='none'" alt={translate_dynamic(ship.name)} class="h-6 w-6 rounded bg-black/30 p-0.5 object-contain" draggable="false" />
+                                  <div class="min-w-0">
+                                    <p class="truncate text-[9px] text-gray-400"><%= translate_dynamic(ship.name) %></p>
+                                    <p class="text-xs font-bold leading-none text-white"><%= Fleets.ship_quantity(fleet, ship.type) %></p>
+                                  </div>
+                                </div>
+                              <% end %>
+                            </div>
                           </div>
                         </div>
 
-                        <div class="flex justify-end xl:justify-end">
-                          <button type="button" class="w-full rounded-lg border border-emerald-500/60 bg-emerald-900/35 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-200 transition hover:bg-emerald-800/45 xl:w-auto">
-                            <%= gettext("Send mission") %>
-                          </button>
-                        </div>
+                        <%!-- Inline admiral picker - shown when assign_admiral_fleet_id == fleet.id --%>
+                        <%= if @assign_admiral_fleet_id == fleet.id do %>
+                          <div class="absolute inset-0 z-10 flex flex-col overflow-hidden rounded-xl bg-[#07111f]/95 backdrop-blur-sm">
+                            <div class="flex items-center justify-between border-b border-cyan-500/15 px-4 py-2.5">
+                              <p class="text-xs font-semibold uppercase tracking-wider text-cyan-300"><%= gettext("Choose an admiral from your deck") %></p>
+                              <button
+                                type="button"
+                                phx-click="cancel_assign_admiral"
+                                class="rounded p-0.5 text-gray-500 transition hover:text-gray-300"
+                              >✕</button>
+                            </div>
+                            <div class="flex flex-1 flex-wrap items-start gap-3 overflow-y-auto p-3">
+                              <%= if @user_admiral_cards == [] do %>
+                                <p class="text-sm text-gray-500"><%= gettext("No admiral cards in your deck.") %></p>
+                              <% else %>
+                                <%= for uc <- @user_admiral_cards do %>
+                                  <button
+                                    type="button"
+                                    phx-click="assign_admiral_card"
+                                    phx-value-fleet_id={fleet.id}
+                                    phx-value-card_id={uc.card_id}
+                                    class="group flex w-[110px] flex-col overflow-hidden rounded-xl border border-cyan-500/20 bg-[#050f1d] transition hover:border-cyan-400/60 hover:shadow-[0_0_16px_rgba(34,211,238,0.2)]"
+                                  >
+                                    <div class="relative h-28 w-full overflow-hidden">
+                                      <img
+                                        src={"/images/#{uc.card.image_path}"}
+                                        alt={uc.card.name}
+                                        class="h-full w-full object-cover object-top transition group-hover:scale-105"
+                                        draggable="false"
+                                      />
+                                    </div>
+                                    <div class="p-2">
+                                      <p class="text-center text-[10px] font-bold text-white"><%= uc.card.name %></p>
+                                      <p class="text-center text-[8px] capitalize text-cyan-300/70"><%= uc.card.rarity %></p>
+                                    </div>
+                                  </button>
+                                <% end %>
+                              <% end %>
+                            </div>
+                          </div>
+                        <% end %>
                       </div>
                     </article>
                   <% end %>
@@ -226,15 +318,6 @@ defmodule NexusDownfallWeb.FleetLive do
                   <option value=""><%= gettext("Select one of your planets") %></option>
                   <%= for planet <- @planets do %>
                     <option value={planet.id} selected={to_string(planet.id) == @fleet_form.planet_id}><%= planet_option_label(planet) %></option>
-                  <% end %>
-                </select>
-              </div>
-
-              <div>
-                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500"><%= gettext("Assigned admiral") %></label>
-                <select name="admiral_name" class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none">
-                  <%= for admiral <- @admiral_options do %>
-                    <option value={admiral} selected={admiral == @fleet_form.admiral_name}><%= admiral_option_label(admiral) %></option>
                   <% end %>
                 </select>
               </div>
@@ -305,6 +388,36 @@ defmodule NexusDownfallWeb.FleetLive do
   def handle_event("toggle_user_menu", _, socket), do: {:noreply, update(socket, :show_user_menu, &(!&1))}
   def handle_event("close_menu", _, socket), do: {:noreply, assign(socket, :show_user_menu, false)}
 
+  def handle_event("open_assign_admiral", %{"fleet_id" => fleet_id}, socket) do
+    {:noreply, assign(socket, :assign_admiral_fleet_id, String.to_integer(fleet_id))}
+  end
+
+  def handle_event("cancel_assign_admiral", _, socket) do
+    {:noreply, assign(socket, :assign_admiral_fleet_id, nil)}
+  end
+
+  def handle_event("assign_admiral_card", %{"fleet_id" => fleet_id, "card_id" => card_id}, socket) do
+    user_id = socket.assigns.current_user.id
+
+    case Fleets.assign_admiral_to_fleet(
+           String.to_integer(fleet_id),
+           user_id,
+           String.to_integer(card_id)
+         ) do
+      {:ok, _fleet} ->
+        {:noreply,
+         socket
+         |> assign_fleet_page()
+         |> assign(:assign_admiral_fleet_id, nil)}
+
+      {:error, :card_not_owned} ->
+        {:noreply, assign(socket, :fleet_notice, gettext("You do not own that card."))}
+
+      {:error, _} ->
+        {:noreply, assign(socket, :fleet_notice, gettext("Could not assign admiral."))}
+    end
+  end
+
   def handle_info({:fleet_ship_built, _payload}, socket) do
     {:noreply, assign_fleet_page(socket)}
   end
@@ -320,11 +433,12 @@ defmodule NexusDownfallWeb.FleetLive do
     |> assign(:fleet_metrics, fleet_metrics(fleets, planets))
     |> assign(:premium_access, premium_access?(socket.assigns.current_user))
     |> assign(:ship_catalog, Fleets.ship_catalog())
-    |> assign(:admiral_options, Fleets.admiral_options())
+    |> assign(:user_admiral_cards, Cards.list_admiral_cards_for_user(user_id))
     |> assign_new(:fleet_form, fn -> %{name: "", planet_id: "", admiral_name: ""} end)
     |> assign_new(:fleet_error, fn -> nil end)
     |> assign_new(:fleet_notice, fn -> nil end)
     |> assign_new(:show_create_modal, fn -> false end)
+      |> assign_new(:assign_admiral_fleet_id, fn -> nil end)
     |> assign(:show_user_menu, socket.assigns[:show_user_menu] || false)
   end
 
@@ -339,10 +453,6 @@ defmodule NexusDownfallWeb.FleetLive do
   defp planet_option_label(planet) do
     "#{planet.name} - #{gettext("System")} #{planet.solar_system.number}"
   end
-
-  defp admiral_option_label(nil), do: gettext("No admiral")
-  defp admiral_option_label(""), do: gettext("No admiral")
-  defp admiral_option_label(admiral), do: translate_dynamic(admiral)
 
   defp fleet_metrics(fleets, planets) do
     %{

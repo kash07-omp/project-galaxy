@@ -114,8 +114,7 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     live_view
     |> form("form[phx-submit='create_fleet']", %{
       "name" => fleet_name,
-      "planet_id" => to_string(planet.id),
-      "admiral_name" => ""
+      "planet_id" => to_string(planet.id)
     })
     |> render_submit()
 

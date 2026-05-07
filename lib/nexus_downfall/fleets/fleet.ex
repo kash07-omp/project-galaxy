@@ -12,6 +12,7 @@ defmodule NexusDownfall.Fleets.Fleet do
     belongs_to :universe, NexusDownfall.Universe.UniverseRecord
     belongs_to :universe_user, NexusDownfall.Accounts.UniverseUser
     belongs_to :home_planet, NexusDownfall.Planets.Planet
+    belongs_to :admiral_card, NexusDownfall.Cards.Card
     has_many :ships, NexusDownfall.Fleets.FleetShip
     has_many :shipyard_queue_items, NexusDownfall.Fleets.ShipyardQueueItem
 
@@ -20,7 +21,7 @@ defmodule NexusDownfall.Fleets.Fleet do
 
   def changeset(fleet, attrs) do
     fleet
-    |> cast(attrs, [:name, :admiral_name, :status, :universe_id, :universe_user_id, :home_planet_id])
+    |> cast(attrs, [:name, :admiral_name, :status, :universe_id, :universe_user_id, :home_planet_id, :admiral_card_id])
     |> validate_required([:name, :status, :universe_id, :universe_user_id, :home_planet_id])
     |> validate_length(:name, min: 2, max: 40)
     |> validate_length(:admiral_name, max: 60)

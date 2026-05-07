@@ -17,6 +17,7 @@ defmodule NexusDownfall.Fleets do
   alias NexusDownfall.Planets.{Building, Planet, ProductionEngine}
   alias NexusDownfall.Repo
   alias NexusDownfall.Workers.ShipConstructionCompleteWorker
+  alias NexusDownfall.Cards
 
   @ship_catalog %{
     "light_freighter" => %{
@@ -228,7 +229,7 @@ defmodule NexusDownfall.Fleets do
       from f in Fleet,
         join: uu in assoc(f, :universe_user),
         where: uu.user_id == ^user_id,
-        preload: [:ships, home_planet: [:solar_system]],
+        preload: [:ships, :admiral_card, home_planet: [:solar_system]],
         order_by: [asc: f.name]
     )
   end
@@ -299,6 +300,55 @@ defmodule NexusDownfall.Fleets do
   rescue
     ArgumentError -> {:error, :invalid_fleet}
     Ecto.InvalidChangesetError -> {:error, :invalid_fleet}
+  end
+
+  @doc """
+  Assigns an admiral card from the user's deck to a fleet.
+  Returns `{:ok, fleet}` or `{:error, reason}`.
+
+  Reasons: `:not_found` (fleet not owned), `:card_not_owned` (card not in deck).
+  """
+  def assign_admiral_to_fleet(fleet_id, user_id, card_id) do
+    Repo.transaction(fn ->
+      fleet =
+        Repo.one(
+          from f in Fleet,
+            join: uu in assoc(f, :universe_user),
+            where: f.id == ^fleet_id and uu.user_id == ^user_id,
+            lock: "FOR UPDATE"
+        )
+
+      if is_nil(fleet), do: Repo.rollback(:not_found)
+
+      unless Cards.user_owns_card?(fleet.universe_user_id, card_id) do
+        Repo.rollback(:card_not_owned)
+      end
+
+      fleet
+      |> Fleet.changeset(%{admiral_card_id: card_id})
+      |> Repo.update!()
+    end)
+    |> normalize_transaction_result()
+  end
+
+  @doc "Removes the admiral card assignment from a fleet."
+  def unassign_admiral_from_fleet(fleet_id, user_id) do
+    Repo.transaction(fn ->
+      fleet =
+        Repo.one(
+          from f in Fleet,
+            join: uu in assoc(f, :universe_user),
+            where: f.id == ^fleet_id and uu.user_id == ^user_id,
+            lock: "FOR UPDATE"
+        )
+
+      if is_nil(fleet), do: Repo.rollback(:not_found)
+
+      fleet
+      |> Fleet.changeset(%{admiral_card_id: nil})
+      |> Repo.update!()
+    end)
+    |> normalize_transaction_result()
   end
 
   def enqueue_ship_construction_for_user(planet_id, user_id, attrs) do
