@@ -37,6 +37,10 @@ Entregar un MVP práctico y rápido, iterando por prioridad y manteniendo estabi
 6. **Observabilidad mínima**:
    - Registrar eventos de dominio críticos.
    - Añadir métricas básicas por funcionalidades nuevas.
+7. **Internacionalización obligatoria (ES/EN/FR)**:
+   - Todo texto visible al usuario (vistas, componentes, hooks/frontend, mensajes, labels, placeholders y tooltips) debe salir traducible para **español, inglés y francés**.
+   - No introducir texto hardcodeado en un único idioma en UI o JS si es visible.
+   - Al cerrar cada tarea, actualizar las entradas de Gettext/locale necesarias para mantener paridad en los tres idiomas.
 
 ## Resumen jugable (alto nivel)
 

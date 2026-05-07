@@ -7,3 +7,73 @@ msgstr ""
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+## Galaxy / Solar system
+msgid "System"
+msgstr "System"
+
+msgid "Galaxy %{number}"
+msgstr "Galaxy %{number}"
+
+msgid "System %{number}"
+msgstr "System %{number}"
+
+msgid "Own planet"
+msgstr "Own planet"
+
+msgid "Your planet"
+msgstr "Your planet"
+
+msgid "Colonised"
+msgstr "Colonised"
+
+msgid "Uninhabited"
+msgstr "Uninhabited"
+
+msgid "Asteroid belt"
+msgstr "Asteroid belt"
+
+msgid "Empty"
+msgstr "Empty"
+
+msgid "Empty slot"
+msgstr "Empty slot"
+
+msgid "Belt"
+msgstr "Belt"
+
+msgid "Orbit"
+msgstr "Orbit"
+
+msgid "Region"
+msgstr "Region"
+
+msgid "Go to Planet"
+msgstr "Go to Planet"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Click a planet to view info."
+msgstr "Click a planet to view info."
+
+msgid "Slots"
+msgstr "Slots"
+
+msgid "Rocky"
+msgstr "Rocky"
+
+msgid "Gas giant"
+msgstr "Gas giant"
+
+msgid "Ice"
+msgstr "Ice"
+
+msgid "Ocean"
+msgstr "Ocean"
+
+msgid "Lava"
+msgstr "Lava"
+
+msgid "Desert"
+msgstr "Desert"

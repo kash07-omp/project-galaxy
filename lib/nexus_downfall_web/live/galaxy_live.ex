@@ -106,7 +106,7 @@ defmodule NexusDownfallWeb.GalaxyLive do
         show_user_menu={@show_user_menu}
         active_tab="galaxy"
         galaxy_id={@galaxy.id}
-        context_label={"Galaxy #{@galaxy.number}"}
+        context_label={gettext("Galaxy %{number}", number: @galaxy.number)}
       />
 
       <!-- ══════ GALAXY MAP ══════ -->

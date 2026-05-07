@@ -260,3 +260,73 @@ msgstr "Error al guardar el idioma."
 
 msgid "Invalid language."
 msgstr "Idioma no válido."
+
+## Galaxy / Solar system
+msgid "System"
+msgstr "Sistema"
+
+msgid "Galaxy %{number}"
+msgstr "Galaxia %{number}"
+
+msgid "System %{number}"
+msgstr "Sistema %{number}"
+
+msgid "Own planet"
+msgstr "Planeta propio"
+
+msgid "Your planet"
+msgstr "Tu planeta"
+
+msgid "Colonised"
+msgstr "Colonizado"
+
+msgid "Uninhabited"
+msgstr "Deshabitado"
+
+msgid "Asteroid belt"
+msgstr "Cinturón de asteroides"
+
+msgid "Empty"
+msgstr "Vacío"
+
+msgid "Empty slot"
+msgstr "Ranura vacía"
+
+msgid "Belt"
+msgstr "Cinturón"
+
+msgid "Orbit"
+msgstr "Órbita"
+
+msgid "Region"
+msgstr "Región"
+
+msgid "Go to Planet"
+msgstr "Ir al planeta"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "Click a planet to view info."
+msgstr "Haz clic en un planeta para ver su información."
+
+msgid "Slots"
+msgstr "Ranuras"
+
+msgid "Rocky"
+msgstr "Rocoso"
+
+msgid "Gas giant"
+msgstr "Gigante gaseoso"
+
+msgid "Ice"
+msgstr "Hielo"
+
+msgid "Ocean"
+msgstr "Océano"
+
+msgid "Lava"
+msgstr "Lava"
+
+msgid "Desert"
+msgstr "Desierto"

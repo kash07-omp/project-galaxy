@@ -82,6 +82,31 @@ defmodule NexusDownfallWeb.SolarSystemLive do
     match?(%{universe_user: %{user_id: ^current_user_id}}, planet)
   end
 
+  defp slot_title(planet) do
+    cond do
+      Map.get(planet, :slot_type) == "asteroid_ring" ->
+        gettext("Asteroid belt")
+
+      Map.get(planet, :universe_user_id) != nil ->
+        Map.get(planet, :name) || gettext("Colonised")
+
+      true ->
+        gettext("Empty slot")
+    end
+  end
+
+  defp subtype_label(subtype) do
+    case subtype do
+      "rocky" -> gettext("Rocky")
+      "gas_giant" -> gettext("Gas giant")
+      "ice" -> gettext("Ice")
+      "ocean" -> gettext("Ocean")
+      "lava" -> gettext("Lava")
+      "desert" -> gettext("Desert")
+      _ -> nil
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Render
   # ---------------------------------------------------------------------------
@@ -96,7 +121,7 @@ defmodule NexusDownfallWeb.SolarSystemLive do
         show_user_menu={@show_user_menu}
         active_tab="galaxy"
         galaxy_id={@galaxy.id}
-        context_label={"System #{@system.number}"}
+        context_label={gettext("System %{number}", number: @system.number)}
       />
 
       <!-- ══════ MAIN CONTENT ══════ -->
@@ -111,6 +136,8 @@ defmodule NexusDownfallWeb.SolarSystemLive do
             data-planets={@planet_data}
             data-bg="/images/space_background_2.jpg"
             data-hyperlanes="4"
+            data-label-your-planet={gettext("Your planet")}
+            data-label-colonised={gettext("Colonised")}
             phx-update="ignore"
           >
             <div id="pixi-mount" class="w-full h-full" style="position:relative;z-index:1;"></div>
@@ -132,13 +159,13 @@ defmodule NexusDownfallWeb.SolarSystemLive do
             <% sp = @selected_planet %>
             <div class="bg-gray-800 border border-gray-700 rounded-lg p-3 flex flex-col gap-2">
               <p class="text-white text-xs font-semibold">
-                <%= sp.name || gettext("Empty slot") %>
+                <%= slot_title(sp) %>
               </p>
               <p class="text-gray-400 text-xs">
                 <%= gettext("Orbit") %> <%= sp.orbit_position %> · <%= gettext("Region") %> <%= sp.region %>
               </p>
               <%= if sp.planet_subtype do %>
-                <p class="text-gray-500 text-xs capitalize"><%= sp.planet_subtype %></p>
+                <p class="text-gray-500 text-xs"><%= subtype_label(sp.planet_subtype) %></p>
               <% end %>
 
               <%= cond do %>

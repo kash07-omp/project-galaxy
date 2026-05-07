@@ -259,6 +259,8 @@ const SolarSystemHook = {
 
   _init() {
     this._lastData = this.el.dataset.planets;
+    this._labelYourPlanet = this.el.dataset.labelYourPlanet || "Your planet";
+    this._labelColonised = this.el.dataset.labelColonised || "Colonised";
     const wrapper  = this.el;
     const W = wrapper.clientWidth  || 900;
     const H = wrapper.clientHeight || 560;
@@ -370,11 +372,11 @@ const SolarSystemHook = {
     if (!this._overlay) return;
     let label = "", color = "";
     if (planet.is_own) {
-      label = planet.name || "Your Planet"; color = "#4ade80";
+      label = planet.name || this._labelYourPlanet; color = "#4ade80";
     } else if (planet.occupied && planet.player) {
       label = planet.name || planet.player;  color = "#fb923c";
     } else if (planet.occupied) {
-      label = "Colonised";                   color = "#fb923c";
+      label = this._labelColonised;           color = "#fb923c";
     } else {
       return; // uninhabited — no nameplate
     }
