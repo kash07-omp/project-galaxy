@@ -39,7 +39,9 @@ defmodule NexusDownfall.Universe do
       from s in SolarSystem,
         join: g in Galaxy,
         on: g.id == s.galaxy_id,
+        join: p in assoc(s, :planets),
         where: g.universe_id == ^universe_id,
+        where: p.slot_type == "planet" and is_nil(p.universe_user_id),
         order_by: [asc: g.number, asc: s.number],
         limit: 1,
         select: s.id
@@ -87,7 +89,10 @@ defmodule NexusDownfall.Universe do
 
   @doc "Creates a hyperlink between two solar systems."
   def create_hyperlink(system_a_id, system_b_id) do
-    {a, b} = if system_a_id < system_b_id, do: {system_a_id, system_b_id}, else: {system_b_id, system_a_id}
+    {a, b} =
+      if system_a_id < system_b_id,
+        do: {system_a_id, system_b_id},
+        else: {system_b_id, system_a_id}
 
     %Hyperlink{}
     |> Hyperlink.changeset(%{system_a_id: a, system_b_id: b})
@@ -95,7 +100,8 @@ defmodule NexusDownfall.Universe do
   end
 
   @doc "Creates a universe."
-  def create_universe(attrs) do    result = %UniverseSchema{} |> UniverseSchema.creation_changeset(attrs) |> Repo.insert()
+  def create_universe(attrs) do
+    result = %UniverseSchema{} |> UniverseSchema.creation_changeset(attrs) |> Repo.insert()
 
     case result do
       {:ok, universe} ->

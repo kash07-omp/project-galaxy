@@ -10,6 +10,7 @@ defmodule NexusDownfallWeb.UniverseJoinLive do
   alias NexusDownfall.Accounts
   alias NexusDownfall.Accounts.UniverseUser
   alias NexusDownfall.Planets
+  alias NexusDownfall.Repo
   alias NexusDownfall.Universe
 
   on_mount {NexusDownfallWeb.UserAuth, :ensure_authenticated}
@@ -19,9 +20,8 @@ defmodule NexusDownfallWeb.UniverseJoinLive do
     <div class="min-h-screen bg-gray-950 text-gray-100 p-6 flex items-center justify-center">
       <div class="w-full max-w-md space-y-8">
         <div class="text-center">
-          <h1 class="text-2xl font-bold text-cyan-400 tracking-widest uppercase">
-            Join Universe
-          </h1>
+          <h1 class="text-2xl font-bold text-cyan-400 tracking-widest uppercase">Join Universe</h1>
+
           <p class="mt-2 text-gray-400 text-sm">{@universe.name}</p>
         </div>
 
@@ -34,6 +34,7 @@ defmodule NexusDownfallWeb.UniverseJoinLive do
         >
           <div>
             <.label for="universe_user_username">Commander name in this universe</.label>
+
             <.input
               field={@form[:username]}
               type="text"
@@ -41,13 +42,12 @@ defmodule NexusDownfallWeb.UniverseJoinLive do
               placeholder="Darth Kharnak"
               required
             />
-            <p class="mt-1 text-xs text-gray-500">
-              3–24 characters. Visible to other players.
-            </p>
+            <p class="mt-1 text-xs text-gray-500">3–24 characters. Visible to other players.</p>
           </div>
 
           <div>
             <.label for="planet_name">Name your home planet</.label>
+
             <.input
               field={@form[:planet_name]}
               type="text"
@@ -107,7 +107,11 @@ defmodule NexusDownfallWeb.UniverseJoinLive do
     {:noreply, assign(socket, form: to_form(changeset, as: "universe_user"))}
   end
 
-  def handle_event("join", %{"universe_user" => uu_params, "join" => %{"planet_name" => planet_name}}, socket) do
+  def handle_event(
+        "join",
+        %{"universe_user" => uu_params, "join" => %{"planet_name" => planet_name}},
+        socket
+      ) do
     %{current_user: user, universe: universe} = socket.assigns
 
     solar_system_id = NexusDownfall.Universe.find_available_solar_system(universe)
@@ -115,15 +119,16 @@ defmodule NexusDownfallWeb.UniverseJoinLive do
     if is_nil(solar_system_id) do
       {:noreply, put_flash(socket, :error, "No available star systems in this universe yet.")}
     else
-      with {:ok, universe_user} <- Accounts.join_universe(user, universe, uu_params),
-           {:ok, _planet} <-
-             Planets.create_initial_planet(%{
-               name: planet_name,
-               orbit_position: 1,
-               region: 1,
-               universe_user_id: universe_user.id,
-               solar_system_id: solar_system_id
-             }) do
+      with {:ok, {universe_user, _planet}} <-
+             Repo.transaction(fn ->
+               with {:ok, universe_user} <- Accounts.join_universe(user, universe, uu_params),
+                    {:ok, planet} <-
+                      Planets.claim_planet_slot(solar_system_id, universe_user.id, planet_name) do
+                 {universe_user, planet}
+               else
+                 {:error, reason} -> Repo.rollback(reason)
+               end
+             end) do
         {:noreply,
          socket
          |> put_flash(:info, "Welcome to #{universe.name}, #{universe_user.username}!")
@@ -131,6 +136,9 @@ defmodule NexusDownfallWeb.UniverseJoinLive do
       else
         {:error, %Ecto.Changeset{} = changeset} ->
           {:noreply, assign(socket, form: to_form(changeset, as: "universe_user"))}
+
+        {:error, :no_available_slots} ->
+          {:noreply, put_flash(socket, :error, "No available planet slots in this universe yet.")}
       end
     end
   end

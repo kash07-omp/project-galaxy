@@ -183,3 +183,6 @@ msgstr ""
 
 msgid "Error al guardar el idioma."
 msgstr ""
+
+msgid "Planet not found."
+msgstr ""

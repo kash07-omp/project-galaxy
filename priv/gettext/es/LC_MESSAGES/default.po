@@ -330,3 +330,6 @@ msgstr "Lava"
 
 msgid "Desert"
 msgstr "Desierto"
+
+msgid "Planet not found."
+msgstr "Planeta no encontrado."

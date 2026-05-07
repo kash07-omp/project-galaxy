@@ -80,14 +80,14 @@ Permitir creación de flotas y viajes entre sistemas conectados.
 
 ### Tareas
 - [x] Modelo de galaxia/sistemas/hipervías y planetas.
-- [ ] Pathfinding A* para rutas de flota.
+- [x] Pathfinding A* para rutas de flota.
 - [ ] Límite de flotas activas (base + mejor espaciopuerto).
 - [ ] Creación de flota desde `/Fleet` y desde detalle de planeta.
 - [ ] Misión de transporte (ida, entrega, retorno, consumo de hidrógeno).
 - [ ] Programación temporal de misiones con Oban.
 
 ### Tests obligatorios
-- [ ] Tests de A* (ruta mínima, sin ruta, empates).
+- [x] Tests de A* (ruta mínima, sin ruta, empates).
 - [ ] Tests de consumo de combustible por segundo.
 - [ ] Tests E2E de misión de transporte completa.
 

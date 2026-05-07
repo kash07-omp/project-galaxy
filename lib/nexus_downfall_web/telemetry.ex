@@ -72,7 +72,11 @@ defmodule NexusDownfallWeb.Telemetry do
       counter("nexus_downfall.accounts.user_registered.count"),
       counter("nexus_downfall.accounts.user_logged_in.count"),
       counter("nexus_downfall.accounts.universe_joined.count"),
-      counter("nexus_downfall.universe.created.count")
+      counter("nexus_downfall.universe.created.count"),
+      counter("nexus_downfall.planets.construction_started.count"),
+      counter("nexus_downfall.planets.construction_completed.count"),
+      counter("nexus_downfall.planets.production_applied.count"),
+      counter("nexus_downfall.planets.unauthorized_access.count")
     ]
   end
 

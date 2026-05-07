@@ -24,8 +24,10 @@ alpha =
     nil ->
       {:ok, universe} =
         %UniverseRecord{} |> UniverseRecord.creation_changeset(alpha_attrs) |> Repo.insert()
+
       IO.puts("[seeds] Created universe: #{universe.name}")
       universe
+
     existing ->
       IO.puts("[seeds] Universe exists: #{existing.name}")
       existing
@@ -37,9 +39,12 @@ alpha =
 galaxy =
   case Repo.get_by(Galaxy, universe_id: alpha.id, number: 1) do
     nil ->
-      {:ok, g} = %Galaxy{} |> Galaxy.changeset(%{number: 1, universe_id: alpha.id}) |> Repo.insert()
+      {:ok, g} =
+        %Galaxy{} |> Galaxy.changeset(%{number: 1, universe_id: alpha.id}) |> Repo.insert()
+
       IO.puts("[seeds] Created galaxy 1")
       g
+
     g ->
       IO.puts("[seeds] Galaxy 1 exists")
       g
@@ -49,18 +54,18 @@ galaxy =
 # 12 solar systems: inner hexagon (1-7) + outer partial ring (8-12)
 # ---------------------------------------------------------------------------
 systems_config = [
-  {1,    0.0,    0.0},
-  {2,  200.0,    0.0},
-  {3,  100.0,  173.0},
-  {4, -100.0,  173.0},
-  {5, -200.0,    0.0},
+  {1, 0.0, 0.0},
+  {2, 200.0, 0.0},
+  {3, 100.0, 173.0},
+  {4, -100.0, 173.0},
+  {5, -200.0, 0.0},
   {6, -100.0, -173.0},
-  {7,  100.0, -173.0},
-  {8,  400.0,    0.0},
-  {9,  300.0,  260.0},
-  {10,   0.0,  346.0},
-  {11,-300.0,  260.0},
-  {12,-400.0,    0.0}
+  {7, 100.0, -173.0},
+  {8, 400.0, 0.0},
+  {9, 300.0, 260.0},
+  {10, 0.0, 346.0},
+  {11, -300.0, 260.0},
+  {12, -400.0, 0.0}
 ]
 
 systems =
@@ -71,9 +76,12 @@ systems =
           %SolarSystem{}
           |> SolarSystem.changeset(%{number: num, galaxy_id: galaxy.id, x: x, y: y})
           |> Repo.insert()
+
         IO.puts("[seeds] Created system #{num}")
         s
-      s -> s
+
+      s ->
+        s
     end
   end)
 
@@ -85,17 +93,35 @@ systems =
 
 hyperlink_pairs = [
   # Inner hub-and-spoke
-  {s1, s2}, {s1, s3}, {s1, s4}, {s1, s5}, {s1, s6}, {s1, s7},
+  {s1, s2},
+  {s1, s3},
+  {s1, s4},
+  {s1, s5},
+  {s1, s6},
+  {s1, s7},
   # Inner ring
-  {s2, s3}, {s3, s4}, {s4, s5}, {s5, s6}, {s6, s7}, {s7, s2},
+  {s2, s3},
+  {s3, s4},
+  {s4, s5},
+  {s5, s6},
+  {s6, s7},
+  {s7, s2},
   # Outer ring connects to nearest inner
-  {s2, s8}, {s3, s9}, {s4, s10}, {s5, s11}, {s6, s12},
+  {s2, s8},
+  {s3, s9},
+  {s4, s10},
+  {s5, s11},
+  {s6, s12},
   # Outer ring partial connections
-  {s8, s9}, {s9, s10}, {s10, s11}, {s11, s12}
+  {s8, s9},
+  {s9, s10},
+  {s10, s11},
+  {s11, s12}
 ]
 
 Enum.each(hyperlink_pairs, fn {a, b} ->
   {aid, bid} = if a.id < b.id, do: {a.id, b.id}, else: {b.id, a.id}
+
   %Hyperlink{}
   |> Hyperlink.changeset(%{system_a_id: aid, system_b_id: bid})
   |> Repo.insert(on_conflict: :nothing, conflict_target: [:system_a_id, :system_b_id])
@@ -112,51 +138,73 @@ IO.puts("[seeds] Hyperlanes ensured (#{length(hyperlink_pairs)} pairs)")
 # {system_number, orbit_count, asteroid_ring_orbits}
 # ---------------------------------------------------------------------------
 planet_subtypes = [
-  "rocky", "lava", "rocky", "desert", "ocean", "ice", "rocky",
-  "gas_giant", "ice", "rocky", "ocean", "lava", "desert", "gas_giant", "rocky"
+  "rocky",
+  "lava",
+  "rocky",
+  "desert",
+  "ocean",
+  "ice",
+  "rocky",
+  "gas_giant",
+  "ice",
+  "rocky",
+  "ocean",
+  "lava",
+  "desert",
+  "gas_giant",
+  "rocky"
 ]
 
 system_slot_specs = [
-  {1,  12, MapSet.new([5, 9])},
-  {2,  10, MapSet.new([4, 8])},
-  {3,   9, MapSet.new([3, 7])},
-  {4,   8, MapSet.new([4, 7])},
-  {5,  11, MapSet.new([2, 6, 9])},
-  {6,   7, MapSet.new([3, 6])},
-  {7,  13, MapSet.new([4, 8, 11])},
-  {8,   9, MapSet.new([3, 7])},
-  {9,   8, MapSet.new([4, 6])},
-  {10,  7, MapSet.new([2, 5])},
+  {1, 12, MapSet.new([5, 9])},
+  {2, 10, MapSet.new([4, 8])},
+  {3, 9, MapSet.new([3, 7])},
+  {4, 8, MapSet.new([4, 7])},
+  {5, 11, MapSet.new([2, 6, 9])},
+  {6, 7, MapSet.new([3, 6])},
+  {7, 13, MapSet.new([4, 8, 11])},
+  {8, 9, MapSet.new([3, 7])},
+  {9, 8, MapSet.new([4, 6])},
+  {10, 7, MapSet.new([2, 5])},
   {11, 10, MapSet.new([3, 7, 9])},
-  {12,  8, MapSet.new([4, 7])}
+  {12, 8, MapSet.new([4, 7])}
 ]
 
 systems_by_number = Map.new(systems, fn s -> {s.number, s} end)
 
 Enum.each(system_slot_specs, fn {sys_num, orbit_count, asteroid_orbits} ->
   system = systems_by_number[sys_num]
-  planet_idx_offset = (sys_num - 1) * 3  # offset so each system has different starting subtype
+  # offset so each system has different starting subtype
+  planet_idx_offset = (sys_num - 1) * 3
 
   Enum.each(1..orbit_count, fn orbit ->
     is_asteroid = MapSet.member?(asteroid_orbits, orbit)
-    slot_type   = if is_asteroid, do: "asteroid_ring", else: "planet"
-    subtype     = if is_asteroid, do: nil,
-                    else: Enum.at(planet_subtypes, rem(orbit - 1 + planet_idx_offset, length(planet_subtypes)))
-    label       = if is_asteroid, do: "Belt", else: "Planet"
-    slot_name   = "#{label} #{sys_num}-#{orbit}"
+    slot_type = if is_asteroid, do: "asteroid_ring", else: "planet"
+
+    subtype =
+      if is_asteroid,
+        do: nil,
+        else:
+          Enum.at(planet_subtypes, rem(orbit - 1 + planet_idx_offset, length(planet_subtypes)))
+
+    label = if is_asteroid, do: "Belt", else: "Planet"
+    slot_name = "#{label} #{sys_num}-#{orbit}"
 
     %Planet{}
     |> Planet.initial_changeset(%{
-      name:            slot_name,
-      orbit_position:  orbit,
-      region:          1,
-      slot_type:       slot_type,
-      planet_subtype:  subtype,
+      name: slot_name,
+      orbit_position: orbit,
+      region: 1,
+      slot_type: slot_type,
+      planet_subtype: subtype,
+      universe_id: alpha.id,
       solar_system_id: system.id,
-      last_tick_at:    DateTime.utc_now() |> DateTime.truncate(:second)
+      last_tick_at: DateTime.utc_now() |> DateTime.truncate(:second)
     })
-    |> Repo.insert(on_conflict: :nothing,
-                   conflict_target: [:solar_system_id, :orbit_position, :region])
+    |> Repo.insert(
+      on_conflict: :nothing,
+      conflict_target: [:solar_system_id, :orbit_position, :region]
+    )
   end)
 
   IO.puts("[seeds] System #{sys_num}: #{orbit_count} slots ensured")
@@ -170,8 +218,11 @@ unless System.get_env("MIX_ENV") == "prod" do
 
   case Accounts.get_user_by_email(dev_email) do
     nil ->
-      {:ok, user} = Accounts.register_user(%{email: dev_email, password: "dev-secret-password-42"})
+      {:ok, user} =
+        Accounts.register_user(%{email: dev_email, password: "dev-secret-password-42"})
+
       IO.puts("[seeds] Created dev user: #{user.email}")
+
     existing ->
       IO.puts("[seeds] Dev user exists: #{existing.email}")
   end
@@ -195,7 +246,10 @@ unless System.get_env("MIX_ENV") == "prod" do
     {updated, _} =
       Repo.update_all(
         from(b in Building,
-          where: b.planet_id == ^planet.id and b.type in ^["command_center", "power_plant"] and b.level < 1),
+          where:
+            b.planet_id == ^planet.id and b.type in ^["command_center", "power_plant"] and
+              b.level < 1
+        ),
         set: [level: 1]
       )
 

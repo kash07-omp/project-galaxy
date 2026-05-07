@@ -77,3 +77,6 @@ msgstr "Lava"
 
 msgid "Desert"
 msgstr "Desert"
+
+msgid "Planet not found."
+msgstr "Planet not found."

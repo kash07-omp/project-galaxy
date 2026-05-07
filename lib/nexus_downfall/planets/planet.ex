@@ -16,14 +16,15 @@ defmodule NexusDownfall.Planets.Planet do
     field :region, :integer, default: 1
     field :slot_type, :string, default: "planet"
     field :planet_subtype, :string
-    field :raw_materials, :float, default: 500.0
-    field :microchips, :float, default: 500.0
-    field :hydrogen, :float, default: 500.0
-    field :food, :float, default: 500.0
-    field :credits, :float, default: 1000.0
+    field :raw_materials, :integer, default: 500
+    field :microchips, :integer, default: 500
+    field :hydrogen, :integer, default: 500
+    field :food, :integer, default: 500
+    field :credits, :integer, default: 1000
     field :population, :integer, default: 100
     field :last_tick_at, :utc_datetime
 
+    belongs_to :universe, NexusDownfall.Universe.UniverseRecord, foreign_key: :universe_id
     belongs_to :solar_system, NexusDownfall.Universe.SolarSystem
     belongs_to :universe_user, NexusDownfall.Accounts.UniverseUser
     has_many :buildings, NexusDownfall.Planets.Building
@@ -40,14 +41,18 @@ defmodule NexusDownfall.Planets.Planet do
       :region,
       :slot_type,
       :planet_subtype,
+      :universe_id,
       :solar_system_id,
       :universe_user_id,
       :last_tick_at
     ])
-    |> validate_required([:orbit_position, :region, :slot_type, :solar_system_id])
+    |> validate_required([:orbit_position, :region, :slot_type, :universe_id, :solar_system_id])
     |> validate_inclusion(:slot_type, ["planet", "asteroid_ring"])
-    |> validate_inclusion(:planet_subtype, ["rocky", "gas_giant", "ice", "ocean", "lava", "desert"],
-      allow_nil: true)
+    |> validate_inclusion(
+      :planet_subtype,
+      ["rocky", "gas_giant", "ice", "ocean", "lava", "desert"],
+      allow_nil: true
+    )
     |> validate_length(:name, min: 2, max: 50, allow_nil: true)
     |> validate_number(:orbit_position, greater_than: 0, less_than_or_equal_to: 15)
     |> validate_number(:region, greater_than: 0, less_than_or_equal_to: 3)

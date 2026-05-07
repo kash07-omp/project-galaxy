@@ -103,11 +103,11 @@ defmodule NexusDownfall.Planets.ConstructionTest do
     # Give the planet plenty of resources
     Repo.update_all(
       from(p in NexusDownfall.Planets.Planet, where: p.id == ^planet.id),
-      set: [raw_materials: 999_999.0, microchips: 999_999.0, hydrogen: 999_999.0, food: 999_999.0]
+      set: [raw_materials: 999_999, microchips: 999_999, hydrogen: 999_999, food: 999_999]
     )
 
     planet = Planets.get_planet!(planet.id)
-    {:ok, planet: planet}
+    {:ok, planet: planet, user: user}
   end
 
   # ---------------------------------------------------------------------------
@@ -183,7 +183,7 @@ defmodule NexusDownfall.Planets.ConstructionTest do
       # Drain all resources
       Repo.update_all(
         from(p in NexusDownfall.Planets.Planet, where: p.id == ^planet.id),
-        set: [raw_materials: 0.0, microchips: 0.0, hydrogen: 0.0, food: 0.0]
+        set: [raw_materials: 0, microchips: 0, hydrogen: 0, food: 0]
       )
 
       assert {:error, :insufficient_resources} =
@@ -193,7 +193,7 @@ defmodule NexusDownfall.Planets.ConstructionTest do
     test "does not enqueue an Oban job on insufficient resources", %{planet: planet} do
       Repo.update_all(
         from(p in NexusDownfall.Planets.Planet, where: p.id == ^planet.id),
-        set: [raw_materials: 0.0, microchips: 0.0, hydrogen: 0.0, food: 0.0]
+        set: [raw_materials: 0, microchips: 0, hydrogen: 0, food: 0]
       )
 
       Planets.start_construction(planet.id, "mine_raw")
@@ -241,6 +241,21 @@ defmodule NexusDownfall.Planets.ConstructionTest do
     test "returns :ok (not error) for missing building_id — idempotent on deletion" do
       # Worker is designed to return :ok when building is deleted (prevent Oban retries)
       assert :ok = perform_job(BuildCompleteWorker, %{"building_id" => 999_999})
+    end
+
+    test "is idempotent when the same completion job is performed twice", %{planet: planet} do
+      building =
+        Oban.Testing.with_testing_mode(:manual, fn ->
+          {:ok, b} = Planets.start_construction(planet.id, "mine_raw")
+          b
+        end)
+
+      assert :ok = perform_job(BuildCompleteWorker, %{"building_id" => building.id})
+      assert :ok = perform_job(BuildCompleteWorker, %{"building_id" => building.id})
+
+      updated = Repo.get!(Building, building.id)
+      assert updated.level == 1
+      assert is_nil(updated.construction_finish_at)
     end
   end
 end

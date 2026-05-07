@@ -29,18 +29,18 @@ defmodule NexusDownfall.Planets.ProductionEngine do
   # Formula: base * level * (1.1 ^ level)  [README: MultiplicadorBase * Nivel * (1.1^Nivel)]
   # Level 0 buildings produce/consume nothing.
   @defs %{
-    "command_center"     => %{energy_consume: 5},
-    "mine_raw"           => %{raw_materials: 200,  energy_consume: 15},
-    "microchip_factory"  => %{microchips: 170,     energy_consume: 20},
-    "hydrogen_extractor" => %{hydrogen: 140,        energy_consume: 18},
-    "farm"               => %{food: 150,            energy_consume: 10},
-    "power_plant"        => %{energy_produce: 75},
-    "nuclear_reactor"    => %{energy_produce: 120},
-    "residential"        => %{population: 10,       energy_consume: 5},
-    "laboratory"         => %{energy_consume: 12},
-    "spaceport"          => %{energy_consume: 15},
-    "defense_center"     => %{energy_consume: 20},
-    "component_factory"  => %{microchips: 120,     energy_consume: 25}
+    "command_center" => %{energy_consume: 5},
+    "mine_raw" => %{raw_materials: 200, energy_consume: 15},
+    "microchip_factory" => %{microchips: 170, energy_consume: 20},
+    "hydrogen_extractor" => %{hydrogen: 140, energy_consume: 18},
+    "farm" => %{food: 150, energy_consume: 10},
+    "power_plant" => %{energy_produce: 75},
+    "nuclear_reactor" => %{energy_produce: 120},
+    "residential" => %{population: 10, energy_consume: 5},
+    "laboratory" => %{energy_consume: 12},
+    "spaceport" => %{energy_consume: 15},
+    "defense_center" => %{energy_consume: 20},
+    "component_factory" => %{microchips: 120, energy_consume: 25}
   }
 
   # ---------------------------------------------------------------------------
@@ -50,34 +50,34 @@ defmodule NexusDownfall.Planets.ProductionEngine do
   # build_time_secs is also * N.
 
   @build_costs %{
-    "command_center"     => %{raw_materials: 200, microchips: 80},
-    "mine_raw"           => %{raw_materials: 100},
-    "microchip_factory"  => %{raw_materials: 130, microchips: 40},
+    "command_center" => %{raw_materials: 200, microchips: 80},
+    "mine_raw" => %{raw_materials: 100},
+    "microchip_factory" => %{raw_materials: 130, microchips: 40},
     "hydrogen_extractor" => %{raw_materials: 120},
-    "farm"               => %{raw_materials: 80,  food: 20},
-    "power_plant"        => %{raw_materials: 160, microchips: 30},
-    "nuclear_reactor"    => %{raw_materials: 250, microchips: 80, hydrogen: 50},
-    "residential"        => %{raw_materials: 100, food: 50},
-    "laboratory"         => %{raw_materials: 220, microchips: 120},
-    "spaceport"          => %{raw_materials: 350, microchips: 180},
-    "defense_center"     => %{raw_materials: 300, microchips: 150},
-    "component_factory"  => %{raw_materials: 180, microchips: 60}
+    "farm" => %{raw_materials: 80, food: 20},
+    "power_plant" => %{raw_materials: 160, microchips: 30},
+    "nuclear_reactor" => %{raw_materials: 250, microchips: 80, hydrogen: 50},
+    "residential" => %{raw_materials: 100, food: 50},
+    "laboratory" => %{raw_materials: 220, microchips: 120},
+    "spaceport" => %{raw_materials: 350, microchips: 180},
+    "defense_center" => %{raw_materials: 300, microchips: 150},
+    "component_factory" => %{raw_materials: 180, microchips: 60}
   }
 
   # Base seconds at level 1. Scales linearly with target level.
   @build_time_base %{
-    "command_center"     => 120,
-    "mine_raw"           => 60,
-    "microchip_factory"  => 90,
+    "command_center" => 120,
+    "mine_raw" => 60,
+    "microchip_factory" => 90,
     "hydrogen_extractor" => 75,
-    "farm"               => 60,
-    "power_plant"        => 100,
-    "nuclear_reactor"    => 180,
-    "residential"        => 75,
-    "laboratory"         => 150,
-    "spaceport"          => 200,
-    "defense_center"     => 200,
-    "component_factory"  => 120
+    "farm" => 60,
+    "power_plant" => 100,
+    "nuclear_reactor" => 180,
+    "residential" => 75,
+    "laboratory" => 150,
+    "spaceport" => 200,
+    "defense_center" => 200,
+    "component_factory" => 120
   }
 
   @max_offline_hours 24
@@ -103,15 +103,15 @@ defmodule NexusDownfall.Planets.ProductionEngine do
     efficiency = if energy_consume == 0, do: 1.0, else: min(1.0, energy_produce / energy_consume)
 
     %{
-      raw_materials:  sum_for(active, :raw_materials) * efficiency,
-      microchips:     sum_for(active, :microchips) * efficiency,
-      hydrogen:       sum_for(active, :hydrogen) * efficiency,
-      food:           sum_for(active, :food) * efficiency,
-      population:     round(sum_for(active, :population) * efficiency),
+      raw_materials: sum_for(active, :raw_materials) * efficiency,
+      microchips: sum_for(active, :microchips) * efficiency,
+      hydrogen: sum_for(active, :hydrogen) * efficiency,
+      food: sum_for(active, :food) * efficiency,
+      population: round(sum_for(active, :population) * efficiency),
       energy_balance: energy_produce - energy_consume,
       energy_produce: energy_produce,
       energy_consume: energy_consume,
-      efficiency:     Float.round(efficiency, 3)
+      efficiency: Float.round(efficiency, 3)
     }
   end
 
@@ -136,15 +136,16 @@ defmodule NexusDownfall.Planets.ProductionEngine do
     elapsed_hours = min(elapsed_secs / 3600.0, @max_offline_hours)
 
     rates = calculate_rates(buildings)
+    deltas = integer_deltas(rates, elapsed_hours)
 
     %{
-      raw_materials: planet.raw_materials + rates.raw_materials * elapsed_hours,
-      microchips:    planet.microchips    + rates.microchips    * elapsed_hours,
-      hydrogen:      planet.hydrogen      + rates.hydrogen      * elapsed_hours,
-      food:          planet.food          + rates.food          * elapsed_hours,
-      credits:       planet.credits,
-      population:    planet.population    + round(rates.population * elapsed_hours),
-      last_tick_at:  now
+      raw_materials: planet.raw_materials + deltas.raw_materials,
+      microchips: planet.microchips + deltas.microchips,
+      hydrogen: planet.hydrogen + deltas.hydrogen,
+      food: planet.food + deltas.food,
+      credits: planet.credits,
+      population: planet.population + deltas.population,
+      last_tick_at: last_tick_at_after_integer_settlement(planet.last_tick_at, now, deltas)
     }
   end
 
@@ -197,4 +198,22 @@ defmodule NexusDownfall.Planets.ProductionEngine do
   # Level 0 always yields 0 regardless of base.
   defp production_rate(_base, 0), do: 0.0
   defp production_rate(base, level), do: base * level * :math.pow(1.1, level)
+
+  defp integer_deltas(rates, elapsed_hours) do
+    %{
+      raw_materials: trunc(rates.raw_materials * elapsed_hours),
+      microchips: trunc(rates.microchips * elapsed_hours),
+      hydrogen: trunc(rates.hydrogen * elapsed_hours),
+      food: trunc(rates.food * elapsed_hours),
+      population: trunc(rates.population * elapsed_hours)
+    }
+  end
+
+  defp last_tick_at_after_integer_settlement(previous_tick_at, now, deltas) do
+    if Enum.any?(deltas, fn {_resource, amount} -> amount > 0 end) do
+      now
+    else
+      previous_tick_at
+    end
+  end
 end
