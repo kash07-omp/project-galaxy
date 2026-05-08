@@ -1855,6 +1855,8 @@ defmodule NexusDownfallWeb.PlanetLive do
      |> assign(:defense_catalog, defense_panel.defense_catalog)}
   end
 
+  def handle_info(_message, socket), do: {:noreply, socket}
+
   defp shipyard_error_reason_label(reason) do
     case reason do
       :spaceport_required ->

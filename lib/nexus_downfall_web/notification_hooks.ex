@@ -51,7 +51,10 @@ defmodule NexusDownfallWeb.NotificationHooks do
     unread_increment = if is_nil(notification.read_at), do: 1, else: 0
 
     notifications =
-      [notification | Enum.reject(socket.assigns.topbar_notifications, &(&1.id == notification.id))]
+      [
+        notification
+        | Enum.reject(socket.assigns.topbar_notifications, &(&1.id == notification.id))
+      ]
       |> Enum.take(@topbar_limit)
 
     socket =
@@ -77,6 +80,24 @@ defmodule NexusDownfallWeb.NotificationHooks do
 
     unread_count =
       if decremented? do
+        max(socket.assigns.topbar_notifications_unread_count - 1, 0)
+      else
+        socket.assigns.topbar_notifications_unread_count
+      end
+
+    socket =
+      socket
+      |> assign(:topbar_notifications, notifications)
+      |> assign(:topbar_notifications_unread_count, unread_count)
+
+    {:cont, socket}
+  end
+
+  defp handle_info({:notification_deleted, %{notification_id: id, read_at: read_at}}, socket) do
+    notifications = Enum.reject(socket.assigns.topbar_notifications, &(&1.id == id))
+
+    unread_count =
+      if is_nil(read_at) do
         max(socket.assigns.topbar_notifications_unread_count - 1, 0)
       else
         socket.assigns.topbar_notifications_unread_count

@@ -135,6 +135,15 @@ defmodule NexusDownfall.Fleets.AttackMissionTest do
 
     set_defenses(target_planet.id, %{"missile_platform" => 2})
 
+    target_planet =
+      set_planet_resources(target_planet, %{
+        raw_materials: 12_000,
+        microchips: 9_000,
+        hydrogen: 8_000,
+        food: 7_000,
+        credits: 6_000
+      })
+
     {:ok, fleet} =
       Fleets.create_fleet_for_user(attacker.id, %{
         "name" => "Attack Fleet #{System.unique_integer([:positive])}",
@@ -143,7 +152,13 @@ defmodule NexusDownfall.Fleets.AttackMissionTest do
 
     set_fleet_ships(fleet.id, %{"corvette" => 20})
 
-    %{attacker: attacker, defender: defender, home_planet: home_planet, target_planet: target_planet, fleet: fleet}
+    %{
+      attacker: attacker,
+      defender: defender,
+      home_planet: home_planet,
+      target_planet: target_planet,
+      fleet: fleet
+    }
   end
 
   test "dispatches attack and resolves planetary defenses on arrival", %{
@@ -154,6 +169,7 @@ defmodule NexusDownfall.Fleets.AttackMissionTest do
     fleet: fleet
   } do
     before_hydrogen = home_planet.hydrogen
+    before_target = Repo.get!(Planet, target_planet.id)
 
     {:ok, mission} =
       Oban.Testing.with_testing_mode(:manual, fn ->
@@ -179,10 +195,25 @@ defmodule NexusDownfall.Fleets.AttackMissionTest do
     assert mission.result_reason == "attack_victory"
     assert Repo.get!(Fleet, fleet.id).status == "returning"
 
+    loot_total =
+      mission.cargo_raw_materials +
+        mission.cargo_microchips +
+        mission.cargo_hydrogen +
+        mission.cargo_food +
+        mission.cargo_credits
+
+    assert loot_total > 0
+
     assert Repo.get_by!(Defense, planet_id: target_planet.id, defense_type: "missile_platform").quantity ==
              0
 
     assert Repo.get_by!(FleetShip, fleet_id: fleet.id, ship_type: "corvette").quantity >= 0
+
+    after_arrival_target = Repo.get!(Planet, target_planet.id)
+
+    assert after_arrival_target.raw_materials <= before_target.raw_materials
+    assert after_arrival_target.microchips <= before_target.microchips
+    assert after_arrival_target.hydrogen <= before_target.hydrogen
 
     attacker_notification =
       Repo.one!(
@@ -212,11 +243,94 @@ defmodule NexusDownfall.Fleets.AttackMissionTest do
     assert is_map(attacker_notification.payload["attacker_total_cost"])
     assert is_map(attacker_notification.payload["defender_total_cost"])
 
-    assert attacker_notification.payload["looted_resources"] == %{
-             "raw_materials" => 0,
-             "microchips" => 0,
-             "hydrogen" => 0
-           }
+    assert [%{"name" => "Corvette", "before" => 20} = attacker_corvettes] =
+             attacker_notification.payload["attacker_units"]
+
+    assert attacker_corvettes["after"] >= 0
+
+    assert attacker_corvettes["lost"] ==
+             attacker_corvettes["before"] - attacker_corvettes["after"]
+
+    defender_missiles =
+      Enum.find(attacker_notification.payload["defender_units"], fn unit ->
+        unit["unit_type"] == "missile_platform"
+      end)
+
+    assert defender_missiles["name"] == "Missile Platform"
+    assert defender_missiles["before"] == 2
+    assert defender_missiles["after"] == 0
+    assert defender_missiles["lost"] == 2
+
+    assert is_list(attacker_notification.payload["round_summaries"])
+    assert attacker_notification.payload["round_summaries"] != []
+
+    assert attacker_notification.payload["looted_resources"]["raw_materials"] >= 0
+    assert attacker_notification.payload["looted_resources"]["microchips"] >= 0
+    assert attacker_notification.payload["looted_resources"]["hydrogen"] >= 0
+
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    Repo.update_all(
+      from(p in Planet, where: p.id == ^home_planet.id),
+      set: [last_tick_at: now]
+    )
+
+    home_before_return = Repo.get!(Planet, home_planet.id)
+
+    Oban.Testing.with_testing_mode(:manual, fn ->
+      assert :ok == Fleets.process_mission_transition(mission.id, "return")
+    end)
+
+    mission_after_return = Repo.get!(FleetMission, mission.id)
+    home_after_return = Repo.get!(Planet, home_planet.id)
+
+    assert mission_after_return.phase == "completed"
+    assert Repo.get!(Fleet, fleet.id).status == "idle"
+
+    assert home_after_return.raw_materials >=
+             home_before_return.raw_materials + mission.cargo_raw_materials
+
+    assert home_after_return.microchips >=
+             home_before_return.microchips + mission.cargo_microchips
+
+    assert home_after_return.hydrogen >= home_before_return.hydrogen + mission.cargo_hydrogen
+  end
+
+  test "unguarded attack records an overrun round and lootable report", %{
+    attacker: attacker,
+    target_planet: target_planet,
+    fleet: fleet
+  } do
+    set_defenses(target_planet.id, %{"missile_platform" => 0})
+
+    {:ok, mission} =
+      Oban.Testing.with_testing_mode(:manual, fn ->
+        Fleets.dispatch_attack_mission_for_user(fleet.id, attacker.id, target_planet.id)
+      end)
+
+    Oban.Testing.with_testing_mode(:manual, fn ->
+      assert :ok == Fleets.process_mission_transition(mission.id, "arrive")
+    end)
+
+    mission = Repo.get!(FleetMission, mission.id)
+    assert mission.phase == "returning"
+    assert mission.result_reason == "attack_victory"
+    assert mission.cargo_raw_materials + mission.cargo_microchips + mission.cargo_hydrogen > 0
+
+    notification =
+      Repo.one!(
+        from n in Notification,
+          where: n.user_id == ^attacker.id and n.type == "battle_report",
+          order_by: [desc: n.id],
+          limit: 1
+      )
+
+    assert notification.payload["rounds"] == 1
+    assert [%{"no_defenders" => true}] = notification.payload["round_summaries"]
+    assert notification.payload["defender_units"] == []
+
+    assert [%{"name" => "Corvette", "before" => 20, "after" => 20, "lost" => 0}] =
+             notification.payload["attacker_units"]
   end
 
   test "rejects attacks against own or empty planets", %{

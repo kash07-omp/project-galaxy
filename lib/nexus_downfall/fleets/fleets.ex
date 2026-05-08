@@ -11,6 +11,7 @@ defmodule NexusDownfall.Fleets do
   """
 
   import Ecto.Query
+  require Logger
 
   alias NexusDownfall.Fleets.{Fleet, FleetMission, FleetShip, Pathfinder, ShipyardQueueItem}
   alias NexusDownfall.Accounts.UniverseUser
@@ -1259,6 +1260,29 @@ defmodule NexusDownfall.Fleets do
 
   @doc "Processes mission transitions triggered by Oban workers."
   def process_mission_transition(mission_id, action) do
+    result = do_process_mission_transition(mission_id, action)
+
+    case result do
+      :ok ->
+        :ok
+
+      other ->
+        Logger.warning(
+          "fleet_mission_transition_warning mission_id=#{inspect(mission_id)} action=#{inspect(action)} result=#{inspect(other)}"
+        )
+
+        other
+    end
+  rescue
+    exception ->
+      Logger.error(
+        "fleet_mission_transition_error mission_id=#{inspect(mission_id)} action=#{inspect(action)} exception=#{Exception.message(exception)} stacktrace=#{Exception.format_stacktrace(__STACKTRACE__)}"
+      )
+
+      reraise exception, __STACKTRACE__
+  end
+
+  defp do_process_mission_transition(mission_id, action) do
     case action do
       "arrive" -> process_mission_arrival(mission_id)
       "complete_colonization" -> process_mission_colonization_completion(mission_id)
@@ -1551,6 +1575,13 @@ defmodule NexusDownfall.Fleets do
 
         result_reason = attack_result_reason(result.outcome)
 
+        loot =
+          if result.outcome == :attacker_victory and attacker_survivors > 0 do
+            calculate_attack_loot!(mission, target_planet)
+          else
+            empty_loot()
+          end
+
         mission =
           if attacker_survivors > 0 do
             return_at = DateTime.add(now, mission.return_travel_seconds, :second)
@@ -1560,6 +1591,11 @@ defmodule NexusDownfall.Fleets do
               phase: "returning",
               result_reason: result_reason,
               return_arrival_at: return_at,
+              cargo_raw_materials: Map.get(loot, :raw_materials, 0),
+              cargo_microchips: Map.get(loot, :microchips, 0),
+              cargo_hydrogen: Map.get(loot, :hydrogen, 0),
+              cargo_food: Map.get(loot, :food, 0),
+              cargo_credits: Map.get(loot, :credits, 0),
               current_oban_job_id: nil
             })
             |> Repo.update!()
@@ -1582,7 +1618,23 @@ defmodule NexusDownfall.Fleets do
           end
 
         :ok = notify_mission_updated(mission)
-  :ok = create_attack_battle_notifications!(mission, target_planet, result, attacker_groups, defender_groups)
+
+        case create_attack_battle_notifications(
+               mission,
+               target_planet,
+               result,
+               attacker_groups,
+               defender_groups,
+               loot
+             ) do
+          :ok ->
+            :ok
+
+          {:error, reason} ->
+            Logger.warning(
+              "Battle resolved but notifications failed for mission #{mission.id}: #{inspect(reason)}"
+            )
+        end
 
         :telemetry.execute(
           [:nexus_downfall, :combat, :attack_resolved],
@@ -1839,6 +1891,10 @@ defmodule NexusDownfall.Fleets do
         true ->
           now = DateTime.utc_now() |> DateTime.truncate(:second)
 
+          if mission.mission_type == "attack" do
+            maybe_deliver_attack_loot_on_return!(mission)
+          end
+
           mission
           |> FleetMission.changeset(%{
             phase: "completed",
@@ -2015,84 +2071,107 @@ defmodule NexusDownfall.Fleets do
   defp attack_result_reason(:defender_victory), do: "attack_defeat"
   defp attack_result_reason(:draw), do: "attack_draw"
 
-  defp create_attack_battle_notifications!(mission, target_planet, result, attacker_groups, defender_groups) do
-    participants = load_battle_participants!(mission, target_planet)
+  defp create_attack_battle_notifications(
+         mission,
+         target_planet,
+         result,
+         attacker_groups,
+         defender_groups,
+         loot
+       ) do
+    with {:ok, participants} <- load_battle_participants(mission, target_planet) do
+      group_by_id =
+        Map.new(attacker_groups ++ defender_groups, fn group ->
+          {group.id, group}
+        end)
 
-    group_by_id =
-      Map.new(attacker_groups ++ defender_groups, fn group ->
-        {group.id, group}
-      end)
+      attacker_losses = losses_breakdown(result.attacker_losses, group_by_id)
+      defender_losses = losses_breakdown(result.defender_losses, group_by_id)
 
-    attacker_losses = losses_breakdown(result.attacker_losses, group_by_id)
-    defender_losses = losses_breakdown(result.defender_losses, group_by_id)
+      attacker_total_cost = total_loss_cost(attacker_losses)
+      defender_total_cost = total_loss_cost(defender_losses)
 
-    attacker_total_cost = total_loss_cost(attacker_losses)
-    defender_total_cost = total_loss_cost(defender_losses)
+      attacker_units =
+        units_snapshot(attacker_groups, result.attacker_remaining, result.attacker_losses)
 
-    base_payload = %{
-      "report_type" => "battle_report",
-      "mission_id" => mission.id,
-      "mission_type" => mission.mission_type,
-      "universe_id" => mission.universe_id,
-      "fleet_id" => mission.fleet_id,
-      "origin_planet_id" => mission.origin_planet_id,
-      "origin_planet_name" => participants.origin_planet_name,
-      "target_planet_id" => mission.target_planet_id,
-      "target_planet_name" => target_planet.name,
-      "rounds" => length(result.rounds),
-      "attacker_losses" => attacker_losses,
-      "defender_losses" => defender_losses,
-      "attacker_total_cost" => attacker_total_cost,
-      "defender_total_cost" => defender_total_cost,
-      "looted_resources" => %{"raw_materials" => 0, "microchips" => 0, "hydrogen" => 0},
-      "attacker" => %{
-        "user_id" => participants.attacker_user_id,
-        "account_name" => participants.attacker_name,
-        "universe_username" => participants.attacker_universe_username
-      },
-      "defender" => %{
-        "user_id" => participants.defender_user_id,
-        "account_name" => participants.defender_name,
-        "universe_username" => participants.defender_universe_username
+      defender_units =
+        units_snapshot(defender_groups, result.defender_remaining, result.defender_losses)
+
+      round_summaries = round_summaries(result.rounds, group_by_id)
+
+      base_payload = %{
+        "report_type" => "battle_report",
+        "mission_id" => mission.id,
+        "mission_type" => mission.mission_type,
+        "universe_id" => mission.universe_id,
+        "fleet_id" => mission.fleet_id,
+        "origin_planet_id" => mission.origin_planet_id,
+        "origin_planet_name" => participants.origin_planet_name,
+        "target_planet_id" => mission.target_planet_id,
+        "target_planet_name" => target_planet.name,
+        "rounds" => length(result.rounds),
+        "round_summaries" => round_summaries,
+        "attacker_units" => attacker_units,
+        "defender_units" => defender_units,
+        "attacker_losses" => attacker_losses,
+        "defender_losses" => defender_losses,
+        "attacker_total_cost" => attacker_total_cost,
+        "defender_total_cost" => defender_total_cost,
+        "looted_resources" => %{
+          "raw_materials" => Map.get(loot, :raw_materials, 0),
+          "microchips" => Map.get(loot, :microchips, 0),
+          "hydrogen" => Map.get(loot, :hydrogen, 0),
+          "food" => Map.get(loot, :food, 0),
+          "credits" => Map.get(loot, :credits, 0)
+        },
+        "attacker" => %{
+          "user_id" => participants.attacker_user_id,
+          "account_name" => participants.attacker_name,
+          "universe_username" => participants.attacker_universe_username
+        },
+        "defender" => %{
+          "user_id" => participants.defender_user_id,
+          "account_name" => participants.defender_name,
+          "universe_username" => participants.defender_universe_username
+        }
       }
-    }
 
-    case Notifications.create_notification(%{
-           user_id: participants.attacker_user_id,
-           universe_id: mission.universe_id,
-           type: "battle_report",
-           title: "Battle Report",
-           summary: "Combat mission resolved.",
-           payload:
-             Map.merge(base_payload, %{
-               "recipient_role" => "attacker",
-               "outcome_for_recipient" => recipient_outcome(result.outcome, :attacker)
-             })
-         }) do
-      {:ok, _notification} -> :ok
-      {:error, _changeset} -> Repo.rollback(:notification_creation_failed)
+      attacker_notification_attrs = %{
+        user_id: participants.attacker_user_id,
+        universe_id: mission.universe_id,
+        type: "battle_report",
+        title: "Battle Report",
+        summary: "Combat mission resolved.",
+        payload:
+          Map.merge(base_payload, %{
+            "recipient_role" => "attacker",
+            "outcome_for_recipient" => recipient_outcome(result.outcome, :attacker)
+          })
+      }
+
+      defender_notification_attrs = %{
+        user_id: participants.defender_user_id,
+        universe_id: mission.universe_id,
+        type: "battle_report",
+        title: "Battle Report",
+        summary: "Combat mission resolved.",
+        payload:
+          Map.merge(base_payload, %{
+            "recipient_role" => "defender",
+            "outcome_for_recipient" => recipient_outcome(result.outcome, :defender)
+          })
+      }
+
+      with {:ok, _notification} <- Notifications.create_notification(attacker_notification_attrs),
+           {:ok, _notification} <- Notifications.create_notification(defender_notification_attrs) do
+        :ok
+      else
+        {:error, reason} -> {:error, reason}
+      end
     end
-
-    case Notifications.create_notification(%{
-           user_id: participants.defender_user_id,
-           universe_id: mission.universe_id,
-           type: "battle_report",
-           title: "Battle Report",
-           summary: "Combat mission resolved.",
-           payload:
-             Map.merge(base_payload, %{
-               "recipient_role" => "defender",
-               "outcome_for_recipient" => recipient_outcome(result.outcome, :defender)
-             })
-         }) do
-      {:ok, _notification} -> :ok
-      {:error, _changeset} -> Repo.rollback(:notification_creation_failed)
-    end
-
-    :ok
   end
 
-  defp load_battle_participants!(mission, target_planet) do
+  defp load_battle_participants(mission, target_planet) do
     participant_rows =
       Repo.all(
         from uu in UniverseUser,
@@ -2107,7 +2186,9 @@ defmodule NexusDownfall.Fleets do
       )
 
     attacker_row = Enum.find(participant_rows, &(&1.universe_user_id == mission.universe_user_id))
-    defender_row = Enum.find(participant_rows, &(&1.universe_user_id == target_planet.universe_user_id))
+
+    defender_row =
+      Enum.find(participant_rows, &(&1.universe_user_id == target_planet.universe_user_id))
 
     origin_planet_name =
       Repo.one(
@@ -2117,18 +2198,64 @@ defmodule NexusDownfall.Fleets do
       ) || "-"
 
     if is_nil(attacker_row) or is_nil(defender_row) do
-      Repo.rollback(:battle_participants_not_found)
+      {:error, :battle_participants_not_found}
+    else
+      {:ok,
+       %{
+         attacker_user_id: attacker_row.user_id,
+         attacker_name: attacker_row.account_name || attacker_row.universe_username,
+         attacker_universe_username: attacker_row.universe_username,
+         defender_user_id: defender_row.user_id,
+         defender_name: defender_row.account_name || defender_row.universe_username,
+         defender_universe_username: defender_row.universe_username,
+         origin_planet_name: origin_planet_name
+       }}
     end
+  end
 
-    %{
-      attacker_user_id: attacker_row.user_id,
-      attacker_name: attacker_row.account_name || attacker_row.universe_username,
-      attacker_universe_username: attacker_row.universe_username,
-      defender_user_id: defender_row.user_id,
-      defender_name: defender_row.account_name || defender_row.universe_username,
-      defender_universe_username: defender_row.universe_username,
-      origin_planet_name: origin_planet_name
-    }
+  defp units_snapshot(groups, remaining_by_id, losses_by_id) do
+    groups
+    |> Enum.flat_map(fn group ->
+      before_quantity = max(Map.get(group, :quantity, 0), 0)
+      after_quantity = max(Map.get(remaining_by_id, group.id, 0), 0)
+      lost = max(Map.get(losses_by_id, group.id, before_quantity - after_quantity), 0)
+
+      if before_quantity <= 0 and after_quantity <= 0 and lost <= 0 do
+        []
+      else
+        unit_cost = unit_cost_for_group(group)
+
+        [
+          %{
+            "unit_type" => to_string(group.unit_type),
+            "kind" => Atom.to_string(group.kind),
+            "class" => group.class,
+            "name" => group_unit_name(group),
+            "icon_path" => unit_icon_path(group),
+            "before" => before_quantity,
+            "after" => after_quantity,
+            "lost" => lost,
+            "resource_cost" => multiply_cost(unit_cost, lost)
+          }
+        ]
+      end
+    end)
+    |> Enum.sort_by(fn row ->
+      {Map.get(row, "kind", ""), Map.get(row, "class", ""), Map.get(row, "name", "")}
+    end)
+  end
+
+  defp round_summaries(rounds, group_by_id) do
+    Enum.map(rounds, fn round ->
+      %{
+        "round" => Map.get(round, :round, 0),
+        "attacker_power" => Map.get(round, :attacker_power, 0),
+        "defender_power" => Map.get(round, :defender_power, 0),
+        "no_defenders" => Map.get(round, :no_defenders?, false),
+        "attacker_losses" => losses_breakdown(Map.get(round, :attacker_losses, %{}), group_by_id),
+        "defender_losses" => losses_breakdown(Map.get(round, :defender_losses, %{}), group_by_id)
+      }
+    end)
   end
 
   defp losses_breakdown(loss_map, group_by_id) do
@@ -2149,6 +2276,8 @@ defmodule NexusDownfall.Fleets do
                 "unit_type" => to_string(group.unit_type),
                 "kind" => Atom.to_string(group.kind),
                 "class" => group.class,
+                "name" => group_unit_name(group),
+                "icon_path" => unit_icon_path(group),
                 "lost" => lost,
                 "resource_cost" => multiply_cost(unit_cost, lost)
               }
@@ -2158,6 +2287,39 @@ defmodule NexusDownfall.Fleets do
     end)
     |> Enum.sort_by(fn row -> {-Map.get(row, "lost", 0), Map.get(row, "unit_type", "")} end)
   end
+
+  defp group_unit_name(%{kind: :ship, unit_type: ship_type}) do
+    case ship_definition(ship_type) do
+      %{name: name} -> name
+      _ -> humanize_unit_type(ship_type)
+    end
+  end
+
+  defp group_unit_name(%{kind: :defense, unit_type: defense_type}) do
+    case PlanetDefenses.defense_definition(defense_type) do
+      %{name: name} -> name
+      _ -> humanize_unit_type(defense_type)
+    end
+  end
+
+  defp group_unit_name(%{unit_type: unit_type}), do: humanize_unit_type(unit_type)
+
+  defp humanize_unit_type(unit_type) do
+    unit_type
+    |> to_string()
+    |> String.replace("_", " ")
+    |> String.split(" ", trim: true)
+    |> Enum.map_join(" ", &String.capitalize/1)
+  end
+
+  defp unit_icon_path(%{kind: :defense}), do: "/images/planet-images/defense-center.png"
+
+  defp unit_icon_path(%{kind: :ship, class: ship_class})
+       when ship_class in ["Civil", "Support", "Capital", "Conquest"],
+       do: "/images/ships/ship-b.svg"
+
+  defp unit_icon_path(%{kind: :ship}), do: "/images/ships/ship-a.svg"
+  defp unit_icon_path(_), do: "/images/ships/ship-a.svg"
 
   defp unit_cost_for_group(%{kind: :ship, unit_type: ship_type}) do
     ship_definition(ship_type)
@@ -2186,7 +2348,8 @@ defmodule NexusDownfall.Fleets do
   end
 
   defp total_loss_cost(losses) do
-    Enum.reduce(losses, %{"raw_materials" => 0, "microchips" => 0, "hydrogen" => 0}, fn row, acc ->
+    Enum.reduce(losses, %{"raw_materials" => 0, "microchips" => 0, "hydrogen" => 0}, fn row,
+                                                                                        acc ->
       row_cost = Map.get(row, "resource_cost", %{})
 
       %{
@@ -2202,6 +2365,97 @@ defmodule NexusDownfall.Fleets do
   defp recipient_outcome(:defender_victory, :attacker), do: "defeat"
   defp recipient_outcome(:defender_victory, :defender), do: "victory"
   defp recipient_outcome(:draw, _recipient), do: "draw"
+
+  defp calculate_attack_loot!(mission, target_planet) do
+    attacker_cargo_capacity =
+      Repo.all(
+        from fs in FleetShip,
+          where: fs.fleet_id == ^mission.fleet_id and fs.quantity > 0,
+          select: %{ship_type: fs.ship_type, quantity: fs.quantity},
+          lock: "FOR UPDATE"
+      )
+      |> fleet_ship_counts()
+      |> total_cargo_capacity()
+
+    if attacker_cargo_capacity <= 0 do
+      empty_loot()
+    else
+      target_planet = refresh_planet_resources!(target_planet)
+
+      available = %{
+        raw_materials: target_planet.raw_materials,
+        microchips: target_planet.microchips,
+        hydrogen: target_planet.hydrogen,
+        food: target_planet.food,
+        credits: target_planet.credits
+      }
+
+      loot = pick_loot(available, attacker_cargo_capacity)
+
+      target_planet
+      |> Ecto.Changeset.cast(
+        deducted_resource_attrs(target_planet, loot),
+        @transport_resource_fields
+      )
+      |> Repo.update!()
+
+      loot
+    end
+  end
+
+  defp pick_loot(available, capacity) when capacity > 0 do
+    resources = [:raw_materials, :microchips, :hydrogen, :food, :credits]
+
+    first_pass =
+      Enum.reduce(resources, empty_loot(), fn resource, acc ->
+        amount = min(div(Map.get(available, resource, 0), 2), remaining_capacity(capacity, acc))
+        Map.put(acc, resource, max(amount, 0))
+      end)
+
+    Enum.reduce_while(resources, first_pass, fn resource, acc ->
+      if remaining_capacity(capacity, acc) <= 0 do
+        {:halt, acc}
+      else
+        available_left = max(Map.get(available, resource, 0) - Map.get(acc, resource, 0), 0)
+        extra = min(available_left, remaining_capacity(capacity, acc))
+        {:cont, Map.update!(acc, resource, &(&1 + extra))}
+      end
+    end)
+  end
+
+  defp pick_loot(_available, _capacity), do: empty_loot()
+
+  defp remaining_capacity(capacity, loot), do: max(capacity - cargo_total(loot), 0)
+
+  defp empty_loot do
+    %{raw_materials: 0, microchips: 0, hydrogen: 0, food: 0, credits: 0}
+  end
+
+  defp maybe_deliver_attack_loot_on_return!(mission) do
+    loot = cargo_from_mission(mission)
+
+    if cargo_total(loot) > 0 do
+      origin_planet =
+        Repo.one(
+          from p in Planet,
+            where: p.id == ^mission.origin_planet_id,
+            lock: "FOR UPDATE"
+        )
+
+      if origin_planet do
+        origin_planet = refresh_planet_resources!(origin_planet)
+
+        origin_planet
+        |> Ecto.Changeset.cast(
+          added_resource_attrs(origin_planet, loot),
+          @transport_resource_fields
+        )
+        |> Repo.update!()
+      end
+    end
+
+    :ok
+  end
 
   defp overdue_mission_action(%{phase: "outbound", outbound_arrival_at: at}, now)
        when not is_nil(at) do

@@ -31,33 +31,47 @@ defmodule NexusDownfall.Combat do
     initial_defender = normalize_groups(defender_groups, :defender)
 
     {attacker, defender, rounds, _rand_state} =
-      Enum.reduce_while(
-        1..max_rounds,
-        {initial_attacker, initial_defender, [], rand_state},
-        fn round_number, {attackers, defenders, acc_rounds, rand} ->
-          cond do
-            side_destroyed?(attackers) or side_destroyed?(defenders) ->
-              {:halt, {attackers, defenders, acc_rounds, rand}}
+      if side_destroyed?(initial_defender) and not side_destroyed?(initial_attacker) do
+        overrun_round = %{
+          round: 1,
+          attacker_losses: %{},
+          defender_losses: %{},
+          attacker_power: side_power(initial_attacker),
+          defender_power: 0,
+          no_defenders?: true
+        }
 
-            true ->
-              {defender_losses, rand} = side_losses(attackers, defenders, rand)
-              {attacker_losses, rand} = side_losses(defenders, attackers, rand)
+        {initial_attacker, initial_defender, [overrun_round], rand_state}
+      else
+        Enum.reduce_while(
+          1..max_rounds,
+          {initial_attacker, initial_defender, [], rand_state},
+          fn round_number, {attackers, defenders, acc_rounds, rand} ->
+            cond do
+              side_destroyed?(attackers) or side_destroyed?(defenders) ->
+                {:halt, {attackers, defenders, acc_rounds, rand}}
 
-              attackers_after = apply_losses(attackers, attacker_losses)
-              defenders_after = apply_losses(defenders, defender_losses)
+              true ->
+                {defender_losses, rand} = side_losses(attackers, defenders, rand)
+                {attacker_losses, rand} = side_losses(defenders, attackers, rand)
 
-              round = %{
-                round: round_number,
-                attacker_losses: losses_by_id(attacker_losses),
-                defender_losses: losses_by_id(defender_losses),
-                attacker_power: side_power(attackers),
-                defender_power: side_power(defenders)
-              }
+                attackers_after = apply_losses(attackers, attacker_losses)
+                defenders_after = apply_losses(defenders, defender_losses)
 
-              {:cont, {attackers_after, defenders_after, [round | acc_rounds], rand}}
+                round = %{
+                  round: round_number,
+                  attacker_losses: losses_by_id(attacker_losses),
+                  defender_losses: losses_by_id(defender_losses),
+                  attacker_power: side_power(attackers),
+                  defender_power: side_power(defenders),
+                  no_defenders?: false
+                }
+
+                {:cont, {attackers_after, defenders_after, [round | acc_rounds], rand}}
+            end
           end
-        end
-      )
+        )
+      end
 
     outcome = outcome(attacker, defender)
 

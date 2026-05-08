@@ -17,6 +17,8 @@ defmodule NexusDownfall.CombatTest do
     result = Combat.resolve_rounds(attackers, [], seed: 42)
 
     assert result.outcome == :attacker_victory
+    assert length(result.rounds) == 1
+    assert hd(result.rounds).no_defenders? == true
     assert result.attacker_losses == %{}
     assert result.defender_losses == %{}
   end

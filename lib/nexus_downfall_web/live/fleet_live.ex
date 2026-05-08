@@ -45,57 +45,57 @@ defmodule NexusDownfallWeb.FleetLive do
                 <p class="text-[10px] uppercase tracking-[0.22em] text-cyan-300/80">
                   {gettext("Fleet Operations")}
                 </p>
-                
+
                 <h1 class="mt-1 text-xl font-bold text-white md:text-2xl">
                   {gettext("Fleet Management")}
                 </h1>
-                
+
                 <p class="mt-1 text-xs text-cyan-100/80 md:text-sm">
                   {gettext(
                     "Monitor each fleet, inspect every ship class and prepare mission dispatches."
                   )}
                 </p>
               </div>
-              
+
               <div class="grid grid-cols-2 gap-2 text-right md:grid-cols-4">
                 <div class="rounded-lg border border-cyan-500/30 bg-[#04101d]/80 px-3 py-2">
                   <p class="text-[10px] uppercase tracking-wide text-gray-500">{gettext("Fleets")}</p>
-                  
+
                   <p class="text-lg font-bold text-cyan-200">{@fleet_metrics.total_fleets}</p>
                 </div>
-                
+
                 <div class="rounded-lg border border-cyan-500/30 bg-[#04101d]/80 px-3 py-2">
                   <p class="text-[10px] uppercase tracking-wide text-gray-500">{gettext("Ships")}</p>
-                  
+
                   <p class="text-lg font-bold text-cyan-200">{@fleet_metrics.total_ships}</p>
                 </div>
-                
+
                 <div class="rounded-lg border border-cyan-500/30 bg-[#04101d]/80 px-3 py-2">
                   <p class="text-[10px] uppercase tracking-wide text-gray-500">{gettext("Worlds")}</p>
-                  
+
                   <p class="text-lg font-bold text-cyan-200">{@fleet_metrics.home_worlds}</p>
                 </div>
-                
+
                 <div class="rounded-lg border border-cyan-500/30 bg-[#04101d]/80 px-3 py-2">
                   <p class="text-[10px] uppercase tracking-wide text-gray-500">{gettext("Ready")}</p>
-                  
+
                   <p class="text-lg font-bold text-emerald-300">{@fleet_metrics.ready_fleets}</p>
                 </div>
               </div>
             </div>
           </section>
-          
+
           <div class="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
             <aside class="space-y-4 xl:sticky xl:top-4 xl:self-start">
               <section class="overflow-hidden rounded-2xl border border-cyan-500/25 bg-[#0a1528]/95 shadow-[0_18px_44px_rgba(2,8,22,0.62)]">
                 <div class="border-b border-cyan-500/15 bg-[linear-gradient(170deg,rgba(8,145,178,0.22),rgba(8,145,178,0.03))] px-4 py-3">
                   <h2 class="text-lg font-bold text-white">{gettext("Fleet Management")}</h2>
-                  
+
                   <p class="mt-1 text-xs text-cyan-100/80">
                     {gettext("Create and organize your operational fleets.")}
                   </p>
                 </div>
-                
+
                 <div class="p-4">
                   <button
                     phx-click="open_create_fleet_modal"
@@ -108,30 +108,30 @@ defmodule NexusDownfallWeb.FleetLive do
                       <p class="text-[10px] uppercase tracking-wide text-gray-500">
                         {gettext("Fleets")}
                       </p>
-                      
+
                       <p class="text-base font-bold text-cyan-200">{@fleet_metrics.total_fleets}</p>
                     </div>
-                    
+
                     <div class="rounded-lg border border-cyan-500/20 bg-[#060d18]/70 px-3 py-2">
                       <p class="text-[10px] uppercase tracking-wide text-gray-500">
                         {gettext("Ships")}
                       </p>
-                      
+
                       <p class="text-base font-bold text-cyan-200">{@fleet_metrics.total_ships}</p>
                     </div>
                   </div>
-                  
+
                   <div class="mt-4 rounded-xl border border-cyan-500/20 bg-[#050f1d]/80 p-3">
                     <div class="mb-2 flex items-center justify-between gap-2">
                       <h3 class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
                         {gettext("Fleet Filters")}
                       </h3>
-                      
+
                       <span class="rounded-full border border-amber-600/60 bg-amber-900/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
                         {gettext("PRO")}
                       </span>
                     </div>
-                    
+
                     <div class={[
                       "space-y-2 transition",
                       if(!@premium_access,
@@ -147,7 +147,7 @@ defmodule NexusDownfallWeb.FleetLive do
                           <option>{gettext("All missions")}</option>
                         </select>
                       </div>
-                      
+
                       <div>
                         <label class="mb-1 block text-[11px] uppercase tracking-wide text-gray-500">
                           {gettext("Planet")}
@@ -156,7 +156,7 @@ defmodule NexusDownfallWeb.FleetLive do
                           <option>{gettext("All planets")}</option>
                         </select>
                       </div>
-                      
+
                       <div>
                         <label class="mb-1 block text-[11px] uppercase tracking-wide text-gray-500">
                           {gettext("Search")}
@@ -168,7 +168,7 @@ defmodule NexusDownfallWeb.FleetLive do
                         />
                       </div>
                     </div>
-                    
+
                     <button
                       :if={!@premium_access}
                       type="button"
@@ -177,35 +177,35 @@ defmodule NexusDownfallWeb.FleetLive do
                       {gettext("Unlock with PRO")}
                     </button>
                   </div>
-                  
+
                   <p class="mt-3 text-[11px] text-gray-500">
                     {gettext("Advanced filters are visible but restricted to PRO commanders.")}
                   </p>
                 </div>
               </section>
             </aside>
-            
+
             <section class="rounded-2xl border border-cyan-500/20 bg-[#081225]/90 p-3 shadow-[0_18px_44px_rgba(2,8,22,0.62)] md:p-4">
               <div class="mb-3 hidden items-center gap-2 rounded-xl border border-cyan-500/15 bg-[#050e1c]/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-cyan-300/70 xl:flex">
                 <div class="w-[72px] shrink-0">{gettext("Admiral")}</div>
-                
+
                 <div class="flex-1 grid grid-cols-[minmax(0,1fr)_200px_180px_auto] gap-2 items-center">
                   <span>{gettext("Fleet")}</span> <span>{gettext("Location")}</span>
                   <span>{gettext("Mission")}</span>
                   <span class="text-right">{gettext("Actions")}</span>
                 </div>
               </div>
-              
+
               <%= if @fleets == [] do %>
                 <div class="rounded-2xl border border-dashed border-cyan-600/30 bg-[#060d18]/80 px-6 py-12 text-center">
                   <p class="text-lg font-semibold text-white">
                     {gettext("No fleets registered yet.")}
                   </p>
-                  
+
                   <p class="mx-auto mt-2 max-w-xl text-sm text-gray-400">
                     {gettext("Create a fleet to start assigning ships from the spaceport queue.")}
                   </p>
-                  
+
                   <button
                     phx-click="open_create_fleet_modal"
                     class="mt-5 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-500"
@@ -233,7 +233,7 @@ defmodule NexusDownfallWeb.FleetLive do
                               <p class="text-center text-[9px] font-bold leading-tight text-white drop-shadow">
                                 {fleet.admiral_card.name}
                               </p>
-                              
+
                               <button
                                 type="button"
                                 phx-click="open_assign_admiral"
@@ -249,11 +249,11 @@ defmodule NexusDownfallWeb.FleetLive do
                               <div class="flex h-10 w-10 items-center justify-center rounded-full border border-gray-700/50 bg-gray-900/50">
                                 <span class="text-2xl opacity-20">★</span>
                               </div>
-                              
+
                               <p class="text-center text-[8px] text-gray-600">
                                 {gettext("No admiral")}
                               </p>
-                              
+
                               <button
                                 type="button"
                                 phx-click="open_assign_admiral"
@@ -265,48 +265,48 @@ defmodule NexusDownfallWeb.FleetLive do
                             </div>
                           <% end %>
                         </div>
-                         <%!-- Right side: row 1 (info) + row 2 (ships) --%>
+                        <%!-- Right side: row 1 (info) + row 2 (ships) --%>
                         <div class="flex min-w-0 flex-1 flex-col gap-2">
                           <%!-- Row 1: fleet name | planet | mission/power | send mission --%>
                           <div class="flex flex-wrap items-stretch gap-2 xl:grid xl:grid-cols-[minmax(0,1fr)_200px_180px_auto] xl:items-center">
                             <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
                               <div class="flex items-center gap-2">
                                 <h3 class="truncate text-sm font-bold text-white">{fleet.name}</h3>
-                                
+
                                 <span class={fleet_status_badge_class(fleet.status)}>
                                   {fleet_status_label(fleet.status)}
                                 </span>
                               </div>
                             </div>
-                            
+
                             <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
                               <p class="text-[10px] uppercase tracking-wide text-gray-500">
                                 {gettext("Planet")}
                               </p>
-                              
+
                               <p class="truncate text-sm font-semibold text-white">
                                 {fleet.home_planet.name}
                               </p>
-                              
+
                               <p class="text-[11px] text-gray-400">
                                 {gettext("System")} {fleet.home_planet.solar_system.number}
                               </p>
                             </div>
-                            
+
                             <div class="rounded-lg border border-cyan-500/15 bg-[#050f1d]/70 px-3 py-2">
                               <p class="text-[10px] uppercase tracking-wide text-gray-500">
                                 {gettext("Current mission")}
                               </p>
-                              
+
                               <p class="text-sm font-semibold text-cyan-200">
                                 {fleet_status_label(fleet.status)}
                               </p>
-                              
+
                               <p class="text-[11px] text-gray-400">
                                 {gettext("Power")}: {fleet_power(fleet, @ship_catalog)}
                               </p>
                             </div>
-                            
+
                             <div class="flex items-center justify-end">
                               <button
                                 type="button"
@@ -327,39 +327,39 @@ defmodule NexusDownfallWeb.FleetLive do
                               </button>
                             </div>
                           </div>
-                          
+
                           <%= if mission = @active_missions_by_fleet[fleet.id] do %>
                             <div class="rounded-lg border border-cyan-500/20 bg-[#031122]/80 px-3 py-2">
                               <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                                 <p class="text-[10px] font-semibold uppercase tracking-wide text-cyan-300">
                                   {mission_progress_title(mission, @now)}
                                 </p>
-                                
+
                                 <p class="text-[11px] text-gray-300">
                                   {mission_progress_label(mission, @now)}
                                 </p>
                               </div>
-                              
+
                               <div class="h-2 w-full overflow-hidden rounded-full bg-cyan-950/70">
                                 <div
                                   class="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-500"
                                   style={"width: #{mission_progress_percent(mission, @now)}%"}
                                 />
                               </div>
-                              
+
                               <div class="mt-2 grid gap-1 text-[11px] text-gray-400 md:grid-cols-3">
                                 <p>
                                   <span class="text-gray-500">{gettext("Origin")}:</span>
                                   <span class="text-gray-200">{mission_origin_name(mission)}</span>
                                 </p>
-                                
+
                                 <p>
                                   <span class="text-gray-500">{gettext("Destination")}:</span>
                                   <span class="text-gray-200">
                                     {mission_destination_name(mission)}
                                   </span>
                                 </p>
-                                
+
                                 <p>
                                   <span class="text-gray-500">
                                     {mission_eta_label(mission, @now)}:
@@ -371,12 +371,12 @@ defmodule NexusDownfallWeb.FleetLive do
                               </div>
                             </div>
                           <% end %>
-                           <%!-- Row 2: ship manifest - full width below fleet info --%>
+                          <%!-- Row 2: ship manifest - full width below fleet info --%>
                           <div class="rounded-lg border border-cyan-500/10 bg-[#030a15]/60 p-2">
                             <p class="mb-1.5 text-[9px] uppercase tracking-widest text-gray-600">
                               {gettext("Ship Manifest")}
                             </p>
-                            
+
                             <div class="flex flex-wrap gap-1.5">
                               <%= for ship <- @ship_catalog do %>
                                 <div class="flex min-w-[90px] items-center gap-1.5 rounded-lg border border-cyan-500/15 bg-[#030914]/85 px-2 py-1">
@@ -391,7 +391,7 @@ defmodule NexusDownfallWeb.FleetLive do
                                     <p class="truncate text-[9px] text-gray-400">
                                       {translate_dynamic(ship.name)}
                                     </p>
-                                    
+
                                     <p class="text-xs font-bold leading-none text-white">
                                       {Fleets.ship_quantity(fleet, ship.type)}
                                     </p>
@@ -401,7 +401,7 @@ defmodule NexusDownfallWeb.FleetLive do
                             </div>
                           </div>
                         </div>
-                        
+
                         <%!-- Inline admiral picker - shown when assign_admiral_fleet_id == fleet.id --%>
                         <%= if @assign_admiral_fleet_id == fleet.id do %>
                           <div class="absolute inset-0 z-10 flex flex-col overflow-hidden rounded-xl bg-[#07111f]/95 backdrop-blur-sm">
@@ -409,7 +409,7 @@ defmodule NexusDownfallWeb.FleetLive do
                               <p class="text-xs font-semibold uppercase tracking-wider text-cyan-300">
                                 {gettext("Choose an admiral from your deck")}
                               </p>
-                              
+
                               <button
                                 type="button"
                                 phx-click="cancel_assign_admiral"
@@ -418,7 +418,7 @@ defmodule NexusDownfallWeb.FleetLive do
                                 ✕
                               </button>
                             </div>
-                            
+
                             <div class="flex flex-1 flex-wrap items-start gap-3 overflow-y-auto p-3">
                               <% assigned_card_ids =
                                 assigned_card_ids_for_other_fleets(@fleets, fleet.id) %>
@@ -433,7 +433,7 @@ defmodule NexusDownfallWeb.FleetLive do
                                     ✕
                                   </span>
                                 </div>
-                                
+
                                 <div class="p-2">
                                   <p class="text-center text-[10px] font-bold text-amber-100">
                                     {gettext("Unassign admiral")}
@@ -485,12 +485,12 @@ defmodule NexusDownfallWeb.FleetLive do
                                         draggable="false"
                                       />
                                     </div>
-                                    
+
                                     <div class="p-2">
                                       <p class="text-center text-[10px] font-bold text-white">
                                         {uc.card.name}
                                       </p>
-                                      
+
                                       <p class="text-center text-[8px] capitalize text-cyan-300/70">
                                         {uc.card.rarity}
                                       </p>
@@ -510,7 +510,7 @@ defmodule NexusDownfallWeb.FleetLive do
           </div>
         </div>
       </main>
-      
+
       <.modal
         :if={@show_create_modal}
         id="create-fleet-modal"
@@ -529,7 +529,7 @@ defmodule NexusDownfallWeb.FleetLive do
               <h2 id="create-fleet-modal-title" class="text-xl font-bold text-white">
                 {gettext("Create fleet")}
               </h2>
-              
+
               <p id="create-fleet-modal-description" class="mt-1 text-xs text-gray-300">
                 {gettext(
                   "Create a named fleet, assign its home planet and optionally an admiral card."
@@ -537,14 +537,14 @@ defmodule NexusDownfallWeb.FleetLive do
               </p>
             </div>
           </div>
-          
+
           <div class="space-y-4 p-5">
             <%= if @fleet_error do %>
               <div class="rounded-xl border border-red-700 bg-red-950/40 px-3 py-2 text-sm text-red-300">
                 {@fleet_error}
               </div>
             <% end %>
-            
+
             <form phx-submit="create_fleet" class="space-y-4">
               <div>
                 <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -558,7 +558,7 @@ defmodule NexusDownfallWeb.FleetLive do
                   class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none"
                 />
               </div>
-              
+
               <div>
                 <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
                   {gettext("Home planet")}
@@ -568,7 +568,7 @@ defmodule NexusDownfallWeb.FleetLive do
                   class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none"
                 >
                   <option value="">{gettext("Select one of your planets")}</option>
-                  
+
                   <%= for planet <- @planets do %>
                     <option value={planet.id} selected={to_string(planet.id) == @fleet_form.planet_id}>
                       {planet_option_label(planet)}
@@ -576,7 +576,7 @@ defmodule NexusDownfallWeb.FleetLive do
                   <% end %>
                 </select>
               </div>
-              
+
               <div>
                 <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
                   {gettext("Assigned admiral")}
@@ -586,7 +586,7 @@ defmodule NexusDownfallWeb.FleetLive do
                   class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none"
                 >
                   <option value="">{gettext("No admiral")}</option>
-                  
+
                   <%= for uc <- @user_admiral_cards do %>
                     <option
                       value={uc.card_id}
@@ -597,7 +597,7 @@ defmodule NexusDownfallWeb.FleetLive do
                   <% end %>
                 </select>
               </div>
-              
+
               <div class="flex flex-col-reverse gap-3 border-t border-gray-800 pt-4 sm:flex-row sm:justify-end">
                 <button
                   type="button"
@@ -617,7 +617,7 @@ defmodule NexusDownfallWeb.FleetLive do
           </div>
         </div>
       </.modal>
-      
+
       <.modal
         :if={@show_send_mission_modal}
         id="send-mission-modal"
@@ -634,20 +634,20 @@ defmodule NexusDownfallWeb.FleetLive do
             <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-black/90" />
             <div class="absolute bottom-3 left-4">
               <h2 class="text-xl font-bold text-white">{gettext("Send mission")}</h2>
-              
+
               <p class="mt-1 text-xs text-gray-300">
                 {gettext("Choose the mission type first, then narrow the target step by step.")}
               </p>
             </div>
           </div>
-          
+
           <div class="space-y-4 p-5">
             <%= if @mission_error do %>
               <div class="rounded-xl border border-red-700 bg-red-950/40 px-3 py-2 text-sm text-red-300">
                 {@mission_error}
               </div>
             <% end %>
-            
+
             <form phx-submit="send_mission" phx-change="mission_form_changed" class="space-y-4">
               <input type="hidden" name="fleet_id" value={@mission_form.fleet_id} />
               <div>
@@ -669,7 +669,7 @@ defmodule NexusDownfallWeb.FleetLive do
                   <% end %>
                 </select>
               </div>
-              
+
               <%= if @mission_form.mission_type in ["colonization", "transport", "attack"] do %>
                 <div class="grid gap-4 md:grid-cols-3">
                   <div>
@@ -681,7 +681,7 @@ defmodule NexusDownfallWeb.FleetLive do
                       class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none"
                     >
                       <option value="">{gettext("Select galaxy")}</option>
-                      
+
                       <%= for galaxy <- @mission_galaxies do %>
                         <option
                           value={galaxy.id}
@@ -692,7 +692,7 @@ defmodule NexusDownfallWeb.FleetLive do
                       <% end %>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
                       {gettext("System")}
@@ -703,7 +703,7 @@ defmodule NexusDownfallWeb.FleetLive do
                       class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none disabled:cursor-not-allowed disabled:text-gray-500"
                     >
                       <option value="">{gettext("Select system")}</option>
-                      
+
                       <%= for system <- @mission_systems do %>
                         <option
                           value={system.id}
@@ -714,7 +714,7 @@ defmodule NexusDownfallWeb.FleetLive do
                       <% end %>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
                       {gettext("Planet")}
@@ -725,7 +725,7 @@ defmodule NexusDownfallWeb.FleetLive do
                       class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none disabled:cursor-not-allowed disabled:text-gray-500"
                     >
                       <option value="">{gettext("Select planet")}</option>
-                      
+
                       <%= for target <- @mission_targets do %>
                         <option
                           value={target.id}
@@ -737,7 +737,7 @@ defmodule NexusDownfallWeb.FleetLive do
                     </select>
                   </div>
                 </div>
-                
+
                 <%= if @mission_form.mission_type == "colonization" do %>
                   <p class="text-xs text-gray-400">
                     {gettext(
@@ -780,23 +780,23 @@ defmodule NexusDownfallWeb.FleetLive do
                           <p class="text-xs font-semibold uppercase tracking-wider text-cyan-300">
                             {gettext("Cargo")}
                           </p>
-                          
+
                           <p class="mt-1 text-[11px] text-gray-400">
                             {gettext("Hydrogen cargo is checked after reserving round-trip fuel.")}
                           </p>
                         </div>
-                        
+
                         <div class="rounded-lg border border-cyan-500/20 bg-[#031122] px-3 py-2 text-right">
                           <p class="text-[10px] uppercase tracking-wide text-gray-500">
                             {gettext("Cargo capacity")}
                           </p>
-                          
+
                           <p class="text-sm font-bold text-cyan-100">
                             {format_number(transport_cargo_total(@mission_form))} / {format_number(
                               transport_cargo_capacity(@selected_mission_fleet)
                             )}
                           </p>
-                          
+
                           <p class="text-[11px] text-gray-400">
                             {gettext("Remaining")}: {format_number(
                               transport_remaining_capacity(@mission_form, @selected_mission_fleet)
@@ -804,7 +804,7 @@ defmodule NexusDownfallWeb.FleetLive do
                           </p>
                         </div>
                       </div>
-                      
+
                       <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                         <%= for resource <- transport_resource_fields() do %>
                           <div class="min-w-0">
@@ -860,7 +860,7 @@ defmodule NexusDownfallWeb.FleetLive do
                   )}
                 </div>
               <% end %>
-              
+
               <div class="flex flex-col-reverse gap-3 border-t border-gray-800 pt-4 sm:flex-row sm:justify-end">
                 <button
                   type="button"
@@ -1227,6 +1227,8 @@ defmodule NexusDownfallWeb.FleetLive do
     {:noreply, new_socket}
   end
 
+  def handle_info(_message, socket), do: {:noreply, socket}
+
   defp assign_fleet_page(socket) do
     user_id = socket.assigns.current_user.id
     planets = Fleets.list_planets_for_user(user_id)
@@ -1400,7 +1402,8 @@ defmodule NexusDownfallWeb.FleetLive do
   defp mission_submit_enabled?(
          %{mission_type: "colonization", target_planet_id: target_planet_id},
          _fleet
-       ), do: target_planet_id != ""
+       ),
+       do: target_planet_id != ""
 
   defp mission_submit_enabled?(%{mission_type: "transport"} = form, fleet) do
     total = transport_cargo_total(form)

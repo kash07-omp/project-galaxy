@@ -104,13 +104,13 @@ Introducir PvP base con misión de ataque simplificada y reportes.
 - [x] Creación de defensas (funcionará de forma similar a la creación de naves desde el espaciopuerto pero creando defensas desde el centro de defensa. Hay que procurar reutilizar todo el código posible.).
 - [x] Misión de combate, incluyendo resolver combate por rondas (atacante/defensor) contando con las defensas del planeta. Tipo Ogame pero aplicando reglas de Nexus y sus naves/defensas y contando con bonificaciones de almirantes y/o gobernadores (otro tipo de cartas) asignadas al planeta.
 - [x] Resultado de combate: Añadir sistema de notificaciones que envíe una notificación con informe de batalla y permita más adelante enviar otro tipo de notificaciones (como mensajes de administración, notificaciones de planetas colonizados o construcciones finalizadas). El informe de batalla debe ser detallado y claro, diciendo el resultado, las naves y defensas perdidas por parte de ambos jugadores, el coste para ambos jugadores en recursos (contabilizando el coste de naves/defensas construidas), los recursos saqueados si es necesario...
-- [ ] Saqueo según capacidad de carga restante.
+- [x] Saqueo según capacidad de carga restante.
 - [ ] Opciones sobre población enemiga (`Sin piedad` / `Ignorar civiles`) en versión simplificada.
-- [ ] Sistema de reportes y notificaciones a ambos jugadores.
+- [x] Sistema de reportes y notificaciones a ambos jugadores.
 
 ### Tests obligatorios
-- [ ] Tests deterministas del motor de combate con seeds fijas.
-- [ ] Tests de integración ataque + resolución + notificaciones.
+- [x] Tests deterministas del motor de combate con seeds fijas.
+- [x] Tests de integración ataque + resolución + notificaciones.
 - [ ] Tests de invariantes (nunca recursos negativos, nunca naves < 0).
 
 ---

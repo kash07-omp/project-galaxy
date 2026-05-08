@@ -7,11 +7,13 @@ defmodule NexusDownfall.Notifications do
   """
 
   import Ecto.Query
+  require Logger
 
   alias NexusDownfall.Notifications.Notification
   alias NexusDownfall.Repo
 
   @topbar_limit 8
+  @metric_types [:combat, :espionage, :construction, :universe]
 
   def notifications_topic_for_user(user_id) when is_integer(user_id) do
     "notifications:user:" <> Integer.to_string(user_id)
@@ -28,12 +30,18 @@ defmodule NexusDownfall.Notifications do
 
   def list_recent_notifications_for_user(user_id, limit \\ @topbar_limit)
       when is_integer(user_id) and is_integer(limit) and limit > 0 do
-    Repo.all(
-      from n in Notification,
-        where: n.user_id == ^user_id,
-        order_by: [desc: n.inserted_at, desc: n.id],
-        limit: ^limit
-    )
+    try do
+      Repo.all(
+        from n in Notification,
+          where: n.user_id == ^user_id,
+          order_by: [desc: n.inserted_at, desc: n.id],
+          limit: ^limit
+      )
+    rescue
+      exception ->
+        log_notification_error(:list_recent_failed, exception, %{user_id: user_id})
+        []
+    end
   end
 
   def list_notifications_for_user(user_id, opts \\ []) when is_integer(user_id) do
@@ -51,38 +59,99 @@ defmodule NexusDownfall.Notifications do
         _ -> query
       end
 
-    Repo.all(query)
+    try do
+      Repo.all(query)
+    rescue
+      exception ->
+        log_notification_error(:list_failed, exception, %{user_id: user_id})
+        []
+    end
+  end
+
+  def notification_metrics_for_user(user_id) when is_integer(user_id) do
+    base = Map.new(@metric_types, &{&1, 0})
+
+    try do
+      rows =
+        Repo.all(
+          from n in Notification,
+            where: n.user_id == ^user_id,
+            group_by: n.type,
+            select: {n.type, count(n.id)}
+        )
+
+      Enum.reduce(rows, base, fn {type, count}, acc ->
+        Map.update!(acc, notification_metric_type(type), &(&1 + count))
+      end)
+      |> Map.put(:total, Enum.reduce(rows, 0, fn {_type, count}, acc -> acc + count end))
+    rescue
+      exception ->
+        log_notification_error(:metrics_failed, exception, %{user_id: user_id})
+        Map.put(base, :total, 0)
+    end
   end
 
   def unread_notifications_count(user_id) when is_integer(user_id) do
-    Repo.one(
-      from n in Notification,
-        where: n.user_id == ^user_id and is_nil(n.read_at),
-        select: count(n.id)
-    ) || 0
+    try do
+      Repo.one(
+        from n in Notification,
+          where: n.user_id == ^user_id and is_nil(n.read_at),
+          select: count(n.id)
+      ) || 0
+    rescue
+      exception ->
+        log_notification_error(:unread_count_failed, exception, %{user_id: user_id})
+        0
+    end
   end
 
   def get_user_notification(notification_id, user_id)
       when is_integer(notification_id) and is_integer(user_id) do
-    Repo.get_by(Notification, id: notification_id, user_id: user_id)
+    try do
+      Repo.get_by(Notification, id: notification_id, user_id: user_id)
+    rescue
+      exception ->
+        log_notification_error(:get_failed, exception, %{
+          user_id: user_id,
+          notification_id: notification_id
+        })
+
+        nil
+    end
   end
 
   def get_user_notification!(notification_id, user_id)
       when is_integer(notification_id) and is_integer(user_id) do
-    Repo.get_by!(Notification, id: notification_id, user_id: user_id)
+    case get_user_notification(notification_id, user_id) do
+      nil -> raise Ecto.NoResultsError, queryable: Notification
+      notification -> notification
+    end
   end
 
   def create_notification(attrs) when is_map(attrs) do
-    %Notification{}
-    |> Notification.changeset(attrs)
-    |> Repo.insert()
-    |> case do
-      {:ok, notification} = ok ->
-        broadcast_created(notification)
-        ok
+    try do
+      %Notification{}
+      |> Notification.changeset(attrs)
+      |> Repo.insert()
+      |> case do
+        {:ok, notification} = ok ->
+          broadcast_created(notification)
+          ok
 
-      error ->
-        error
+        {:error, changeset} = error ->
+          log_notification_error(:insert_rejected, changeset, %{
+            attrs: Map.take(attrs, [:user_id, :universe_id, :type])
+          })
+
+          error
+      end
+    rescue
+      exception ->
+        log_notification_error(:insert_failed, exception, %{
+          attrs: Map.take(attrs, [:user_id, :universe_id, :type])
+        })
+
+        {:error, {:insert_failed, exception}}
     end
   end
 
@@ -110,6 +179,40 @@ defmodule NexusDownfall.Notifications do
             error
         end
     end
+  rescue
+    exception ->
+      log_notification_error(:read_update_failed, exception, %{
+        user_id: user_id,
+        notification_id: notification_id
+      })
+
+      {:error, :read_update_failed}
+  end
+
+  def delete_notification(notification_id, user_id)
+      when is_integer(notification_id) and is_integer(user_id) do
+    case get_user_notification(notification_id, user_id) do
+      nil ->
+        {:error, :not_found}
+
+      %Notification{} = notification ->
+        case Repo.delete(notification) do
+          {:ok, deleted} = ok ->
+            broadcast_deleted(deleted)
+            ok
+
+          error ->
+            error
+        end
+    end
+  rescue
+    exception ->
+      log_notification_error(:delete_failed, exception, %{
+        user_id: user_id,
+        notification_id: notification_id
+      })
+
+      {:error, :delete_failed}
   end
 
   defp broadcast_created(notification) do
@@ -125,6 +228,31 @@ defmodule NexusDownfall.Notifications do
       NexusDownfall.PubSub,
       notifications_topic_for_user(notification.user_id),
       {:notification_read, %{notification_id: notification.id, read_at: notification.read_at}}
+    )
+  end
+
+  defp broadcast_deleted(notification) do
+    Phoenix.PubSub.broadcast(
+      NexusDownfall.PubSub,
+      notifications_topic_for_user(notification.user_id),
+      {:notification_deleted, %{notification_id: notification.id, read_at: notification.read_at}}
+    )
+  end
+
+  defp notification_metric_type(type) when type in ["battle_report", "combat"], do: :combat
+  defp notification_metric_type("espionage"), do: :espionage
+  defp notification_metric_type("construction"), do: :construction
+  defp notification_metric_type(_), do: :universe
+
+  defp log_notification_error(event, exception, metadata) do
+    detail =
+      case exception do
+        %{__exception__: true} -> Exception.message(exception)
+        _ -> inspect(exception)
+      end
+
+    Logger.error(
+      "notification_error event=#{event} metadata=#{inspect(metadata)} exception=#{detail}"
     )
   end
 end

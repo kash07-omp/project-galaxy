@@ -9,6 +9,7 @@ defmodule NexusDownfallWeb.FleetLiveTest do
   alias NexusDownfall.Cards.UserCard
   alias NexusDownfall.Fleets
   alias NexusDownfall.Fleets.Fleet
+  alias NexusDownfall.Notifications
   alias NexusDownfall.Planets
   alias NexusDownfall.Planets.Planet
   alias NexusDownfall.Repo
@@ -232,6 +233,29 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     assert refreshed =~ ">1<"
   end
 
+  test "fleet live tolerates notification pubsub events from the topbar hook", %{
+    conn: conn,
+    user: user
+  } do
+    {:ok, live_view, html} = live(conn, ~p"/fleet")
+    assert html =~ "Fleet Management"
+
+    {:ok, _notification} =
+      Notifications.create_notification(%{
+        user_id: user.id,
+        type: "battle_report",
+        title: "Battle Report",
+        summary: "Combat mission resolved.",
+        payload: %{
+          "rounds" => 1,
+          "outcome_for_recipient" => "victory",
+          "looted_resources" => %{"raw_materials" => 0, "microchips" => 0, "hydrogen" => 0}
+        }
+      })
+
+    assert render(live_view) =~ "Fleet Management"
+  end
+
   test "same admiral card cannot be assigned to two fleets of the same player", %{
     user: user,
     universe_user: universe_user,
@@ -440,7 +464,9 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     assert rendered_max =~ "5000 / 5000"
 
     live_view
-    |> element("button[phx-click='select_owned_transport_target'][phx-value-target_planet_id='#{target.id}']")
+    |> element(
+      "button[phx-click='select_owned_transport_target'][phx-value-target_planet_id='#{target.id}']"
+    )
     |> render_click()
 
     live_view
@@ -458,12 +484,13 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     assert rendered_success =~ "Transport mission dispatched."
   end
 
-  test "transport targets include inhabited planets from other players and show compact coordinates", %{
-    conn: conn,
-    user: user,
-    universe_user: universe_user,
-    planet: planet
-  } do
+  test "transport targets include inhabited planets from other players and show compact coordinates",
+       %{
+         conn: conn,
+         user: user,
+         universe_user: universe_user,
+         planet: planet
+       } do
     system = Repo.preload(planet, :solar_system).solar_system |> Repo.preload(:galaxy)
     universe = Repo.get!(NexusDownfall.Universe.UniverseRecord, universe_user.universe_id)
     rival_user = create_user()
