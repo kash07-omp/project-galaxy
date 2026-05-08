@@ -15,17 +15,19 @@ defmodule NexusDownfallWeb.GameComponents do
 
   attr :current_user, :map, required: true
   attr :show_user_menu, :boolean, default: false
+  attr :show_game_nav, :boolean, default: true
   attr :active_tab, :any, default: nil
   attr :galaxy_id, :any, default: nil
   attr :planet_id, :any, default: nil
   attr :context_label, :string, default: nil
+  attr :logo_path, :string, default: "/dashboard"
 
   @doc "Renders the universal game navigation topbar."
   def topbar(assigns) do
     ~H"""
     <nav class="flex items-center justify-between bg-gray-900/95 border-b border-gray-800 px-3 h-10 shrink-0 z-30 backdrop-blur select-none">
       <%!-- Logo --%>
-      <.link navigate={~p"/dashboard"} class="flex items-center gap-1.5 shrink-0">
+      <.link navigate={@logo_path} class="flex items-center gap-1.5 shrink-0">
         <span class="text-cyan-400 text-base">⬡</span>
         <span class="text-white font-bold tracking-widest text-xs uppercase">Nexus</span>
         <span class="text-cyan-400 font-bold text-xs">:</span>
@@ -33,7 +35,10 @@ defmodule NexusDownfallWeb.GameComponents do
       </.link>
 
       <%!-- Nav tabs --%>
-      <div class="flex items-center gap-0.5 text-[11px] font-medium overflow-x-auto px-2">
+      <div
+        :if={@show_game_nav}
+        class="flex items-center gap-0.5 text-[11px] font-medium overflow-x-auto px-2"
+      >
         <%= if @galaxy_id do %>
           <.game_nav_tab
             href={~p"/galaxies/#{@galaxy_id}"}
@@ -43,6 +48,7 @@ defmodule NexusDownfallWeb.GameComponents do
         <% else %>
           <.game_nav_tab href="#" label={gettext("Galaxy")} active={@active_tab == "galaxy"} />
         <% end %>
+
         <%= if @planet_id do %>
           <.game_nav_tab
             href={~p"/planets/#{@planet_id}"}
@@ -50,7 +56,11 @@ defmodule NexusDownfallWeb.GameComponents do
             active={@active_tab == "cities"}
           />
         <% else %>
-          <.game_nav_tab href={~p"/planets"} label={gettext("Cities")} active={@active_tab == "cities"} />
+          <.game_nav_tab
+            href={~p"/planets"}
+            label={gettext("Cities")}
+            active={@active_tab == "cities"}
+          />
         <% end %>
         <.game_nav_tab href="#" label={gettext("Research")} active={false} />
         <.game_nav_tab href="#" label={gettext("Laws")} active={false} />
@@ -67,7 +77,6 @@ defmodule NexusDownfallWeb.GameComponents do
           </span>
         <% end %>
       </div>
-
       <%!-- User menu --%>
       <div class="relative flex items-center gap-2 shrink-0">
         <span class="text-gray-400 text-xs hidden sm:block">{topbar_player_name(@current_user)}</span>
@@ -78,11 +87,12 @@ defmodule NexusDownfallWeb.GameComponents do
           {String.first(topbar_player_name(@current_user))}
         </button>
         <%= if @show_user_menu do %>
-          <div class="fixed inset-0 z-40" phx-click="toggle_user_menu" />
-          <div class="absolute top-9 right-0 z-50 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden">
+          <div
+            phx-click-away="toggle_user_menu"
+            class="absolute top-9 right-0 z-50 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden"
+          >
             <.link
               navigate={~p"/users/settings"}
-              phx-click="toggle_user_menu"
               class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition"
             >
               ⚙️ {gettext("Settings")}
@@ -132,6 +142,9 @@ defmodule NexusDownfallWeb.GameComponents do
   # ---------------------------------------------------------------------------
 
   defp topbar_player_name(user) do
-    user.email |> String.split("@") |> hd()
+    cond do
+      is_binary(user.account_name) and user.account_name != "" -> user.account_name
+      true -> user.email |> String.split("@") |> hd()
+    end
   end
 end

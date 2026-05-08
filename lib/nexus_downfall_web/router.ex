@@ -31,6 +31,7 @@ defmodule NexusDownfallWeb.Router do
       live "/users/log_in", UserLoginLive, :new
     end
 
+    post "/users/register", UserRegistrationController, :create
     post "/users/log_in", UserSessionController, :create
   end
 
@@ -47,17 +48,24 @@ defmodule NexusDownfallWeb.Router do
   scope "/", NexusDownfallWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live_session :require_authenticated_user,
+    live_session :authenticated_onboarding,
       on_mount: [{NexusDownfallWeb.UserAuth, :ensure_authenticated}] do
-      live "/dashboard", DashboardLive, :index
       live "/universes", UniverseListLive, :index
       live "/universes/:slug/join", UniverseJoinLive, :new
+      live "/users/settings", UserSettingsLive, :edit
+    end
+
+    live_session :require_universe_membership,
+      on_mount: [
+        {NexusDownfallWeb.UserAuth, :ensure_authenticated},
+        {NexusDownfallWeb.UserAuth, :ensure_joined_universe}
+      ] do
+      live "/dashboard", DashboardLive, :index
       live "/fleet", FleetLive, :index
       live "/planets/:id", PlanetLive, :show
       live "/planets", PlanetsListLive, :index
       live "/galaxies/:galaxy_id", GalaxyLive, :show
       live "/systems/:id", SolarSystemLive, :show
-      live "/users/settings", UserSettingsLive, :edit
     end
   end
 

@@ -6,6 +6,7 @@ defmodule NexusDownfallWeb.UserLoginLiveTest do
   setup do
     {:ok, user} =
       NexusDownfall.Accounts.register_user(%{
+        account_name: "Login#{System.unique_integer()}",
         email: "login#{System.unique_integer()}@example.com",
         password: "correcthorsebatt!"
       })
@@ -19,21 +20,21 @@ defmodule NexusDownfallWeb.UserLoginLiveTest do
       assert html =~ "Sign In"
     end
 
-    test "redirects authenticated users to dashboard", %{conn: conn, user: user} do
+    test "redirects authenticated users to universes", %{conn: conn, user: user} do
       token = NexusDownfall.Accounts.generate_user_session_token(user)
       conn = Phoenix.ConnTest.init_test_session(conn, %{"_nexus_downfall_user_token" => token})
-      assert {:error, {:redirect, %{to: "/dashboard"}}} = live(conn, ~p"/users/log_in")
+      assert {:error, {:redirect, %{to: "/universes"}}} = live(conn, ~p"/users/log_in")
     end
   end
 
   describe "POST /users/log_in (via form submit)" do
-    test "logs in and redirects to dashboard", %{conn: conn, user: user} do
+    test "logs in and redirects to universes", %{conn: conn, user: user} do
       conn =
         post(conn, ~p"/users/log_in", %{
           "user" => %{"email" => user.email, "password" => "correcthorsebatt!"}
         })
 
-      assert redirected_to(conn) == ~p"/dashboard"
+      assert redirected_to(conn) == ~p"/universes"
     end
 
     test "shows flash error for wrong password", %{conn: conn, user: user} do

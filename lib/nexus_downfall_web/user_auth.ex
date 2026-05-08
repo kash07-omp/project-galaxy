@@ -53,7 +53,7 @@ defmodule NexusDownfallWeb.UserAuth do
   def redirect_if_authenticated(conn, _opts) do
     if conn.assigns[:current_user] do
       conn
-      |> redirect(to: ~p"/dashboard")
+      |> redirect(to: ~p"/universes")
       |> halt()
     else
       conn
@@ -74,7 +74,7 @@ defmodule NexusDownfallWeb.UserAuth do
     |> renew_session()
     |> put_session(@session_key, token)
     |> maybe_write_remember_me_cookie(token, params)
-    |> redirect(to: return_to || ~p"/dashboard")
+    |> redirect(to: return_to || ~p"/universes")
   end
 
   @doc "Logs out the user by deleting the token and redirecting to home."
@@ -96,6 +96,7 @@ defmodule NexusDownfallWeb.UserAuth do
 
   - `:mount_current_user` — assigns current_user (optional, no redirect).
   - `:ensure_authenticated` — assigns current_user, redirects to login if nil.
+  - `:ensure_joined_universe` — redirects to universes list if user has no membership.
   - `:redirect_if_authenticated` — redirects to dashboard if user is logged in.
   """
   def on_mount(:mount_current_user, _params, session, socket) do
@@ -122,9 +123,38 @@ defmodule NexusDownfallWeb.UserAuth do
     socket = mount_current_user(session, socket)
 
     if socket.assigns.current_user do
-      {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/dashboard")}
+      {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/universes")}
     else
       {:cont, socket}
+    end
+  end
+
+  def on_mount(:ensure_joined_universe, _params, session, socket) do
+    socket = mount_current_user(session, socket)
+
+    case socket.assigns.current_user do
+      nil ->
+        socket =
+          socket
+          |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
+          |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
+
+        {:halt, socket}
+
+      user ->
+        if Accounts.has_universe_memberships?(user.id) do
+          {:cont, socket}
+        else
+          socket =
+            socket
+            |> Phoenix.LiveView.put_flash(
+              :info,
+              "Join a universe first to access command, fleet and galaxy screens."
+            )
+            |> Phoenix.LiveView.redirect(to: ~p"/universes")
+
+          {:halt, socket}
+        end
     end
   end
 

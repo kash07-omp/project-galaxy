@@ -11,30 +11,31 @@ defmodule NexusDownfallWeb.DashboardLive do
   def render(assigns) do
     ~H"""
     <div class="flex flex-col min-h-screen bg-gray-950 text-gray-100 font-sans">
-
       <!-- ══════ TOPBAR ══════ -->
       <.topbar
         current_user={@current_user}
         show_user_menu={@show_user_menu}
         active_tab={nil}
       />
-
       <main class="flex-1 p-6">
         <h1 class="text-xl font-bold text-cyan-400 tracking-widest uppercase mb-6">
-          <%= gettext("Command Bridge") %>
+          {gettext("Universe Command Bridge")}
         </h1>
-
+        
         <section>
-          <h2 class="text-lg font-semibold text-gray-300 mb-4"><%= gettext("Your Universes") %></h2>
-
+          <h2 class="text-lg font-semibold text-gray-300 mb-4">
+            {gettext("Your Universe Accounts")}
+          </h2>
+          
           <%= if @memberships == [] do %>
             <div class="rounded-lg border border-gray-800 bg-gray-900 p-8 text-center">
-              <p class="text-gray-500 mb-4"><%= gettext("You have not joined any universe yet.") %></p>
+              <p class="text-gray-500 mb-4">{gettext("You have not joined any universe yet.")}</p>
+              
               <.link
                 navigate={~p"/universes"}
                 class="inline-block px-4 py-2 rounded bg-cyan-700 hover:bg-cyan-600 text-white text-sm font-medium"
               >
-                <%= gettext("Browse Universes") %>
+                {gettext("Browse Universes")}
               </.link>
             </div>
           <% else %>
@@ -43,18 +44,25 @@ defmodule NexusDownfallWeb.DashboardLive do
                 <li class="rounded-lg border border-gray-800 bg-gray-900 p-4 space-y-2">
                   <div class="flex items-center justify-between">
                     <p class="text-cyan-300 font-semibold">{uu.universe.name}</p>
+                    
                     <%= if first_planet = List.first(uu.planets) do %>
                       <.link
                         navigate={~p"/planets/#{first_planet.id}"}
                         class="px-2 py-0.5 rounded bg-cyan-800 hover:bg-cyan-700 text-xs text-white font-medium"
                       >
-                        <%= gettext("View Planet") %>
+                        {gettext("View Planet")}
                       </.link>
                     <% end %>
                   </div>
+                  
                   <p class="text-xs text-gray-500">
                     alias: <span class="text-gray-300">{uu.username}</span>
                   </p>
+                  
+                  <p class="text-xs text-gray-500">
+                    species: <span class="text-gray-300">{species_label(uu.species)}</span>
+                  </p>
+                  
                   <p class="text-xs text-gray-500">
                     score: <span class="text-gray-300">{uu.score}</span>
                   </p>
@@ -85,4 +93,10 @@ defmodule NexusDownfallWeb.DashboardLive do
 
   def handle_event("toggle_user_menu", _, socket),
     do: {:noreply, update(socket, :show_user_menu, &(!&1))}
+
+  defp species_label("human"), do: gettext("Human")
+  defp species_label("reptilian"), do: gettext("Reptilian")
+  defp species_label("avianoid"), do: gettext("Avianoid")
+  defp species_label(other) when is_binary(other), do: other
+  defp species_label(_), do: "-"
 end

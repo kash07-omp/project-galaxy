@@ -259,6 +259,126 @@ msgstr "Almirante"
 msgid "Admiral assigned successfully."
 msgstr "Almirante asignado correctamente."
 
+msgid "Join a universe first to access command, fleet and galaxy screens."
+msgstr "Únete primero a un universo para acceder a las pantallas de mando, flota y galaxia."
+
+msgid "Universe Selection"
+msgstr "Selección de Universo"
+
+msgid "Deploy Your Command"
+msgstr "Despliega tu Mando"
+
+msgid "Welcome, %{name}. Choose where your account will begin the war campaign. Each universe has a different population pressure and expansion space."
+msgstr "Bienvenido, %{name}. Elige dónde empezará tu cuenta la campaña bélica. Cada universo tiene una presión poblacional y espacio de expansión distintos."
+
+msgid "No open universes right now."
+msgstr "No hay universos abiertos ahora mismo."
+
+msgid "Check back soon. New battlefronts open regularly."
+msgstr "Vuelve pronto. Se abren nuevos frentes de batalla con frecuencia."
+
+msgid "Universe"
+msgstr "Universo"
+
+msgid "Galaxies"
+msgstr "Galaxias"
+
+msgid "Free planets"
+msgstr "Planetas libres"
+
+msgid "Open Command Dashboard"
+msgstr "Abrir Panel de Mando"
+
+msgid "Join the Army"
+msgstr "Unirte al Ejército"
+
+msgid "Universe Join Wizard"
+msgstr "Asistente de Unión al Universo"
+
+msgid "Configure your first deployment in two steps: choose a species and select your starting galaxy."
+msgstr "Configura tu primer despliegue en dos pasos: elige especie y selecciona tu galaxia inicial."
+
+msgid "1. Species"
+msgstr "1. Especie"
+
+msgid "2. Galaxy"
+msgstr "2. Galaxia"
+
+msgid "Choose your species"
+msgstr "Elige tu especie"
+
+msgid "Fast reproduction: +5% population generation speed."
+msgstr "Reproducción rápida: +5% de velocidad de generación de población."
+
+msgid "Brute force: +5% attack power on all ships."
+msgstr "Fuerza bruta: +5% de poder de ataque en todas las naves."
+
+msgid "Advanced intellect: +5% research speed."
+msgstr "Intelecto avanzado: +5% de velocidad de investigación."
+
+msgid "Human"
+msgstr "Humano"
+
+msgid "Reptilian"
+msgstr "Reptiliano"
+
+msgid "Avianoid"
+msgstr "Avioide"
+
+msgid "Balanced strategists with explosive demographic growth in early colonies."
+msgstr "Estrategas equilibrados con crecimiento demográfico explosivo en colonias tempranas."
+
+msgid "Predatory warlords with hardened combat doctrine and relentless pressure."
+msgstr "Señores de la guerra depredadores con doctrina de combate endurecida y presión implacable."
+
+msgid "High-altitude thinkers focused on rapid scientific breakthroughs."
+msgstr "Pensadores de gran altura centrados en avances científicos rápidos."
+
+msgid "Select your starting galaxy"
+msgstr "Selecciona tu galaxia inicial"
+
+msgid "Change species"
+msgstr "Cambiar especie"
+
+msgid "Selected species"
+msgstr "Especie seleccionada"
+
+msgid "Recommended"
+msgstr "Recomendada"
+
+msgid "Occupied"
+msgstr "Ocupados"
+
+msgid "Free"
+msgstr "Libres"
+
+msgid "Confirm deployment"
+msgstr "Confirmar despliegue"
+
+msgid "Back to universe selection"
+msgstr "Volver a selección de universo"
+
+msgid "You already joined this universe."
+msgstr "Ya te uniste a este universo."
+
+msgid "Select species and galaxy before confirming."
+msgstr "Selecciona especie y galaxia antes de confirmar."
+
+msgid "No available planet slots in this galaxy."
+msgstr "No hay plazas de planeta disponibles en esta galaxia."
+
+msgid "Could not complete deployment."
+msgstr "No se pudo completar el despliegue."
+
+msgid "Welcome to %{universe}, %{commander}!"
+msgstr "¡Bienvenido a %{universe}, %{commander}!"
+
+msgid "Universe Command Bridge"
+msgstr "Puente de Mando del Universo"
+
+msgid "Your Universe Accounts"
+msgstr "Tus Cuentas por Universo"
+
 #: lib/nexus_downfall_web/live/fleet_live.ex:731
 #, elixir-autogen, elixir-format
 msgid "Admiral unassigned."
@@ -865,6 +985,24 @@ msgstr "Idioma"
 #, elixir-autogen, elixir-format
 msgid "Language updated successfully."
 msgstr "Idioma actualizado correctamente."
+
+msgid "Player name"
+msgstr "Nombre del jugador"
+
+msgid "Update player name"
+msgstr "Actualizar nombre del jugador"
+
+msgid "3-24 characters. Letters, numbers, spaces, underscores and hyphens."
+msgstr "3-24 caracteres. Letras, numeros, espacios, guiones bajos y guiones medios."
+
+msgid "Player name updated successfully."
+msgstr "Nombre del jugador actualizado correctamente."
+
+msgid "Could not update player name."
+msgstr "No se pudo actualizar el nombre del jugador."
+
+msgid "Invalid player name."
+msgstr "Nombre del jugador no valido."
 
 #: lib/nexus_downfall_web/live/solar_system_live.ex:104
 #, elixir-autogen, elixir-format

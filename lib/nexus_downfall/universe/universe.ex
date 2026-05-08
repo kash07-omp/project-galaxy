@@ -19,6 +19,7 @@ defmodule NexusDownfall.Universe do
   alias NexusDownfall.Repo
   alias NexusDownfall.Universe.{Galaxy, Hyperlink, SolarSystem}
   alias NexusDownfall.Universe.UniverseRecord, as: UniverseSchema
+  alias NexusDownfall.Planets.Planet
 
   @doc "Lists all universes with `status: open`."
   def list_open_universes do
@@ -47,6 +48,57 @@ defmodule NexusDownfall.Universe do
         select: s.id
 
     Repo.one(query)
+  end
+
+  @doc "Finds the first available solar system id in a specific galaxy from a universe."
+  def find_available_solar_system_in_galaxy(%UniverseSchema{id: universe_id}, galaxy_id) do
+    query =
+      from s in SolarSystem,
+        join: g in Galaxy,
+        on: g.id == s.galaxy_id,
+        join: p in assoc(s, :planets),
+        where: g.universe_id == ^universe_id and g.id == ^galaxy_id,
+        where: p.slot_type == "planet" and is_nil(p.universe_user_id),
+        order_by: [asc: s.number],
+        limit: 1,
+        select: s.id
+
+    Repo.one(query)
+  end
+
+  @doc "Returns occupancy stats for each galaxy in a universe ordered by galaxy number."
+  def list_galaxy_join_stats(%UniverseSchema{id: universe_id}) do
+    Repo.all(
+      from g in Galaxy,
+        join: s in SolarSystem,
+        on: s.galaxy_id == g.id,
+        join: p in Planet,
+        on: p.solar_system_id == s.id,
+        where: g.universe_id == ^universe_id and p.slot_type == "planet",
+        group_by: [g.id, g.number],
+        order_by: [asc: g.number],
+        select: %{
+          galaxy_id: g.id,
+          number: g.number,
+          users_count: count(p.universe_user_id, :distinct),
+          occupied_planets: filter(count(p.id), not is_nil(p.universe_user_id)),
+          free_planets: filter(count(p.id), is_nil(p.universe_user_id))
+        }
+    )
+  end
+
+  @doc "Returns the recommended galaxy id for onboarding based on available slots and population pressure."
+  def recommended_galaxy_id(%UniverseSchema{} = universe) do
+    universe
+    |> list_galaxy_join_stats()
+    |> Enum.max_by(
+      fn stat -> stat.free_planets * 100 - stat.users_count * 5 - stat.occupied_planets end,
+      fn -> nil end
+    )
+    |> case do
+      nil -> nil
+      best -> best.galaxy_id
+    end
   end
 
   @doc "Gets a galaxy with all its solar systems and their planets."

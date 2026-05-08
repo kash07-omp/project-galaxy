@@ -11,6 +11,7 @@ defmodule NexusDownfall.Accounts.User do
 
   schema "users" do
     field :email, :string
+    field :account_name, :string
     field :premium, :boolean, default: false
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
@@ -27,8 +28,10 @@ defmodule NexusDownfall.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password])
+    |> cast(attrs, [:email, :account_name, :password])
     |> validate_email(opts)
+    |> put_default_account_name()
+    |> validate_account_name(opts)
     |> validate_password(opts)
   end
 
@@ -62,6 +65,15 @@ defmodule NexusDownfall.Accounts.User do
     user
     |> cast(attrs, [:locale])
     |> validate_inclusion(:locale, ["en", "es", "fr"])
+  end
+
+  @doc """
+  Changeset for global account/player name updates.
+  """
+  def account_name_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:account_name])
+    |> validate_account_name(opts)
   end
 
   @doc """
@@ -108,9 +120,7 @@ defmodule NexusDownfall.Accounts.User do
   defp validate_email(changeset, opts) do
     changeset
     |> validate_required([:email])
-    |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/,
-      message: "must have the @ sign and no spaces"
-    )
+    |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
     |> validate_length(:email, max: 160)
     |> maybe_validate_unique_email(opts)
   end
@@ -120,6 +130,16 @@ defmodule NexusDownfall.Accounts.User do
     |> validate_required([:password])
     |> validate_length(:password, min: 12, max: 72)
     |> maybe_hash_password(opts)
+  end
+
+  defp validate_account_name(changeset, opts) do
+    changeset
+    |> validate_required([:account_name])
+    |> validate_length(:account_name, min: 3, max: 24)
+    |> validate_format(:account_name, ~r/^[a-zA-Z0-9_\- ]+$/,
+      message: "only letters, numbers, spaces, underscores and hyphens allowed"
+    )
+    |> maybe_validate_unique_account_name(opts)
   end
 
   defp maybe_hash_password(changeset, opts) do
@@ -143,6 +163,43 @@ defmodule NexusDownfall.Accounts.User do
       |> unique_constraint(:email)
     else
       changeset
+    end
+  end
+
+  defp maybe_validate_unique_account_name(changeset, opts) do
+    if Keyword.get(opts, :validate_account_name, true) do
+      changeset
+      |> unsafe_validate_unique(:account_name, NexusDownfall.Repo)
+      |> unique_constraint(:account_name)
+    else
+      changeset
+    end
+  end
+
+  defp put_default_account_name(changeset) do
+    account_name = get_change(changeset, :account_name)
+    email = get_change(changeset, :email)
+
+    cond do
+      is_binary(account_name) and String.trim(account_name) != "" ->
+        changeset
+
+      is_binary(email) and String.contains?(email, "@") ->
+        default_name =
+          email
+          |> String.split("@")
+          |> hd()
+          |> String.replace(~r/[^a-zA-Z0-9_\- ]+/, "")
+          |> String.slice(0, 24)
+
+        if default_name == "" do
+          changeset
+        else
+          put_change(changeset, :account_name, default_name)
+        end
+
+      true ->
+        changeset
     end
   end
 end

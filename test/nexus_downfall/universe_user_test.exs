@@ -2,6 +2,7 @@ defmodule NexusDownfall.UniverseUserTest do
   use NexusDownfall.DataCase, async: true
 
   alias NexusDownfall.Accounts
+  alias NexusDownfall.Repo
   alias NexusDownfall.Universe
   alias NexusDownfall.Universe.UniverseRecord
 
@@ -18,7 +19,10 @@ defmodule NexusDownfall.UniverseUserTest do
   defp create_universe do
     {:ok, u} =
       %UniverseRecord{}
-      |> UniverseRecord.creation_changeset(%{name: "Test Universe", slug: "test-#{System.unique_integer()}"})
+      |> UniverseRecord.creation_changeset(%{
+        name: "Test Universe",
+        slug: "test-#{System.unique_integer()}"
+      })
       |> NexusDownfall.Repo.insert()
 
     u
@@ -59,6 +63,21 @@ defmodule NexusDownfall.UniverseUserTest do
       assert {:ok, _} = Accounts.join_universe(u1, univ_a, %{username: "Nomad"})
       assert {:ok, _} = Accounts.join_universe(u1, univ_b, %{username: "Nomad"})
     end
+
+    test "normalizes legacy invalid account names when joining" do
+      user = create_user()
+      universe = create_universe()
+
+      Repo.update_all(
+        from(u in NexusDownfall.Accounts.User, where: u.id == ^user.id),
+        set: [account_name: "martinpardo.oscar"]
+      )
+
+      user = Repo.get!(NexusDownfall.Accounts.User, user.id)
+
+      assert {:ok, uu} = Accounts.join_universe(user, universe, %{})
+      assert uu.username == "martinpardooscar"
+    end
   end
 
   describe "list_universe_memberships/1" do
@@ -77,11 +96,19 @@ defmodule NexusDownfall.UniverseUserTest do
   describe "list_open_universes/0" do
     test "only returns universes with status open" do
       %UniverseRecord{}
-      |> UniverseRecord.creation_changeset(%{name: "Open", slug: "open-#{System.unique_integer()}", status: "open"})
+      |> UniverseRecord.creation_changeset(%{
+        name: "Open",
+        slug: "open-#{System.unique_integer()}",
+        status: "open"
+      })
       |> NexusDownfall.Repo.insert!()
 
       %UniverseRecord{}
-      |> UniverseRecord.creation_changeset(%{name: "Running", slug: "run-#{System.unique_integer()}", status: "running"})
+      |> UniverseRecord.creation_changeset(%{
+        name: "Running",
+        slug: "run-#{System.unique_integer()}",
+        status: "running"
+      })
       |> NexusDownfall.Repo.insert!()
 
       open = Universe.list_open_universes()

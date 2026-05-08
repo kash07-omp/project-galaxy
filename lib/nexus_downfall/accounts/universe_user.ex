@@ -13,6 +13,7 @@ defmodule NexusDownfall.Accounts.UniverseUser do
 
   schema "universe_users" do
     field :username, :string
+    field :species, :string, default: "human"
     field :score, :integer, default: 0
     field :karma, :integer, default: 0
     field :diplomatic_points, :integer, default: 0
@@ -32,9 +33,10 @@ defmodule NexusDownfall.Accounts.UniverseUser do
   """
   def join_changeset(universe_user, attrs) do
     universe_user
-    |> cast(attrs, [:username, :user_id, :universe_id, :joined_at])
-    |> validate_required([:username, :user_id, :universe_id, :joined_at])
+    |> cast(attrs, [:username, :species, :user_id, :universe_id, :joined_at])
+    |> validate_required([:username, :species, :user_id, :universe_id, :joined_at])
     |> validate_length(:username, min: 3, max: 24)
+    |> validate_inclusion(:species, ["human", "reptilian", "avianoid"])
     |> validate_format(:username, ~r/^[a-zA-Z0-9_\- ]+$/,
       message: "only letters, numbers, spaces, underscores and hyphens allowed"
     )

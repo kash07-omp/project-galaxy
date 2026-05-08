@@ -7,6 +7,7 @@ defmodule NexusDownfallWeb.UserRegistrationLiveTest do
     test "renders registration form", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
       assert html =~ "Create Account"
+      assert html =~ "Account name"
       assert html =~ "Email"
       assert html =~ "Password"
     end
@@ -14,6 +15,7 @@ defmodule NexusDownfallWeb.UserRegistrationLiveTest do
     test "redirects authenticated users to dashboard", %{conn: conn} do
       {:ok, user} =
         NexusDownfall.Accounts.register_user(%{
+          account_name: "Taken#{System.unique_integer()}",
           email: "taken#{System.unique_integer()}@example.com",
           password: "correcthorse42!"
         })
@@ -21,20 +23,29 @@ defmodule NexusDownfallWeb.UserRegistrationLiveTest do
       token = NexusDownfall.Accounts.generate_user_session_token(user)
       conn = conn |> Phoenix.ConnTest.init_test_session(%{"_nexus_downfall_user_token" => token})
 
-      assert {:error, {:redirect, %{to: "/dashboard"}}} = live(conn, ~p"/users/register")
+      assert {:error, {:redirect, %{to: "/universes"}}} = live(conn, ~p"/users/register")
     end
   end
 
   describe "Registration form submit" do
-    test "creates account and redirects to login" do
-      {:ok, lv, _html} = live(build_conn(), ~p"/users/register")
+    test "creates account and redirects to universe selection", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/users/register")
 
-      result =
-        lv
-        |> form("#registration_form", user: %{email: "new@example.com", password: "supersecure123!"})
-        |> render_submit()
+      suffix = System.unique_integer([:positive])
 
-      assert {:error, {:redirect, %{to: "/users/log_in"}}} = result
+      form =
+        form(lv, "#registration_form",
+          user: %{
+            account_name: "Cmd#{suffix}",
+            email: "new#{suffix}@example.com",
+            password: "supersecure123!"
+          }
+        )
+
+      render_submit(form)
+      conn = follow_trigger_action(form, conn)
+
+      assert redirected_to(conn) == "/universes"
     end
 
     test "shows validation errors on invalid data" do
@@ -42,7 +53,7 @@ defmodule NexusDownfallWeb.UserRegistrationLiveTest do
 
       html =
         lv
-        |> form("#registration_form", user: %{email: "bad", password: "short"})
+        |> form("#registration_form", user: %{account_name: "x", email: "bad", password: "short"})
         |> render_change()
 
       assert html =~ "must have the @ sign"

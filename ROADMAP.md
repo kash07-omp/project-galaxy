@@ -40,6 +40,7 @@ Que un usuario pueda crear cuenta, entrar y tener su primer planeta inicial.
 - [x] Implementar autenticación (registro/login/logout).
 - [x] Modelo de usuario global + relación con usuarios por universo.
 - [x] Flujo "unirse a universo" y creación de planeta inicial.
+- [x] Endurecer onboarding: wizard de unión (especie + galaxia recomendada) y bloqueo de menú/rutas de juego hasta pertenecer a un universo.
 - [x] UI base sci-fi (Tailwind) para dashboard inicial.
 - [x] Telemetría básica de eventos clave (alta, login, creación planeta).
 

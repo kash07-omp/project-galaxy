@@ -85,6 +85,47 @@ defmodule NexusDownfall.Planets do
     end
   end
 
+  @doc "Claims the first available planet slot in a galaxy for the given universe user."
+  def claim_planet_slot_in_galaxy(galaxy_id, universe_user_id, name) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    Repo.transaction(fn ->
+      planet =
+        Repo.one(
+          from p in Planet,
+            join: s in SolarSystem,
+            on: s.id == p.solar_system_id,
+            where:
+              s.galaxy_id == ^galaxy_id and
+                p.slot_type == "planet" and
+                is_nil(p.universe_user_id),
+            order_by: [asc: s.number, asc: p.orbit_position],
+            limit: 1,
+            lock: "FOR UPDATE SKIP LOCKED"
+        )
+
+      if is_nil(planet), do: Repo.rollback(:no_available_slots)
+
+      updated_planet =
+        planet
+        |> Ecto.Changeset.change(%{
+          name: name,
+          universe_user_id: universe_user_id,
+          last_tick_at: now
+        })
+        |> Repo.update!()
+
+      {:ok, _} = ensure_building_slots(updated_planet.id)
+      :ok = apply_starter_setup(updated_planet.id)
+
+      updated_planet
+    end)
+    |> case do
+      {:ok, planet} -> {:ok, planet}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
   @doc "Returns all planets belonging to `universe_user_id`, with buildings preloaded."
   def list_planets_for_user(universe_user_id) do
     Repo.all(

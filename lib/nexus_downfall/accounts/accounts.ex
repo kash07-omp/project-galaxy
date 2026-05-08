@@ -26,7 +26,11 @@ defmodule NexusDownfall.Accounts do
 
   @doc "Returns a registration changeset (no hashing, no DB uniqueness check)."
   def change_user_registration(%User{} = user \\ %User{}, attrs \\ %{}) do
-    User.registration_changeset(user, attrs, hash_password: false, validate_email: false)
+    User.registration_changeset(user, attrs,
+      hash_password: false,
+      validate_email: false,
+      validate_account_name: false
+    )
   end
 
   @doc """
@@ -85,6 +89,13 @@ defmodule NexusDownfall.Accounts do
     |> Repo.update()
   end
 
+  @doc "Updates the user's global account/player name."
+  def update_user_account_name(%User{} = user, account_name) when is_binary(account_name) do
+    user
+    |> User.account_name_changeset(%{account_name: account_name})
+    |> Repo.update()
+  end
+
   # ---------------------------------------------------------------------------
   # Session tokens
   # ---------------------------------------------------------------------------
@@ -135,8 +146,30 @@ defmodule NexusDownfall.Accounts do
   def join_universe(user, universe, attrs) do
     string_attrs = Map.new(attrs, fn {k, v} -> {to_string(k), v} end)
 
+    username_input =
+      string_attrs
+      |> Map.get("username")
+      |> case do
+        nil -> user.account_name
+        "" -> user.account_name
+        value -> value
+      end
+
+    username = normalize_universe_username(username_input, user.id)
+
+    species =
+      string_attrs
+      |> Map.get("species")
+      |> case do
+        nil -> "human"
+        "" -> "human"
+        value -> value
+      end
+
     merged =
       Map.merge(string_attrs, %{
+        "username" => username,
+        "species" => species,
         "user_id" => user.id,
         "universe_id" => universe.id,
         "joined_at" => DateTime.utc_now() |> DateTime.truncate(:second)
@@ -167,5 +200,27 @@ defmodule NexusDownfall.Accounts do
   @doc "Returns all `UniverseUser` records for `user_id`, preloading `:universe`."
   def list_universe_memberships(user_id) do
     Repo.all(from uu in UniverseUser, where: uu.user_id == ^user_id, preload: [:universe])
+  end
+
+  @doc "Returns true when the user has at least one universe membership."
+  def has_universe_memberships?(user_id) do
+    Repo.exists?(from uu in UniverseUser, where: uu.user_id == ^user_id, select: 1)
+  end
+
+  defp normalize_universe_username(value, user_id) do
+    normalized =
+      value
+      |> to_string()
+      |> String.trim()
+      |> String.replace(~r/[^a-zA-Z0-9_\- ]+/, "")
+
+    base =
+      if normalized == "" do
+        "Commander-#{user_id}"
+      else
+        normalized
+      end
+
+    String.slice(base, 0, 24)
   end
 end

@@ -11,6 +11,7 @@ defmodule NexusDownfall.AccountsTest do
   defp valid_user_attrs(overrides \\ %{}) do
     Map.merge(
       %{
+        account_name: "Cmd#{System.unique_integer([:positive])}",
         email: "user#{System.unique_integer()}@example.com",
         password: "superSecureP@ss1"
       },
@@ -33,17 +34,36 @@ defmodule NexusDownfall.AccountsTest do
     test "rejects duplicate email (case-insensitive)" do
       attrs = valid_user_attrs()
       {:ok, _} = Accounts.register_user(attrs)
-      assert {:error, changeset} = Accounts.register_user(Map.update!(attrs, :email, &String.upcase/1))
+
+      assert {:error, changeset} =
+               Accounts.register_user(
+                 attrs
+                 |> Map.update!(:email, &String.upcase/1)
+                 |> Map.put(:account_name, "Alt#{System.unique_integer()}")
+               )
+
       assert %{email: ["has already been taken"]} = errors_on(changeset)
     end
 
     test "rejects invalid email format" do
-      assert {:error, cs} = Accounts.register_user(%{email: "notanemail", password: "superSecureP@ss1"})
+      assert {:error, cs} =
+               Accounts.register_user(%{
+                 account_name: "NoEmail#{System.unique_integer()}",
+                 email: "notanemail",
+                 password: "superSecureP@ss1"
+               })
+
       assert %{email: [_]} = errors_on(cs)
     end
 
     test "rejects short password" do
-      assert {:error, cs} = Accounts.register_user(%{email: "x@example.com", password: "short"})
+      assert {:error, cs} =
+               Accounts.register_user(%{
+                 account_name: "TinyPass#{System.unique_integer()}",
+                 email: "x@example.com",
+                 password: "short"
+               })
+
       assert %{password: [_]} = errors_on(cs)
     end
   end
@@ -68,6 +88,22 @@ defmodule NexusDownfall.AccountsTest do
 
     test "returns nil for unknown email" do
       refute Accounts.get_user_by_email_and_password("no@one.com", "whatever")
+    end
+  end
+
+  describe "update_user_account_name/2" do
+    test "updates account name with valid value" do
+      {:ok, user} = Accounts.register_user(valid_user_attrs())
+
+      assert {:ok, updated} = Accounts.update_user_account_name(user, "Renamed Commander")
+      assert updated.account_name == "Renamed Commander"
+    end
+
+    test "rejects invalid account name" do
+      {:ok, user} = Accounts.register_user(valid_user_attrs())
+
+      assert {:error, cs} = Accounts.update_user_account_name(user, "!")
+      assert %{account_name: [_ | _]} = errors_on(cs)
     end
   end
 
