@@ -442,7 +442,7 @@ defmodule NexusDownfallWeb.FleetLive do
                 </select>
               </div>
 
-              <%= if @mission_form.mission_type == "colonization" do %>
+              <%= if @mission_form.mission_type in ["colonization", "transport"] do %>
                 <div class="grid gap-4 md:grid-cols-3">
                   <div>
                     <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500"><%= gettext("Galaxy") %></label>
@@ -475,12 +475,32 @@ defmodule NexusDownfallWeb.FleetLive do
                   </div>
                 </div>
 
-                <p class="text-xs text-gray-400">
-                  <%= gettext("If another commander arrives first, your colonizer will automatically return.") %>
-                </p>
+                <%= if @mission_form.mission_type == "colonization" do %>
+                  <p class="text-xs text-gray-400">
+                    <%= gettext("If another commander arrives first, your colonizer will automatically return.") %>
+                  </p>
+                <% else %>
+                  <div class="rounded-xl border border-cyan-500/20 bg-[#050f1d]/80 p-3">
+                    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-cyan-300"><%= gettext("Cargo") %></p>
+                        <p class="mt-1 text-[11px] text-gray-400"><%= gettext("Hydrogen cargo is checked after reserving round-trip fuel.") %></p>
+                      </div>
+                    </div>
+
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                      <%= for resource <- transport_resource_fields() do %>
+                        <div>
+                          <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500"><%= transport_resource_label(resource) %></label>
+                          <input type="number" name={to_string(resource)} min="0" step="1" value={Map.get(@mission_form, resource)} class="w-full rounded-lg border border-gray-700 bg-[#060d18] px-2.5 py-2 text-sm text-white placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none" />
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
               <% else %>
                 <div class="rounded-xl border border-amber-700/60 bg-amber-950/30 px-3 py-3 text-sm text-amber-200">
-                  <%= gettext("This mission type is visible as a placeholder for now. Only Colonization is currently playable.") %>
+                  <%= gettext("This mission type is visible as a placeholder for now. Only Colonization and Transport are currently playable.") %>
                 </div>
               <% end %>
 
@@ -572,7 +592,12 @@ defmodule NexusDownfallWeb.FleetLive do
         mission_type: default_mission,
         galaxy_id: "",
         system_id: "",
-        target_planet_id: ""
+        target_planet_id: "",
+        raw_materials: "0",
+        microchips: "0",
+        hydrogen: "0",
+        food: "0",
+        credits: "0"
       }
 
       {galaxies, systems, planets} = load_mission_target_options(fleet_id, user_id, mission_form)
@@ -631,7 +656,7 @@ defmodule NexusDownfallWeb.FleetLive do
     target_planet_id = parse_optional_int(mission_form.target_planet_id)
 
     cond do
-      mission_form.mission_type != "colonization" ->
+      mission_form.mission_type not in ["colonization", "transport"] ->
         {:noreply,
          socket
          |> assign(:show_send_mission_modal, true)
@@ -646,7 +671,7 @@ defmodule NexusDownfallWeb.FleetLive do
          |> assign(:mission_error, gettext("Choose galaxy, system and planet before dispatching."))}
 
       true ->
-        case Fleets.dispatch_colonization_mission_for_user(fleet_id, user_id, target_planet_id) do
+        case dispatch_selected_mission(mission_form, fleet_id, user_id, target_planet_id) do
           {:ok, _mission} ->
             {:noreply,
              socket
@@ -658,7 +683,7 @@ defmodule NexusDownfallWeb.FleetLive do
              |> assign(:mission_systems, [])
              |> assign(:mission_targets, [])
              |> assign(:mission_form, empty_mission_form())
-             |> put_flash(:success, gettext("Colonization mission dispatched."))}
+             |> put_flash(:success, dispatch_success_message(mission_form.mission_type))}
 
           {:error, reason} ->
             {galaxies, systems, planets} = load_mission_target_options(fleet_id, user_id, mission_form)
@@ -809,12 +834,28 @@ defmodule NexusDownfallWeb.FleetLive do
       mission_type: Map.get(params, "mission_type", ""),
       galaxy_id: Map.get(params, "galaxy_id", ""),
       system_id: Map.get(params, "system_id", ""),
-      target_planet_id: Map.get(params, "target_planet_id", "")
+      target_planet_id: Map.get(params, "target_planet_id", ""),
+      raw_materials: Map.get(params, "raw_materials", "0"),
+      microchips: Map.get(params, "microchips", "0"),
+      hydrogen: Map.get(params, "hydrogen", "0"),
+      food: Map.get(params, "food", "0"),
+      credits: Map.get(params, "credits", "0")
     }
   end
 
   defp empty_mission_form do
-    %{fleet_id: "", mission_type: "", galaxy_id: "", system_id: "", target_planet_id: ""}
+    %{
+      fleet_id: "",
+      mission_type: "",
+      galaxy_id: "",
+      system_id: "",
+      target_planet_id: "",
+      raw_materials: "0",
+      microchips: "0",
+      hydrogen: "0",
+      food: "0",
+      credits: "0"
+    }
   end
 
   defp mission_options(nil), do: mission_options(%{ships: []})
@@ -838,6 +879,29 @@ defmodule NexusDownfallWeb.FleetLive do
   defp mission_galaxy_label(galaxy), do: "#{gettext("Galaxy")} #{galaxy.number} · #{galaxy.free_planets} #{gettext("targets")}"
   defp mission_system_label(system), do: "#{gettext("System")} #{system.number} · #{system.free_planets} #{gettext("targets")}"
 
+  defp dispatch_selected_mission(%{mission_type: "colonization"}, fleet_id, user_id, target_planet_id) do
+    Fleets.dispatch_colonization_mission_for_user(fleet_id, user_id, target_planet_id)
+  end
+
+  defp dispatch_selected_mission(%{mission_type: "transport"} = mission_form, fleet_id, user_id, target_planet_id) do
+    cargo =
+      Map.take(mission_form, transport_resource_fields())
+      |> Map.new(fn {resource, amount} -> {to_string(resource), amount} end)
+
+    Fleets.dispatch_transport_mission_for_user(fleet_id, user_id, target_planet_id, cargo)
+  end
+
+  defp dispatch_success_message("transport"), do: gettext("Transport mission dispatched.")
+  defp dispatch_success_message(_), do: gettext("Colonization mission dispatched.")
+
+  defp transport_resource_fields, do: [:raw_materials, :microchips, :hydrogen, :food, :credits]
+
+  defp transport_resource_label(:raw_materials), do: gettext("Raw Materials")
+  defp transport_resource_label(:microchips), do: gettext("Microchips")
+  defp transport_resource_label(:hydrogen), do: gettext("Hydrogen")
+  defp transport_resource_label(:food), do: gettext("Food")
+  defp transport_resource_label(:credits), do: gettext("Credits")
+
   defp planet_option_label(planet) do
     "#{planet.name} - #{gettext("System")} #{planet.solar_system.number}"
   end
@@ -853,7 +917,26 @@ defmodule NexusDownfallWeb.FleetLive do
   end
 
   defp mission_submit_enabled?(%{mission_type: "colonization", target_planet_id: target_planet_id}), do: target_planet_id != ""
+  defp mission_submit_enabled?(%{mission_type: "transport", target_planet_id: target_planet_id} = form) do
+    target_planet_id != "" and transport_cargo_total(form) > 0
+  end
+
   defp mission_submit_enabled?(_form), do: false
+
+  defp transport_cargo_total(form) do
+    transport_resource_fields()
+    |> Enum.reduce(0, fn field, acc -> acc + parse_form_amount(Map.get(form, field)) end)
+  end
+
+  defp parse_form_amount(value) when is_integer(value), do: max(value, 0)
+  defp parse_form_amount(value) when is_binary(value) do
+    case Integer.parse(value) do
+      {amount, ""} when amount > 0 -> amount
+      _ -> 0
+    end
+  end
+
+  defp parse_form_amount(_), do: 0
 
   defp load_mission_target_options(fleet_id, user_id, %{mission_type: "colonization", galaxy_id: galaxy_id, system_id: system_id}) do
     galaxies =
@@ -877,6 +960,36 @@ defmodule NexusDownfallWeb.FleetLive do
         nil -> []
         value ->
           case Fleets.list_colonizable_planets_for_fleet(fleet_id, user_id, value) do
+            {:ok, values} -> values
+            _ -> []
+          end
+      end
+
+    {galaxies, systems, planets}
+  end
+
+  defp load_mission_target_options(fleet_id, user_id, %{mission_type: "transport", galaxy_id: galaxy_id, system_id: system_id}) do
+    galaxies =
+      case Fleets.list_transportable_galaxies_for_fleet(fleet_id, user_id) do
+        {:ok, values} -> values
+        _ -> []
+      end
+
+    systems =
+      case parse_optional_int(galaxy_id) do
+        nil -> []
+        value ->
+          case Fleets.list_transportable_systems_for_fleet(fleet_id, user_id, value) do
+            {:ok, values} -> values
+            _ -> []
+          end
+      end
+
+    planets =
+      case parse_optional_int(system_id) do
+        nil -> []
+        value ->
+          case Fleets.list_transportable_planets_for_fleet(fleet_id, user_id, value) do
             {:ok, values} -> values
             _ -> []
           end
@@ -931,6 +1044,11 @@ defmodule NexusDownfallWeb.FleetLive do
   defp mission_error_message(:target_colonizing), do: gettext("Target planet is currently being colonized.")
   defp mission_error_message(:colonizer_required), do: gettext("Fleet needs at least one Colonizer ship.")
   defp mission_error_message(:insufficient_hydrogen), do: gettext("Not enough hydrogen for the mission.")
+  defp mission_error_message(:insufficient_resources), do: gettext("Not enough resources for cargo and fuel.")
+  defp mission_error_message(:empty_cargo), do: gettext("Choose at least one resource to transport.")
+  defp mission_error_message(:no_cargo_capacity), do: gettext("Fleet has no cargo capacity.")
+  defp mission_error_message(:cargo_exceeds_capacity), do: gettext("Cargo exceeds fleet capacity.")
+  defp mission_error_message(:invalid_cargo), do: gettext("Cargo amounts must be zero or greater.")
   defp mission_error_message(:no_route), do: gettext("No route found between origin and target.")
   defp mission_error_message(:invalid_target), do: gettext("Invalid target planet.")
   defp mission_error_message(_), do: gettext("Could not dispatch mission.")
@@ -1037,7 +1155,7 @@ defmodule NexusDownfallWeb.FleetLive do
     {outbound_arrival_at, end_at}
   end
 
-  defp mission_display_phase(%{phase: "outbound", outbound_arrival_at: outbound_arrival_at}, now)
+  defp mission_display_phase(%{mission_type: "colonization", phase: "outbound", outbound_arrival_at: outbound_arrival_at}, now)
        when not is_nil(outbound_arrival_at) do
     if DateTime.compare(now, outbound_arrival_at) in [:eq, :gt] do
       # If worker delivery is delayed, show colonization progress instead of an outbound bar stuck at 100%.
@@ -1045,6 +1163,11 @@ defmodule NexusDownfallWeb.FleetLive do
     else
       :outbound
     end
+  end
+
+  defp mission_display_phase(%{phase: "outbound", outbound_arrival_at: outbound_arrival_at}, _now)
+       when not is_nil(outbound_arrival_at) do
+    :outbound
   end
 
   defp mission_display_phase(%{phase: "outbound"}, _now), do: :outbound

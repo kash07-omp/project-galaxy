@@ -1538,3 +1538,33 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "— select fleet —"
 msgstr ""
+
+msgid "Cargo"
+msgstr ""
+
+msgid "Hydrogen cargo is checked after reserving round-trip fuel."
+msgstr ""
+
+msgid "Microchips"
+msgstr ""
+
+msgid "Transport mission dispatched."
+msgstr ""
+
+msgid "Not enough resources for cargo and fuel."
+msgstr ""
+
+msgid "Choose at least one resource to transport."
+msgstr ""
+
+msgid "Fleet has no cargo capacity."
+msgstr ""
+
+msgid "Cargo exceeds fleet capacity."
+msgstr ""
+
+msgid "Cargo amounts must be zero or greater."
+msgstr ""
+
+msgid "This mission type is visible as a placeholder for now. Only Colonization and Transport are currently playable."
+msgstr ""

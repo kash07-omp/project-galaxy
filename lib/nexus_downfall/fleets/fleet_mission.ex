@@ -4,7 +4,7 @@ defmodule NexusDownfall.Fleets.FleetMission do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @mission_types ["colonization"]
+  @mission_types ["colonization", "transport"]
   @active_phases ["outbound", "colonizing", "returning"]
   @terminal_phases ["completed", "failed"]
   @phases @active_phases ++ @terminal_phases
@@ -21,6 +21,11 @@ defmodule NexusDownfall.Fleets.FleetMission do
     field :return_travel_seconds, :integer
 
     field :hydrogen_cost, :integer
+    field :cargo_raw_materials, :integer, default: 0
+    field :cargo_microchips, :integer, default: 0
+    field :cargo_hydrogen, :integer, default: 0
+    field :cargo_food, :integer, default: 0
+    field :cargo_credits, :integer, default: 0
 
     field :outbound_arrival_at, :utc_datetime
     field :colonization_complete_at, :utc_datetime
@@ -49,6 +54,11 @@ defmodule NexusDownfall.Fleets.FleetMission do
       :colonization_seconds,
       :return_travel_seconds,
       :hydrogen_cost,
+      :cargo_raw_materials,
+      :cargo_microchips,
+      :cargo_hydrogen,
+      :cargo_food,
+      :cargo_credits,
       :outbound_arrival_at,
       :colonization_complete_at,
       :return_arrival_at,
@@ -68,6 +78,11 @@ defmodule NexusDownfall.Fleets.FleetMission do
       :colonization_seconds,
       :return_travel_seconds,
       :hydrogen_cost,
+      :cargo_raw_materials,
+      :cargo_microchips,
+      :cargo_hydrogen,
+      :cargo_food,
+      :cargo_credits,
       :outbound_arrival_at,
       :fleet_id,
       :origin_planet_id,
@@ -81,6 +96,11 @@ defmodule NexusDownfall.Fleets.FleetMission do
     |> validate_number(:colonization_seconds, greater_than_or_equal_to: 0)
     |> validate_number(:return_travel_seconds, greater_than_or_equal_to: 0)
     |> validate_number(:hydrogen_cost, greater_than_or_equal_to: 0)
+    |> validate_number(:cargo_raw_materials, greater_than_or_equal_to: 0)
+    |> validate_number(:cargo_microchips, greater_than_or_equal_to: 0)
+    |> validate_number(:cargo_hydrogen, greater_than_or_equal_to: 0)
+    |> validate_number(:cargo_food, greater_than_or_equal_to: 0)
+    |> validate_number(:cargo_credits, greater_than_or_equal_to: 0)
     |> unique_constraint(:fleet_id, name: :fleet_missions_one_active_per_fleet_idx)
   end
 

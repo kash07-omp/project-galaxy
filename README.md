@@ -131,7 +131,7 @@ Para hacer este viaje la flota consumirá el recurso Hidrógeno. El cálculo de 
 ### Misiones disponibles
 
 - **Misión de colonización**: una flota con al menos una nave Colonizer puede viajar a un planeta libre. El primero que llega inicia la colonización; durante ese tiempo el planeta deja de aceptar nuevas colonizaciones. Si la colonia se completa, se consume una nave colonizadora, el planeta pasa al jugador con estructuras y recursos iniciales configurables y las naves restantes regresan a la base. Si otro jugador llegó antes, la flota retorna automáticamente.
-- **Misión de transporte**: llevar recursos con límite por bodega y disponibilidad real (incluyendo coste de hidrógeno del viaje).
+- **Misión de transporte**: una flota puede llevar Materia Prima, Microchips, Hidrógeno, Comida y Créditos a un planeta habitado del mismo universo. El despacho valida capacidad total de bodega y disponibilidad real del planeta origen, reservando primero el hidrógeno de ida y vuelta; al llegar entrega la carga en backend y programa el retorno automático.
 - **Misión de ataque**: combate contra flotas/defensas del objetivo, con resultado de victoria, empate o derrota y notificación de reporte.
 - Futuro: bombardeo orbital y bloqueo planetario.
 

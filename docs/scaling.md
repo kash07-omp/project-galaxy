@@ -19,6 +19,7 @@ Nexus: Downfall should stay universe-first as it grows.
 - Oban is the persistent agenda for delayed work.
 - Use domain queues instead of a single generic queue: `construction`, `fleet`, `combat`, `notifications`, `maintenance`.
 - Workers must be idempotent. A retried or duplicate job should not apply the same gameplay result twice.
+- Transport missions spend fuel and cargo in a single locked dispatch transaction, then perform one locked target update on arrival and one fleet status update on return. Load scales with mission transitions, not connected clients; LiveView only renders PubSub updates and a local progress timer.
 
 ## Realtime topics
 

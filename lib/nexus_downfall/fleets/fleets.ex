@@ -22,6 +22,14 @@ defmodule NexusDownfall.Fleets do
   alias NexusDownfall.Cards
 
   @active_mission_phases ["outbound", "colonizing", "returning"]
+  @transport_resource_fields [:raw_materials, :microchips, :hydrogen, :food, :credits]
+  @transport_cargo_fields %{
+    raw_materials: :cargo_raw_materials,
+    microchips: :cargo_microchips,
+    hydrogen: :cargo_hydrogen,
+    food: :cargo_food,
+    credits: :cargo_credits
+  }
 
   @ship_catalog %{
     "light_freighter" => %{
@@ -535,6 +543,100 @@ defmodule NexusDownfall.Fleets do
     end
   end
 
+  @doc "Lists galaxies that contain inhabited transport targets for the fleet."
+  def list_transportable_galaxies_for_fleet(fleet_id, user_id, limit \\ 50) do
+    case fleet_for_user(fleet_id, user_id) do
+      nil ->
+        {:error, :fleet_not_found}
+
+      fleet ->
+        galaxies =
+          Repo.all(
+            from g in Galaxy,
+              join: s in assoc(g, :solar_systems),
+              join: p in assoc(s, :planets),
+              where: g.universe_id == ^fleet.universe_id,
+              where:
+                p.slot_type == "planet" and not is_nil(p.universe_user_id) and
+                  p.id != ^fleet.home_planet_id,
+              group_by: [g.id, g.number],
+              order_by: [asc: g.number],
+              limit: ^limit,
+              select: %{
+                id: g.id,
+                number: g.number,
+                free_planets: count(p.id)
+              }
+          )
+
+        {:ok, galaxies}
+    end
+  end
+
+  @doc "Lists systems inside a galaxy that contain inhabited transport targets."
+  def list_transportable_systems_for_fleet(fleet_id, user_id, galaxy_id, limit \\ 100) do
+    case fleet_for_user(fleet_id, user_id) do
+      nil ->
+        {:error, :fleet_not_found}
+
+      fleet ->
+        systems =
+          Repo.all(
+            from s in SolarSystem,
+              join: g in assoc(s, :galaxy),
+              join: p in assoc(s, :planets),
+              where: g.id == ^galaxy_id and g.universe_id == ^fleet.universe_id,
+              where:
+                p.slot_type == "planet" and not is_nil(p.universe_user_id) and
+                  p.id != ^fleet.home_planet_id,
+              group_by: [s.id, s.number],
+              order_by: [asc: s.number],
+              limit: ^limit,
+              select: %{
+                id: s.id,
+                number: s.number,
+                free_planets: count(p.id)
+              }
+          )
+
+        {:ok, systems}
+    end
+  end
+
+  @doc "Lists inhabited planets inside a system that can receive transport cargo."
+  def list_transportable_planets_for_fleet(fleet_id, user_id, system_id, limit \\ 50) do
+    case fleet_for_user(fleet_id, user_id) do
+      nil ->
+        {:error, :fleet_not_found}
+
+      fleet ->
+        planets =
+          Repo.all(
+            from p in Planet,
+              join: s in assoc(p, :solar_system),
+              join: g in assoc(s, :galaxy),
+              where: s.id == ^system_id and g.universe_id == ^fleet.universe_id,
+              where:
+                p.slot_type == "planet" and not is_nil(p.universe_user_id) and
+                  p.id != ^fleet.home_planet_id,
+              order_by: [asc: p.orbit_position, asc: p.region],
+              limit: ^limit,
+              select: %{
+                id: p.id,
+                name: p.name,
+                orbit_position: p.orbit_position,
+                region: p.region,
+                solar_system_id: s.id,
+                solar_system_number: s.number,
+                galaxy_id: g.id,
+                galaxy_number: g.number
+              }
+          )
+
+        {:ok, planets}
+    end
+  end
+
   @doc "Dispatches a colonization mission for a fleet owned by the user."
   def dispatch_colonization_mission_for_user(fleet_id, user_id, target_planet_id) do
     Repo.transaction(fn ->
@@ -643,6 +745,124 @@ defmodule NexusDownfall.Fleets do
     |> normalize_transaction_result()
   rescue
     ArgumentError -> {:error, :invalid_dispatch_request}
+    Ecto.ConstraintError -> {:error, :fleet_busy}
+  end
+
+  @doc "Dispatches a transport mission that delivers cargo, then returns home."
+  def dispatch_transport_mission_for_user(fleet_id, user_id, target_planet_id, cargo_attrs) do
+    Repo.transaction(fn ->
+      fleet =
+        fleet_for_user_for_update(fleet_id, user_id)
+        |> Repo.preload([:ships, :home_planet])
+
+      if is_nil(fleet), do: Repo.rollback(:fleet_not_found)
+      if fleet.status != "idle", do: Repo.rollback(:fleet_busy)
+
+      origin_planet =
+        Repo.one(
+          from p in Planet,
+            where: p.id == ^fleet.home_planet_id,
+            preload: [:solar_system],
+            lock: "FOR UPDATE"
+        )
+
+      if is_nil(origin_planet), do: Repo.rollback(:origin_not_found)
+
+      origin_planet = refresh_planet_resources!(origin_planet)
+
+      target_planet =
+        Repo.one(
+          from p in Planet,
+            where:
+              p.id == ^target_planet_id and
+                p.universe_id == ^fleet.universe_id and
+                p.slot_type == "planet",
+            preload: [:solar_system]
+        )
+
+      if is_nil(target_planet), do: Repo.rollback(:target_not_found)
+      if origin_planet.id == target_planet.id, do: Repo.rollback(:invalid_target)
+      if is_nil(target_planet.universe_user_id), do: Repo.rollback(:target_unavailable)
+
+      cargo = normalize_transport_cargo!(cargo_attrs)
+      cargo_total = cargo_total(cargo)
+
+      if cargo_total <= 0, do: Repo.rollback(:empty_cargo)
+
+      ship_counts = fleet_ship_counts(fleet.ships)
+      cargo_capacity = total_cargo_capacity(ship_counts)
+
+      if cargo_capacity <= 0, do: Repo.rollback(:no_cargo_capacity)
+      if cargo_total > cargo_capacity, do: Repo.rollback(:cargo_exceeds_capacity)
+
+      route_system_ids =
+        resolve_route_ids!(origin_planet.solar_system_id, target_planet.solar_system_id, fleet.universe_id)
+
+      outbound_travel_seconds =
+        travel_seconds(route_system_ids, origin_planet.orbit_position, target_planet.orbit_position)
+
+      return_travel_seconds =
+        travel_seconds(Enum.reverse(route_system_ids), target_planet.orbit_position, origin_planet.orbit_position)
+
+      hydrogen_cost =
+        trunc(
+          Float.ceil(
+            total_fuel_per_second(ship_counts) * (outbound_travel_seconds + return_travel_seconds)
+          )
+        )
+
+      deductions = Map.update!(cargo, :hydrogen, &(&1 + hydrogen_cost))
+
+      unless resources_available?(origin_planet, deductions) do
+        Repo.rollback(:insufficient_resources)
+      end
+
+      origin_planet
+      |> Ecto.Changeset.cast(deducted_resource_attrs(origin_planet, deductions), @transport_resource_fields)
+      |> Repo.update!()
+
+      now = DateTime.utc_now() |> DateTime.truncate(:second)
+      outbound_arrival_at = DateTime.add(now, outbound_travel_seconds, :second)
+
+      mission_attrs =
+        %{
+          mission_type: "transport",
+          phase: "outbound",
+          route_system_ids: route_system_ids,
+          outbound_travel_seconds: outbound_travel_seconds,
+          colonization_seconds: 0,
+          return_travel_seconds: return_travel_seconds,
+          hydrogen_cost: hydrogen_cost,
+          outbound_arrival_at: outbound_arrival_at,
+          fleet_id: fleet.id,
+          origin_planet_id: origin_planet.id,
+          target_planet_id: target_planet.id,
+          universe_user_id: fleet.universe_user_id,
+          universe_id: fleet.universe_id
+        }
+        |> Map.merge(cargo_mission_attrs(cargo))
+
+      mission =
+        %FleetMission{}
+        |> FleetMission.changeset(mission_attrs)
+        |> Repo.insert!()
+
+      update_fleet_status!(fleet.id, "outbound")
+      mission = schedule_mission_action!(mission, "arrive", outbound_arrival_at)
+      :ok = notify_mission_updated(mission)
+
+      :telemetry.execute(
+        [:nexus_downfall, :fleets, :transport_dispatched],
+        %{count: 1, cargo_units: cargo_total, hydrogen_cost: hydrogen_cost},
+        %{mission_id: mission.id, fleet_id: fleet.id, target_planet_id: target_planet.id}
+      )
+
+      Repo.preload(mission, [:fleet, :origin_planet, :target_planet])
+    end)
+    |> normalize_transaction_result()
+  rescue
+    ArgumentError -> {:error, :invalid_dispatch_request}
+    Ecto.InvalidChangesetError -> {:error, :invalid_dispatch_request}
     Ecto.ConstraintError -> {:error, :fleet_busy}
   end
 
@@ -880,57 +1100,10 @@ defmodule NexusDownfall.Fleets do
 
           now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-          cond do
-            not is_nil(target_planet.universe_user_id) or
-                target_planet_colonizing?(target_planet.id, mission.id) ->
-              return_at = DateTime.add(now, mission.return_travel_seconds, :second)
-
-              mission =
-                mission
-                |> FleetMission.changeset(%{
-                  phase: "returning",
-                  result_reason: "late_arrival",
-                  return_arrival_at: return_at,
-                  current_oban_job_id: nil
-                })
-                |> Repo.update!()
-
-              update_fleet_status!(mission.fleet_id, "returning")
-              schedule_mission_action!(mission, "return", return_at)
-              :ok = notify_mission_updated(mission)
-
-              :telemetry.execute(
-                [:nexus_downfall, :fleets, :colonization_arrival_lost],
-                %{count: 1},
-                %{mission_id: mission.id, target_planet_id: mission.target_planet_id}
-              )
-
-              :ok
-
-            true ->
-              complete_at = DateTime.add(now, mission.colonization_seconds, :second)
-
-              mission =
-                mission
-                |> FleetMission.changeset(%{
-                  phase: "colonizing",
-                  result_reason: nil,
-                  colonization_complete_at: complete_at,
-                  current_oban_job_id: nil
-                })
-                |> Repo.update!()
-
-              update_fleet_status!(mission.fleet_id, "colonizing")
-              schedule_mission_action!(mission, "complete_colonization", complete_at)
-              :ok = notify_mission_updated(mission)
-
-              :telemetry.execute(
-                [:nexus_downfall, :fleets, :colonization_arrival_won],
-                %{count: 1},
-                %{mission_id: mission.id, target_planet_id: mission.target_planet_id}
-              )
-
-              :ok
+          case mission.mission_type do
+            "transport" -> process_transport_arrival!(mission, target_planet, now)
+            "colonization" -> process_colonization_arrival!(mission, target_planet, now)
+            _ -> :noop
           end
       end
     end)
@@ -939,6 +1112,97 @@ defmodule NexusDownfall.Fleets do
       {:ok, :noop} -> :ok
       {:error, reason} -> reason
     end
+  end
+
+  defp process_colonization_arrival!(mission, target_planet, now) do
+    cond do
+      not is_nil(target_planet.universe_user_id) or
+          target_planet_colonizing?(target_planet.id, mission.id) ->
+        return_at = DateTime.add(now, mission.return_travel_seconds, :second)
+
+        mission =
+          mission
+          |> FleetMission.changeset(%{
+            phase: "returning",
+            result_reason: "late_arrival",
+            return_arrival_at: return_at,
+            current_oban_job_id: nil
+          })
+          |> Repo.update!()
+
+        update_fleet_status!(mission.fleet_id, "returning")
+        schedule_mission_action!(mission, "return", return_at)
+        :ok = notify_mission_updated(mission)
+
+        :telemetry.execute(
+          [:nexus_downfall, :fleets, :colonization_arrival_lost],
+          %{count: 1},
+          %{mission_id: mission.id, target_planet_id: mission.target_planet_id}
+        )
+
+        :ok
+
+      true ->
+        complete_at = DateTime.add(now, mission.colonization_seconds, :second)
+
+        mission =
+          mission
+          |> FleetMission.changeset(%{
+            phase: "colonizing",
+            result_reason: nil,
+            colonization_complete_at: complete_at,
+            current_oban_job_id: nil
+          })
+          |> Repo.update!()
+
+        update_fleet_status!(mission.fleet_id, "colonizing")
+        schedule_mission_action!(mission, "complete_colonization", complete_at)
+        :ok = notify_mission_updated(mission)
+
+        :telemetry.execute(
+          [:nexus_downfall, :fleets, :colonization_arrival_won],
+          %{count: 1},
+          %{mission_id: mission.id, target_planet_id: mission.target_planet_id}
+        )
+
+        :ok
+    end
+  end
+
+  defp process_transport_arrival!(mission, target_planet, now) do
+    target_available? = not is_nil(target_planet.universe_user_id)
+    return_at = DateTime.add(now, mission.return_travel_seconds, :second)
+
+    if target_available? do
+      target_planet = refresh_planet_resources!(target_planet)
+      cargo = cargo_from_mission(mission)
+
+      target_planet
+      |> Ecto.Changeset.cast(added_resource_attrs(target_planet, cargo), @transport_resource_fields)
+      |> Repo.update!()
+    end
+
+    mission =
+      mission
+      |> FleetMission.changeset(%{
+        phase: "returning",
+        result_reason: if(target_available?, do: "transport_delivered", else: "target_unavailable"),
+        return_arrival_at: return_at,
+        current_oban_job_id: nil
+      })
+      |> Repo.update!()
+
+    update_fleet_status!(mission.fleet_id, "returning")
+    schedule_mission_action!(mission, "return", return_at)
+    :ok = notify_mission_updated(mission)
+
+    :telemetry.execute(
+      [:nexus_downfall, :fleets, :transport_delivered],
+      %{count: 1, cargo_units: cargo_total(cargo_from_mission(mission))},
+      %{mission_id: mission.id, target_planet_id: mission.target_planet_id, delivered: target_available?}
+    )
+
+    :ok
   end
 
   defp process_mission_colonization_completion(mission_id) do
@@ -1283,6 +1547,62 @@ defmodule NexusDownfall.Fleets do
     end)
   end
 
+  defp total_cargo_capacity(ship_counts) do
+    Enum.reduce(ship_counts, 0, fn {ship_type, quantity}, acc ->
+      case ship_definition(ship_type) do
+        nil -> acc
+        ship -> acc + quantity * ship.cargo
+      end
+    end)
+  end
+
+  defp normalize_transport_cargo!(attrs) do
+    Map.new(@transport_resource_fields, fn field ->
+      amount =
+        attrs
+        |> Map.get(to_string(field), Map.get(attrs, field, 0))
+        |> parse_transport_amount!()
+
+      if amount < 0, do: Repo.rollback(:invalid_cargo)
+
+      {field, amount}
+    end)
+  end
+
+  defp cargo_total(cargo) do
+    Enum.reduce(cargo, 0, fn {_field, amount}, acc -> acc + amount end)
+  end
+
+  defp cargo_mission_attrs(cargo) do
+    Map.new(cargo, fn {resource_field, amount} ->
+      {Map.fetch!(@transport_cargo_fields, resource_field), amount}
+    end)
+  end
+
+  defp cargo_from_mission(mission) do
+    Map.new(@transport_cargo_fields, fn {resource_field, mission_field} ->
+      {resource_field, Map.get(mission, mission_field) || 0}
+    end)
+  end
+
+  defp resources_available?(planet, resource_amounts) do
+    Enum.all?(resource_amounts, fn {field, amount} ->
+      Map.fetch!(planet, field) >= amount
+    end)
+  end
+
+  defp deducted_resource_attrs(planet, resource_amounts) do
+    Map.new(@transport_resource_fields, fn field ->
+      {field, Map.fetch!(planet, field) - Map.get(resource_amounts, field, 0)}
+    end)
+  end
+
+  defp added_resource_attrs(planet, resource_amounts) do
+    Map.new(@transport_resource_fields, fn field ->
+      {field, Map.fetch!(planet, field) + Map.get(resource_amounts, field, 0)}
+    end)
+  end
+
   defp target_planet_colonizing?(target_planet_id, exclude_mission_id \\ nil) do
     query =
       from m in FleetMission,
@@ -1447,6 +1767,10 @@ defmodule NexusDownfall.Fleets do
   defp parse_optional_int(nil), do: nil
   defp parse_optional_int(""), do: nil
   defp parse_optional_int(value), do: parse_int!(value)
+
+  defp parse_transport_amount!(""), do: 0
+  defp parse_transport_amount!(nil), do: 0
+  defp parse_transport_amount!(value), do: parse_int!(value)
 
   defp normalize_transaction_result({:ok, value}), do: {:ok, value}
   defp normalize_transaction_result({:error, reason}), do: {:error, reason}

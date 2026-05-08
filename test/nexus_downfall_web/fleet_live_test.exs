@@ -88,6 +88,19 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     planet
   end
 
+  defp create_owned_planet(system, universe_user, orbit_position, name) do
+    {:ok, planet} =
+      Planets.create_initial_planet(%{
+        name: name,
+        orbit_position: orbit_position,
+        region: 1,
+        solar_system_id: system.id,
+        universe_user_id: universe_user.id
+      })
+
+    planet
+  end
+
   defp create_free_planet(system, orbit_position) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
@@ -140,7 +153,11 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     {:ok, conn: conn, user: user, universe_user: universe_user, planet: planet}
   end
 
-  test "create fleet button opens modal and creates fleet", %{conn: conn, planet: planet, universe_user: universe_user} do
+  test "create fleet button opens modal and creates fleet", %{
+    conn: conn,
+    planet: planet,
+    universe_user: universe_user
+  } do
     fleet_name = "Fleet #{System.unique_integer([:positive])}"
 
     {:ok, live_view, html} = live(conn, ~p"/fleet")
@@ -169,10 +186,16 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     fleet = Repo.get_by!(Fleet, name: fleet_name, universe_user_id: universe_user.id)
 
     # Ensure the initialized ship slots exist so the roster can render quantities immediately.
-    assert Repo.exists?(from fs in NexusDownfall.Fleets.FleetShip, where: fs.fleet_id == ^fleet.id)
+    assert Repo.exists?(
+             from fs in NexusDownfall.Fleets.FleetShip, where: fs.fleet_id == ^fleet.id
+           )
   end
 
-  test "fleet live refreshes on ship-built pubsub event", %{conn: conn, user: user, planet: planet} do
+  test "fleet live refreshes on ship-built pubsub event", %{
+    conn: conn,
+    user: user,
+    planet: planet
+  } do
     {:ok, fleet} =
       Fleets.create_fleet_for_user(user.id, %{
         "name" => "Realtime Fleet",
@@ -196,7 +219,12 @@ defmodule NexusDownfallWeb.FleetLiveTest do
       NexusDownfall.PubSub,
       Fleets.fleet_updates_topic_for_user(user.id),
       {:fleet_ship_built,
-       %{fleet_id: fleet.id, ship_type: "light_fighter", fleet_ship_quantity: 1, planet_id: planet.id}}
+       %{
+         fleet_id: fleet.id,
+         ship_type: "light_fighter",
+         fleet_ship_quantity: 1,
+         planet_id: planet.id
+       }}
     )
 
     refreshed = render(live_view)
@@ -226,7 +254,9 @@ defmodule NexusDownfallWeb.FleetLiveTest do
       })
 
     assert {:ok, _} = Fleets.assign_admiral_to_fleet(fleet_a.id, user.id, card.id)
-    assert {:error, :card_already_assigned} = Fleets.assign_admiral_to_fleet(fleet_b.id, user.id, card.id)
+
+    assert {:error, :card_already_assigned} =
+             Fleets.assign_admiral_to_fleet(fleet_b.id, user.id, card.id)
 
     assert Repo.get!(Fleet, fleet_a.id).admiral_card_id == card.id
     assert is_nil(Repo.get!(Fleet, fleet_b.id).admiral_card_id)
@@ -269,7 +299,11 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     assert rendered =~ "disabled"
   end
 
-  test "send mission modal disables colonization when the fleet has no colonizer", %{conn: conn, user: user, planet: planet} do
+  test "send mission modal disables colonization when the fleet has no colonizer", %{
+    conn: conn,
+    user: user,
+    planet: planet
+  } do
     system = Repo.preload(planet, :solar_system).solar_system |> Repo.preload(:galaxy)
     _target = create_free_planet(system, 6)
 
@@ -289,10 +323,11 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     assert rendered_open =~ "Send mission"
     assert rendered_open =~ "Colonization (requires Colonizer)"
     assert rendered_open =~ "Transport"
-    assert rendered_open =~ "This mission type is visible as a placeholder for now."
+    assert rendered_open =~ "Cargo"
   end
 
-  test "send mission modal dispatches colonization through galaxy, system and planet selectors", %{conn: conn, user: user, planet: planet} do
+  test "send mission modal dispatches colonization through galaxy, system and planet selectors",
+       %{conn: conn, user: user, planet: planet} do
     system = Repo.preload(planet, :solar_system).solar_system |> Repo.preload(:galaxy)
     target = create_free_planet(system, 6)
 
@@ -354,5 +389,76 @@ defmodule NexusDownfallWeb.FleetLiveTest do
 
     rendered_success = render(live_view)
     assert rendered_success =~ "Colonization mission dispatched."
+  end
+
+  test "send mission modal dispatches transport with cargo selectors", %{
+    conn: conn,
+    user: user,
+    universe_user: universe_user,
+    planet: planet
+  } do
+    system = Repo.preload(planet, :solar_system).solar_system |> Repo.preload(:galaxy)
+    target = create_owned_planet(system, universe_user, 7, "Transport Target")
+
+    {:ok, fleet} =
+      Fleets.create_fleet_for_user(user.id, %{
+        "name" => "Cargo Fleet #{System.unique_integer([:positive])}",
+        "planet_id" => planet.id
+      })
+
+    Repo.update_all(
+      from(fs in NexusDownfall.Fleets.FleetShip,
+        where: fs.fleet_id == ^fleet.id and fs.ship_type == "light_freighter"
+      ),
+      set: [quantity: 1]
+    )
+
+    Repo.update_all(
+      from(p in NexusDownfall.Planets.Planet, where: p.id == ^planet.id),
+      set: [raw_materials: 20_000, hydrogen: 50_000]
+    )
+
+    {:ok, live_view, _html} = live(conn, ~p"/fleet")
+
+    live_view
+    |> element("button[phx-click='open_send_mission_modal'][phx-value-fleet_id='#{fleet.id}']")
+    |> render_click()
+
+    rendered_open = render(live_view)
+    assert rendered_open =~ "Cargo"
+    assert rendered_open =~ "Hydrogen cargo is checked after reserving round-trip fuel."
+
+    live_view
+    |> form("form[phx-submit='send_mission']", %{
+      "fleet_id" => to_string(fleet.id),
+      "mission_type" => "transport",
+      "galaxy_id" => to_string(system.galaxy.id),
+      "raw_materials" => "1000"
+    })
+    |> render_change()
+
+    live_view
+    |> form("form[phx-submit='send_mission']", %{
+      "fleet_id" => to_string(fleet.id),
+      "mission_type" => "transport",
+      "galaxy_id" => to_string(system.galaxy.id),
+      "system_id" => to_string(system.id),
+      "raw_materials" => "1000"
+    })
+    |> render_change()
+
+    live_view
+    |> form("form[phx-submit='send_mission']", %{
+      "fleet_id" => to_string(fleet.id),
+      "mission_type" => "transport",
+      "galaxy_id" => to_string(system.galaxy.id),
+      "system_id" => to_string(system.id),
+      "target_planet_id" => to_string(target.id),
+      "raw_materials" => "1000"
+    })
+    |> render_submit()
+
+    rendered_success = render(live_view)
+    assert rendered_success =~ "Transport mission dispatched."
   end
 end

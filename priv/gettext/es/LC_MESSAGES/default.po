@@ -1564,3 +1564,32 @@ msgstr "objetivos"
 msgid "— select fleet —"
 msgstr ""
 
+msgid "Cargo"
+msgstr "Carga"
+
+msgid "Hydrogen cargo is checked after reserving round-trip fuel."
+msgstr "La carga de hidrógeno se comprueba después de reservar el combustible de ida y vuelta."
+
+msgid "Microchips"
+msgstr "Microchips"
+
+msgid "Transport mission dispatched."
+msgstr "Misión de transporte despachada."
+
+msgid "Not enough resources for cargo and fuel."
+msgstr "No hay recursos suficientes para la carga y el combustible."
+
+msgid "Choose at least one resource to transport."
+msgstr "Elige al menos un recurso para transportar."
+
+msgid "Fleet has no cargo capacity."
+msgstr "La flota no tiene capacidad de carga."
+
+msgid "Cargo exceeds fleet capacity."
+msgstr "La carga supera la capacidad de la flota."
+
+msgid "Cargo amounts must be zero or greater."
+msgstr "Las cantidades de carga deben ser cero o superiores."
+
+msgid "This mission type is visible as a placeholder for now. Only Colonization and Transport are currently playable."
+msgstr "Este tipo de misión es solo un placeholder por ahora. Actualmente solo se pueden jugar Colonización y Transporte."

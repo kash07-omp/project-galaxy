@@ -83,7 +83,7 @@ Permitir creación de flotas y viajes entre sistemas conectados.
 - [x] Pathfinding A* para rutas de flota.
 - [x] Creación de flota desde `/Fleet` y desde detalle de planeta.
 - [x] Misión de colonización (selección de planeta válido, tiempo que tarda en colonizarse, eliminación de la nave tras la colonización, asignación del nuevo planeta al jugador con la estructura del ayuntamiento a nivel 1 y recursos iniciales, consumo de hidrógeno).
-- [ ] Misión de transporte (ida, entrega, retorno, consumo de hidrógeno).
+- [x] Misión de transporte (ida, entrega, retorno, consumo de hidrógeno. Fijarse en como está implementada la UX de la misión de colonización respecto a la progress bar.).
 - [ ] Programación temporal de misiones con Oban.
 - [ ] Límite de flotas activas (base + mejor espaciopuerto).
 
