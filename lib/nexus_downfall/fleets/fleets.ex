@@ -37,7 +37,7 @@ defmodule NexusDownfall.Fleets do
     "light_freighter" => %{
       type: "light_freighter", tier: 1,
       name: "Light Freighter",
-      description: "Transporte barato y rápido. Ideal para primeros saqueos y logística temprana.",
+      description: "Cheap and fast transport. Ideal for early raids and first logistics routes.",
       hull: 120, shield: 15, attack: 5, accuracy: 35, agility: 55, speed: 110,
       fuel_per_s: 0.8, cargo: 5000,
       cost: %{raw_materials: 1500, microchips: 800, hydrogen: 300},
@@ -46,7 +46,7 @@ defmodule NexusDownfall.Fleets do
     "heavy_freighter" => %{
       type: "heavy_freighter", tier: 1,
       name: "Heavy Freighter",
-      description: "Mueve grandes cantidades de recursos, pero ralentiza la flota y necesita escolta.",
+      description: "Moves large resource loads, but slows the fleet and needs an escort.",
       hull: 420, shield: 60, attack: 20, accuracy: 30, agility: 25, speed: 70,
       fuel_per_s: 2.4, cargo: 25000,
       cost: %{raw_materials: 6000, microchips: 3500, hydrogen: 1600},
@@ -55,7 +55,7 @@ defmodule NexusDownfall.Fleets do
     "light_fighter" => %{
       type: "light_fighter", tier: 1,
       name: "Light Fighter",
-      description: "Nave rápida y barata. Excelente para cazar cargueros y bombarderos mal protegidos.",
+      description: "Fast and cheap attack craft. Excellent for hunting freighters and exposed bombers.",
       hull: 90, shield: 20, attack: 35, accuracy: 68, agility: 85, speed: 150,
       fuel_per_s: 1.2, cargo: 60,
       cost: %{raw_materials: 1200, microchips: 600, hydrogen: 450},
@@ -64,7 +64,7 @@ defmodule NexusDownfall.Fleets do
     "corvette" => %{
       type: "corvette", tier: 1,
       name: "Corvette",
-      description: "Primera nave militar estable. Protege cargueros y da consistencia a flotas tempranas.",
+      description: "First stable military ship. Protects freighters and gives early fleets consistency.",
       hull: 220, shield: 45, attack: 80, accuracy: 60, agility: 62, speed: 115,
       fuel_per_s: 2.0, cargo: 120,
       cost: %{raw_materials: 3500, microchips: 1800, hydrogen: 900},
@@ -73,7 +73,7 @@ defmodule NexusDownfall.Fleets do
     "missile_corvette" => %{
       type: "missile_corvette", tier: 1,
       name: "Missile Corvette",
-      description: "Nave de daño inicial. Muy buena para romper escudos y defensas ligeras, mala en combates largos.",
+      description: "Opening burst damage ship. Strong against shields and light defenses, weak in long battles.",
       hull: 180, shield: 25, attack: 145, accuracy: 52, agility: 50, speed: 95,
       fuel_per_s: 2.8, cargo: 80,
       cost: %{raw_materials: 4200, microchips: 2500, hydrogen: 1800},
@@ -82,7 +82,7 @@ defmodule NexusDownfall.Fleets do
     "heavy_fighter" => %{
       type: "heavy_fighter", tier: 2,
       name: "Heavy Fighter",
-      description: "Nave rápida para saqueos serios. Tiene carga propia y buena pegada contra objetivos vulnerables.",
+      description: "Fast ship for serious raids. Carries its own cargo and hits vulnerable targets hard.",
       hull: 320, shield: 70, attack: 130, accuracy: 72, agility: 78, speed: 135,
       fuel_per_s: 5.2, cargo: 900,
       cost: %{raw_materials: 13000, microchips: 6500, hydrogen: 5500},
@@ -91,7 +91,7 @@ defmodule NexusDownfall.Fleets do
     "frigate" => %{
       type: "frigate", tier: 2,
       name: "Frigate",
-      description: "Núcleo militar del mid-game. Sirve para ataque, defensa y escolta.",
+      description: "Mid-game military core. Useful for attack, defense and escort duties.",
       hull: 550, shield: 120, attack: 190, accuracy: 64, agility: 45, speed: 85,
       fuel_per_s: 4.5, cargo: 300,
       cost: %{raw_materials: 15000, microchips: 9000, hydrogen: 4000},
@@ -100,7 +100,7 @@ defmodule NexusDownfall.Fleets do
     "light_destroyer" => %{
       type: "light_destroyer", tier: 2,
       name: "Light Destroyer",
-      description: "Counter directo contra enjambres de cazas, corbetas y raiders.",
+      description: "Direct counter to fighter swarms, corvettes and raiding fleets.",
       hull: 680, shield: 160, attack: 150, accuracy: 78, agility: 42, speed: 75,
       fuel_per_s: 5.0, cargo: 200,
       cost: %{raw_materials: 18000, microchips: 12000, hydrogen: 4500},
@@ -109,7 +109,7 @@ defmodule NexusDownfall.Fleets do
     "bomber" => %{
       type: "bomber", tier: 2,
       name: "Bomber",
-      description: "Nave especializada en destruir defensas. Necesita escolta.",
+      description: "Specialized ship for destroying defenses. It needs an escort.",
       hull: 900, shield: 160, attack: 520, accuracy: 45, agility: 20, speed: 50,
       fuel_per_s: 10.0, cargo: 500,
       cost: %{raw_materials: 52000, microchips: 38000, hydrogen: 24000},
@@ -118,7 +118,7 @@ defmodule NexusDownfall.Fleets do
     "blocker" => %{
       type: "blocker", tier: 2,
       name: "Blocker",
-      description: "Nave diseñada para misiones de bloqueo planetario. No gana por daño, gana por control estratégico.",
+      description: "Designed for planetary blockade missions. It wins through strategic control, not raw damage.",
       hull: 1500, shield: 450, attack: 120, accuracy: 55, agility: 18, speed: 42,
       fuel_per_s: 12.0, cargo: 3000,
       cost: %{raw_materials: 60000, microchips: 50000, hydrogen: 30000},
@@ -127,7 +127,7 @@ defmodule NexusDownfall.Fleets do
     "colonizer" => %{
       type: "colonizer", tier: 2,
       name: "Colonizer",
-      description: "Permite fundar nuevas colonias. Es estratégica, cara y debe protegerse.",
+      description: "Enables new colonies. Strategic, expensive and worth protecting.",
       hull: 1800, shield: 500, attack: 20, accuracy: 25, agility: 8, speed: 35,
       fuel_per_s: 18.0, cargo: 100_000,
       cost: %{raw_materials: 120_000, microchips: 85_000, hydrogen: 70_000},
@@ -136,7 +136,7 @@ defmodule NexusDownfall.Fleets do
     "cruiser" => %{
       type: "cruiser", tier: 3,
       name: "Cruiser",
-      description: "Nave pesada estable. Protege bombarderos, bloqueadores y naves estratégicas.",
+      description: "Reliable heavy ship. Protects bombers, blockers and strategic craft.",
       hull: 1200, shield: 300, attack: 380, accuracy: 62, agility: 32, speed: 65,
       fuel_per_s: 8.5, cargo: 1000,
       cost: %{raw_materials: 42000, microchips: 26000, hydrogen: 12000},
@@ -145,7 +145,7 @@ defmodule NexusDownfall.Fleets do
     "carrier" => %{
       type: "carrier", tier: 3,
       name: "Drone Carrier",
-      description: "Mejora cazas y naves ligeras aliadas. No debe usarse sin escolta.",
+      description: "Enhances allied fighters and light ships. Should not be deployed without escort.",
       hull: 2500, shield: 700, attack: 220, accuracy: 58, agility: 15, speed: 45,
       fuel_per_s: 16.0, cargo: 2500,
       cost: %{raw_materials: 125_000, microchips: 95_000, hydrogen: 55_000},
@@ -154,7 +154,7 @@ defmodule NexusDownfall.Fleets do
     "ew_cruiser" => %{
       type: "ew_cruiser", tier: 3,
       name: "Electronic Warfare Cruiser",
-      description: "Nave técnica. Reduce escudos enemigos y mejora ataques contra objetivos resistentes.",
+      description: "Technical support ship. Weakens enemy shields and improves attacks against hardened targets.",
       hull: 800, shield: 1000, attack: 60, accuracy: 80, agility: 28, speed: 60,
       fuel_per_s: 13.0, cargo: 300,
       cost: %{raw_materials: 90_000, microchips: 125_000, hydrogen: 60_000},
@@ -163,7 +163,7 @@ defmodule NexusDownfall.Fleets do
     "battleship" => %{
       type: "battleship", tier: 3,
       name: "Battleship",
-      description: "Cazador de naves grandes. Excelente contra bloqueadores, cruceros, portadrones y top tier.",
+      description: "Large-ship hunter. Excellent against blockers, cruisers, carriers and top-tier hulls.",
       hull: 4200, shield: 1100, attack: 1250, accuracy: 58, agility: 10, speed: 35,
       fuel_per_s: 22.0, cargo: 3000,
       cost: %{raw_materials: 220_000, microchips: 150_000, hydrogen: 90_000},
@@ -172,7 +172,7 @@ defmodule NexusDownfall.Fleets do
     "leviathan" => %{
       type: "leviathan", tier: 4,
       name: "Leviathan",
-      description: "Nave top tier de combate directo. Diseñada para decidir guerras de flota.",
+      description: "Top-tier direct combat ship. Built to decide fleet wars.",
       hull: 22000, shield: 6500, attack: 5500, accuracy: 62, agility: 4, speed: 18,
       fuel_per_s: 90.0, cargo: 10_000,
       cost: %{raw_materials: 1_500_000, microchips: 1_200_000, hydrogen: 750_000},
@@ -181,7 +181,7 @@ defmodule NexusDownfall.Fleets do
     "aphelion" => %{
       type: "aphelion", tier: 4,
       name: "Aphelion",
-      description: "Plataforma de bombardeo estratégico. Destruye defensas e infraestructura planetaria.",
+      description: "Strategic bombardment platform. Destroys defenses and planetary infrastructure.",
       hull: 16000, shield: 4500, attack: 2200, accuracy: 45, agility: 3, speed: 16,
       fuel_per_s: 120.0, cargo: 5000,
       cost: %{raw_materials: 1_300_000, microchips: 1_700_000, hydrogen: 1_000_000},
@@ -190,7 +190,7 @@ defmodule NexusDownfall.Fleets do
     "exodus" => %{
       type: "exodus", tier: 4,
       name: "Exodus",
-      description: "Arca de conquista. Sirve para tomar planetas y sostener ocupaciones. No es una nave de combate principal.",
+      description: "Conquest ark. Takes planets and sustains occupations, but is not a main combat ship.",
       hull: 28000, shield: 8000, attack: 900, accuracy: 35, agility: 2, speed: 12,
       fuel_per_s: 150.0, cargo: 250_000,
       cost: %{raw_materials: 2_000_000, microchips: 1_500_000, hydrogen: 1_300_000},

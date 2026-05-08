@@ -141,6 +141,8 @@ Las defensas se construyen desde el Centro de Defensa y quedan fijas en el plane
 
 La construcción usa una cola persistente por planeta con Oban. El backend descuenta recursos y completa cada unidad de forma transaccional; LiveView solo muestra el estado y no participa en la resolución lógica.
 
+La vista del Centro de Defensa valida también en UX los límites de infraestructuras críticas contando defensas construidas, defensas en cola y defensas preparadas en el resumen. Los catálogos de naves y defensas muestran una vista resumida de dos líneas y un modal de detalle con imagen, descripción completa y estadísticas.
+
 ### Configuración parametrizable
 
 Los valores de gameplay de alto impacto para el MVP se cargan desde `priv/settings/gameplay.json` y se cachean en memoria al arrancar la aplicación para reducir overhead en runtime.

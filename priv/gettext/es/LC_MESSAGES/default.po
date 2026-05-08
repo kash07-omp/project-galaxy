@@ -1847,3 +1847,252 @@ msgstr "Bastion de Defensa Planetaria"
 
 msgid "Critical hardpoint that raises planetary conquest resistance against Exodus-class operations."
 msgstr "Punto critico fortificado que aumenta la resistencia de conquista contra operaciones clase Exodus."
+
+msgid "Available"
+msgstr "Disponible"
+
+msgid "Details"
+msgstr "Detalles"
+
+msgid "Tier"
+msgstr "Nivel"
+
+msgid "Hull"
+msgstr "Casco"
+
+msgid "Shield"
+msgstr "Escudo"
+
+msgid "Accuracy"
+msgstr "Punteria"
+
+msgid "Agility"
+msgstr "Agilidad"
+
+msgid "Speed"
+msgstr "Velocidad"
+
+msgid "Fuel/s"
+msgstr "Combustible/s"
+
+msgid "Build time"
+msgstr "Tiempo de construccion"
+
+msgid "Role"
+msgstr "Rol"
+
+msgid "Energy"
+msgstr "Energia"
+
+msgid "Target priority"
+msgstr "Prioridad de objetivo"
+
+msgid "Rules"
+msgstr "Reglas"
+
+msgid "No target priority"
+msgstr "Sin prioridad de objetivo"
+
+msgid "No special rules"
+msgstr "Sin reglas especiales"
+
+msgid "Defense limit reached: existing and queued defenses already use all available slots."
+msgstr "Limite de defensa alcanzado: las defensas existentes y en cola ya usan todos los espacios disponibles."
+
+msgid "Only %{count} more can be staged for this defense."
+msgstr "Solo se pueden preparar %{count} mas de esta defensa."
+
+msgid "Light"
+msgstr "Ligera"
+
+msgid "Medium"
+msgstr "Media"
+
+msgid "Heavy"
+msgstr "Pesada"
+
+msgid "Capital"
+msgstr "Capital"
+
+msgid "Civil"
+msgstr "Civil"
+
+msgid "Siege"
+msgstr "Asedio"
+
+msgid "Support"
+msgstr "Soporte"
+
+msgid "Conquest"
+msgstr "Conquista"
+
+msgid "Fixed Defense"
+msgstr "Defensa fija"
+
+msgid "Saturation Fire"
+msgstr "Fuego de saturacion"
+
+msgid "Anti-squadron Accuracy"
+msgstr "Precision antiescuadron"
+
+msgid "Piercing Shot"
+msgstr "Disparo perforante"
+
+msgid "Ion Pulse"
+msgstr "Pulso ionico"
+
+msgid "Shield Overload"
+msgstr "Sobrecarga de escudos"
+
+msgid "Critical Infrastructure"
+msgstr "Infraestructura critica"
+
+msgid "Anti-siege"
+msgstr "Antiasedio"
+
+msgid "Orbital Interception"
+msgstr "Intercepcion orbital"
+
+msgid "Anti-blockade"
+msgstr "Antibloqueo"
+
+msgid "Conquest Resistance"
+msgstr "Resistencia de conquista"
+
+msgid "Cheap anti-light defense"
+msgstr "Defensa barata anti-ligera"
+
+msgid "Precise anti-light defense"
+msgstr "Defensa precisa anti-ligera"
+
+msgid "Anti-medium defense"
+msgstr "Defensa anti-media"
+
+msgid "Heavy armor piercing"
+msgstr "Perforacion pesada"
+
+msgid "Shield suppression"
+msgstr "Supresion de escudos"
+
+msgid "Anti-capital defense"
+msgstr "Defensa anti-capital"
+
+msgid "Global protection"
+msgstr "Proteccion global"
+
+msgid "Bombardment counter"
+msgstr "Counter de bombardeo"
+
+msgid "Blockade counter"
+msgstr "Counter de bloqueo"
+
+msgid "Anti-conquest infrastructure"
+msgstr "Infraestructura anti-conquista"
+
+msgid "Light Freighter"
+msgstr "Carguero Ligero"
+
+msgid "Heavy Freighter"
+msgstr "Carguero Pesado"
+
+msgid "Light Fighter"
+msgstr "Caza Ligero"
+
+msgid "Corvette"
+msgstr "Corbeta"
+
+msgid "Missile Corvette"
+msgstr "Corbeta Misilera"
+
+msgid "Heavy Fighter"
+msgstr "Caza Pesado"
+
+msgid "Frigate"
+msgstr "Fragata"
+
+msgid "Light Destroyer"
+msgstr "Destructor Ligero"
+
+msgid "Bomber"
+msgstr "Bombardero"
+
+msgid "Blocker"
+msgstr "Bloqueador"
+
+msgid "Colonizer"
+msgstr "Colonizadora"
+
+msgid "Cruiser"
+msgstr "Crucero"
+
+msgid "Drone Carrier"
+msgstr "Portadrones"
+
+msgid "Electronic Warfare Cruiser"
+msgstr "Crucero de Guerra Electronica"
+
+msgid "Battleship"
+msgstr "Acorazado"
+
+msgid "Leviathan"
+msgstr "Leviathan"
+
+msgid "Aphelion"
+msgstr "Aphelion"
+
+msgid "Exodus"
+msgstr "Exodus"
+
+msgid "Cheap and fast transport. Ideal for early raids and first logistics routes."
+msgstr "Transporte barato y rapido. Ideal para primeros saqueos y rutas logisticas iniciales."
+
+msgid "Moves large resource loads, but slows the fleet and needs an escort."
+msgstr "Mueve grandes cargas de recursos, pero ralentiza la flota y necesita escolta."
+
+msgid "Fast and cheap attack craft. Excellent for hunting freighters and exposed bombers."
+msgstr "Nave de ataque rapida y barata. Excelente para cazar cargueros y bombarderos expuestos."
+
+msgid "First stable military ship. Protects freighters and gives early fleets consistency."
+msgstr "Primera nave militar estable. Protege cargueros y da consistencia a flotas tempranas."
+
+msgid "Opening burst damage ship. Strong against shields and light defenses, weak in long battles."
+msgstr "Nave de dano inicial. Fuerte contra escudos y defensas ligeras, debil en combates largos."
+
+msgid "Fast ship for serious raids. Carries its own cargo and hits vulnerable targets hard."
+msgstr "Nave rapida para saqueos serios. Lleva carga propia y golpea fuerte a objetivos vulnerables."
+
+msgid "Mid-game military core. Useful for attack, defense and escort duties."
+msgstr "Nucleo militar de mid-game. Util para ataque, defensa y escolta."
+
+msgid "Direct counter to fighter swarms, corvettes and raiding fleets."
+msgstr "Counter directo contra enjambres de cazas, corbetas y flotas de saqueo."
+
+msgid "Specialized ship for destroying defenses. It needs an escort."
+msgstr "Nave especializada en destruir defensas. Necesita escolta."
+
+msgid "Designed for planetary blockade missions. It wins through strategic control, not raw damage."
+msgstr "Disenado para misiones de bloqueo planetario. Gana por control estrategico, no por dano bruto."
+
+msgid "Enables new colonies. Strategic, expensive and worth protecting."
+msgstr "Permite fundar nuevas colonias. Estrategica, cara y digna de proteccion."
+
+msgid "Reliable heavy ship. Protects bombers, blockers and strategic craft."
+msgstr "Nave pesada fiable. Protege bombarderos, bloqueadores y naves estrategicas."
+
+msgid "Enhances allied fighters and light ships. Should not be deployed without escort."
+msgstr "Mejora cazas y naves ligeras aliadas. No debe desplegarse sin escolta."
+
+msgid "Technical support ship. Weakens enemy shields and improves attacks against hardened targets."
+msgstr "Nave tecnica de soporte. Debilita escudos enemigos y mejora ataques contra objetivos resistentes."
+
+msgid "Large-ship hunter. Excellent against blockers, cruisers, carriers and top-tier hulls."
+msgstr "Cazador de naves grandes. Excelente contra bloqueadores, cruceros, portadrones y cascos top tier."
+
+msgid "Top-tier direct combat ship. Built to decide fleet wars."
+msgstr "Nave top tier de combate directo. Creada para decidir guerras de flota."
+
+msgid "Strategic bombardment platform. Destroys defenses and planetary infrastructure."
+msgstr "Plataforma de bombardeo estrategico. Destruye defensas e infraestructura planetaria."
+
+msgid "Conquest ark. Takes planets and sustains occupations, but is not a main combat ship."
+msgstr "Arca de conquista. Toma planetas y sostiene ocupaciones, pero no es una nave principal de combate."

@@ -6,7 +6,7 @@ defmodule NexusDownfallWeb.PlanetLiveDefenseTest do
 
   alias NexusDownfall.Accounts
   alias NexusDownfall.Planets
-  alias NexusDownfall.Planets.{Building, Defense}
+  alias NexusDownfall.Planets.{Building, Defense, DefenseQueueItem}
   alias NexusDownfall.Repo
 
   defp create_universe do
@@ -132,20 +132,67 @@ defmodule NexusDownfallWeb.PlanetLiveDefenseTest do
     assert defense.quantity == 2
   end
 
-  test "shows defense limit errors in the defense center", %{conn: conn, planet: planet} do
+  test "prevents staging more limited defenses than allowed", %{conn: conn, planet: planet} do
     {:ok, lv, _html} = live(conn, ~p"/planets/#{planet.id}")
 
     render_click(lv, "select_building", %{"type" => "defense_center"})
     render_click(lv, "select_tab", %{"tab" => "specific"})
     render_click(lv, "grant_test_resources", %{})
 
-    render_submit(lv, "add_to_defense_order", %{
-      "defense_type" => "planetary_shield_dome",
-      "quantity" => "2"
-    })
+    html =
+      render_submit(lv, "add_to_defense_order", %{
+        "defense_type" => "planetary_shield_dome",
+        "quantity" => "2"
+      })
+
+    assert html =~ "Only 1 more can be staged for this defense."
 
     html = render_click(lv, "submit_defense_order", %{})
+    assert html =~ "Add defenses to the order first."
+  end
 
-    assert html =~ "Defense limit reached for this planet."
+  test "limited defense UX counts already queued defenses", %{conn: conn, planet: planet} do
+    {:ok, _queue_item} =
+      %DefenseQueueItem{}
+      |> DefenseQueueItem.changeset(%{
+        planet_id: planet.id,
+        defense_type: "planetary_shield_dome",
+        quantity: 1,
+        queue_position: 1,
+        status: "queued",
+        build_seconds: 2400
+      })
+      |> Repo.insert()
+
+    {:ok, lv, _html} = live(conn, ~p"/planets/#{planet.id}")
+
+    render_click(lv, "select_building", %{"type" => "defense_center"})
+    render_click(lv, "select_tab", %{"tab" => "specific"})
+
+    html =
+      render_submit(lv, "add_to_defense_order", %{
+        "defense_type" => "planetary_shield_dome",
+        "quantity" => "1"
+      })
+
+    assert html =~
+             "Defense limit reached: existing and queued defenses already use all available slots."
+  end
+
+  test "clicking a defense name opens a detailed stats modal", %{conn: conn, planet: planet} do
+    {:ok, lv, _html} = live(conn, ~p"/planets/#{planet.id}")
+
+    render_click(lv, "select_building", %{"type" => "defense_center"})
+    render_click(lv, "select_tab", %{"tab" => "specific"})
+
+    html =
+      lv
+      |> element("[data-unit-detail='defense-planetary_shield_dome']")
+      |> render_click()
+
+    assert html =~ "Planetary Shield Dome"
+    assert html =~ "Strategic shield infrastructure"
+    assert html =~ "Shield Overload"
+    assert html =~ "Limit"
   end
 end

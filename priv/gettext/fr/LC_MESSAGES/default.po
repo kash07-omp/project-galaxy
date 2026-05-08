@@ -1847,3 +1847,252 @@ msgstr "Bastion de defense planetaire"
 
 msgid "Critical hardpoint that raises planetary conquest resistance against Exodus-class operations."
 msgstr "Point fortifie critique qui augmente la resistance a la conquete contre les operations de classe Exodus."
+
+msgid "Available"
+msgstr "Disponible"
+
+msgid "Details"
+msgstr "Details"
+
+msgid "Tier"
+msgstr "Rang"
+
+msgid "Hull"
+msgstr "Coque"
+
+msgid "Shield"
+msgstr "Bouclier"
+
+msgid "Accuracy"
+msgstr "Precision"
+
+msgid "Agility"
+msgstr "Agilite"
+
+msgid "Speed"
+msgstr "Vitesse"
+
+msgid "Fuel/s"
+msgstr "Carburant/s"
+
+msgid "Build time"
+msgstr "Temps de construction"
+
+msgid "Role"
+msgstr "Role"
+
+msgid "Energy"
+msgstr "Energie"
+
+msgid "Target priority"
+msgstr "Priorite de cible"
+
+msgid "Rules"
+msgstr "Regles"
+
+msgid "No target priority"
+msgstr "Aucune priorite de cible"
+
+msgid "No special rules"
+msgstr "Aucune regle speciale"
+
+msgid "Defense limit reached: existing and queued defenses already use all available slots."
+msgstr "Limite de defense atteinte : les defenses existantes et en file utilisent deja tous les emplacements disponibles."
+
+msgid "Only %{count} more can be staged for this defense."
+msgstr "Seulement %{count} defense(s) de ce type peuvent encore etre preparees."
+
+msgid "Light"
+msgstr "Legere"
+
+msgid "Medium"
+msgstr "Moyenne"
+
+msgid "Heavy"
+msgstr "Lourde"
+
+msgid "Capital"
+msgstr "Capitale"
+
+msgid "Civil"
+msgstr "Civile"
+
+msgid "Siege"
+msgstr "Siege"
+
+msgid "Support"
+msgstr "Soutien"
+
+msgid "Conquest"
+msgstr "Conquete"
+
+msgid "Fixed Defense"
+msgstr "Defense fixe"
+
+msgid "Saturation Fire"
+msgstr "Tir de saturation"
+
+msgid "Anti-squadron Accuracy"
+msgstr "Precision anti-escadrille"
+
+msgid "Piercing Shot"
+msgstr "Tir perforant"
+
+msgid "Ion Pulse"
+msgstr "Impulsion ionique"
+
+msgid "Shield Overload"
+msgstr "Surcharge de bouclier"
+
+msgid "Critical Infrastructure"
+msgstr "Infrastructure critique"
+
+msgid "Anti-siege"
+msgstr "Anti-siege"
+
+msgid "Orbital Interception"
+msgstr "Interception orbitale"
+
+msgid "Anti-blockade"
+msgstr "Anti-blocus"
+
+msgid "Conquest Resistance"
+msgstr "Resistance a la conquete"
+
+msgid "Cheap anti-light defense"
+msgstr "Defense anti-legere economique"
+
+msgid "Precise anti-light defense"
+msgstr "Defense anti-legere precise"
+
+msgid "Anti-medium defense"
+msgstr "Defense anti-moyenne"
+
+msgid "Heavy armor piercing"
+msgstr "Perforation lourde"
+
+msgid "Shield suppression"
+msgstr "Suppression de boucliers"
+
+msgid "Anti-capital defense"
+msgstr "Defense anti-capitale"
+
+msgid "Global protection"
+msgstr "Protection globale"
+
+msgid "Bombardment counter"
+msgstr "Contre-bombardement"
+
+msgid "Blockade counter"
+msgstr "Contre-blocus"
+
+msgid "Anti-conquest infrastructure"
+msgstr "Infrastructure anti-conquete"
+
+msgid "Light Freighter"
+msgstr "Cargo leger"
+
+msgid "Heavy Freighter"
+msgstr "Cargo lourd"
+
+msgid "Light Fighter"
+msgstr "Chasseur leger"
+
+msgid "Corvette"
+msgstr "Corvette"
+
+msgid "Missile Corvette"
+msgstr "Corvette missile"
+
+msgid "Heavy Fighter"
+msgstr "Chasseur lourd"
+
+msgid "Frigate"
+msgstr "Fregate"
+
+msgid "Light Destroyer"
+msgstr "Destroyer leger"
+
+msgid "Bomber"
+msgstr "Bombardier"
+
+msgid "Blocker"
+msgstr "Bloqueur"
+
+msgid "Colonizer"
+msgstr "Colonisateur"
+
+msgid "Cruiser"
+msgstr "Croiseur"
+
+msgid "Drone Carrier"
+msgstr "Porte-drones"
+
+msgid "Electronic Warfare Cruiser"
+msgstr "Croiseur de guerre electronique"
+
+msgid "Battleship"
+msgstr "Cuirasse"
+
+msgid "Leviathan"
+msgstr "Leviathan"
+
+msgid "Aphelion"
+msgstr "Aphelion"
+
+msgid "Exodus"
+msgstr "Exodus"
+
+msgid "Cheap and fast transport. Ideal for early raids and first logistics routes."
+msgstr "Transport rapide et economique. Ideal pour les premiers raids et routes logistiques."
+
+msgid "Moves large resource loads, but slows the fleet and needs an escort."
+msgstr "Deplace de grandes charges de ressources, mais ralentit la flotte et demande une escorte."
+
+msgid "Fast and cheap attack craft. Excellent for hunting freighters and exposed bombers."
+msgstr "Vaisseau d attaque rapide et economique. Excellent pour chasser cargos et bombardiers exposes."
+
+msgid "First stable military ship. Protects freighters and gives early fleets consistency."
+msgstr "Premier vaisseau militaire stable. Protege les cargos et stabilise les premieres flottes."
+
+msgid "Opening burst damage ship. Strong against shields and light defenses, weak in long battles."
+msgstr "Vaisseau de degats initiaux. Fort contre boucliers et defenses legeres, faible en combat long."
+
+msgid "Fast ship for serious raids. Carries its own cargo and hits vulnerable targets hard."
+msgstr "Vaisseau rapide pour raids serieux. Transporte sa cargaison et frappe fort les cibles vulnerables."
+
+msgid "Mid-game military core. Useful for attack, defense and escort duties."
+msgstr "Coeur militaire de milieu de partie. Utile en attaque, defense et escorte."
+
+msgid "Direct counter to fighter swarms, corvettes and raiding fleets."
+msgstr "Contre direct aux essaims de chasseurs, corvettes et flottes de raid."
+
+msgid "Specialized ship for destroying defenses. It needs an escort."
+msgstr "Vaisseau specialise dans la destruction des defenses. Il a besoin d une escorte."
+
+msgid "Designed for planetary blockade missions. It wins through strategic control, not raw damage."
+msgstr "Concu pour les missions de blocus planetaire. Il gagne par controle strategique, pas par degats bruts."
+
+msgid "Enables new colonies. Strategic, expensive and worth protecting."
+msgstr "Permet de fonder de nouvelles colonies. Strategique, couteux et a proteger."
+
+msgid "Reliable heavy ship. Protects bombers, blockers and strategic craft."
+msgstr "Vaisseau lourd fiable. Protege bombardiers, bloqueurs et vaisseaux strategiques."
+
+msgid "Enhances allied fighters and light ships. Should not be deployed without escort."
+msgstr "Ameliore chasseurs et vaisseaux legers allies. Ne pas deployer sans escorte."
+
+msgid "Technical support ship. Weakens enemy shields and improves attacks against hardened targets."
+msgstr "Vaisseau technique de soutien. Affaiblit les boucliers ennemis et aide contre les cibles durcies."
+
+msgid "Large-ship hunter. Excellent against blockers, cruisers, carriers and top-tier hulls."
+msgstr "Chasseur de grands vaisseaux. Excellent contre bloqueurs, croiseurs, porte-drones et coques top tier."
+
+msgid "Top-tier direct combat ship. Built to decide fleet wars."
+msgstr "Vaisseau top tier de combat direct. Concu pour decider les guerres de flotte."
+
+msgid "Strategic bombardment platform. Destroys defenses and planetary infrastructure."
+msgstr "Plateforme de bombardement strategique. Detruit defenses et infrastructure planetaire."
+
+msgid "Conquest ark. Takes planets and sustains occupations, but is not a main combat ship."
+msgstr "Arche de conquete. Prend des planetes et soutient les occupations, mais n est pas un vaisseau de combat principal."

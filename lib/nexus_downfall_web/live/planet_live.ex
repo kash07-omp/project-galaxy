@@ -73,6 +73,7 @@ defmodule NexusDownfallWeb.PlanetLive do
          |> assign(:defense_error, nil)
          |> assign(:defense_notice, nil)
          |> assign(:defense_order, %{})
+         |> assign(:selected_unit_details, nil)
          |> assign(
            :selected_fleet_id,
            case shipyard.fleets do
@@ -99,6 +100,7 @@ defmodule NexusDownfallWeb.PlanetLive do
         Enum.any?(assigns.buildings, &(&1.construction_finish_at != nil))
       )
       |> assign(:building_layout, @building_layout)
+      |> assign(:unit_detail, selected_unit_detail(assigns.selected_unit_details))
 
     ~H"""
     <div class="flex flex-col h-screen bg-gray-950 font-sans overflow-hidden select-none">
@@ -245,8 +247,8 @@ defmodule NexusDownfallWeb.PlanetLive do
             class={[
               "relative z-10 w-full bg-gray-900 rounded-2xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col",
               if(@selected in ["spaceport", "defense_center"] and @selected_tab == "specific",
-                do: "max-w-5xl",
-                else: "max-w-2xl"
+                do: "max-w-6xl",
+                else: "max-w-3xl"
               )
             ]}
             style="max-height: 88vh"
@@ -627,7 +629,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                             end %>
                           <form
                             phx-submit="add_to_build_order"
-                            class="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-800/30 transition"
+                            class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/30 transition"
                           >
                             <input type="hidden" name="ship_type" value={ship.type} />
                             <!-- Tier icon -->
@@ -642,25 +644,38 @@ defmodule NexusDownfallWeb.PlanetLive do
                             <!-- Ship info -->
                             <div class="flex-1 min-w-0">
                               <div class="flex items-baseline gap-2 flex-wrap">
-                                <span class="text-[12px] font-semibold text-white">
+                                <button
+                                  type="button"
+                                  phx-click="show_ship_details"
+                                  phx-value-ship_type={ship.type}
+                                  data-unit-detail={"ship-#{ship.type}"}
+                                  class="text-left text-sm font-semibold text-white hover:text-cyan-300 transition"
+                                >
                                   {translate_dynamic(ship.name)}
-                                </span>
-                                <span class="text-[10px] text-gray-500 shrink-0">
+                                </button>
+                                <span class="text-xs text-gray-500 shrink-0">
                                   ⏱ {format_duration(ship.build_time_seconds)}
                                 </span>
                               </div>
 
+                              <p
+                                class="text-xs text-gray-400 mt-1 leading-snug"
+                                style="-webkit-line-clamp: 2; -webkit-box-orient: vertical; display: -webkit-box; overflow: hidden;"
+                              >
+                                {translate_dynamic(ship.description)}
+                              </p>
+
                               <div class="flex items-center gap-3 mt-0.5 flex-wrap">
-                                <span class="text-[10px] text-amber-400">
+                                <span class="text-xs text-amber-400">
                                   ⛏ {format_resource(ship.cost.raw_materials * 1.0)}
                                 </span>
-                                <span class="text-[10px] text-blue-400">
+                                <span class="text-xs text-blue-400">
                                   💾 {format_resource(ship.cost.microchips * 1.0)}
                                 </span>
-                                <span class="text-[10px] text-cyan-400">
+                                <span class="text-xs text-cyan-400">
                                   💧 {format_resource(ship.cost.hydrogen * 1.0)}
                                 </span>
-                                <span class="text-[10px] text-gray-500">
+                                <span class="text-xs text-gray-500">
                                   ⚔ {ship.attack} · 🛡 {ship.hull}
                                 </span>
                               </div>
@@ -673,13 +688,13 @@ defmodule NexusDownfallWeb.PlanetLive do
                                 min="1"
                                 value="1"
                                 disabled={no_fleet}
-                                class="w-12 rounded-lg border border-gray-700 bg-gray-900 px-2 py-1 text-xs text-white text-center focus:border-pink-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                class="w-14 rounded-lg border border-gray-700 bg-gray-900 px-2 py-1.5 text-sm text-white text-center focus:border-pink-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
                               <button
                                 type="submit"
                                 disabled={no_fleet}
                                 class={[
-                                  "rounded-lg px-2.5 py-1 text-xs font-semibold transition",
+                                  "rounded-lg px-3 py-1.5 text-sm font-semibold transition",
                                   if(no_fleet,
                                     do: "bg-gray-800 text-gray-600 cursor-not-allowed",
                                     else: "bg-pink-600 hover:bg-pink-500 text-white cursor-pointer"
@@ -694,18 +709,18 @@ defmodule NexusDownfallWeb.PlanetLive do
                       </div>
                     </div>
                     <!-- ══ RIGHT: Build Summary ══ -->
-                    <div class="w-60 shrink-0 flex flex-col border-l border-gray-800 overflow-hidden bg-gray-950/30">
+                    <div class="w-72 shrink-0 flex flex-col border-l border-gray-800 overflow-hidden bg-gray-950/30">
                       <div class="px-3 pt-3 pb-2 border-b border-gray-800 shrink-0">
-                        <h3 class="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">
                           {gettext("Build Summary")}
                         </h3>
 
-                        <p class="text-[10px] text-gray-600 mb-1">{gettext("Target Fleet:")}</p>
+                        <p class="text-xs text-gray-600 mb-1">{gettext("Target Fleet:")}</p>
 
                         <form phx-change="set_target_fleet">
                           <select
                             name="fleet_id"
-                            class="w-full rounded-lg border border-gray-700 bg-gray-900 px-2 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                            class="w-full rounded-lg border border-gray-700 bg-gray-900 px-2 py-1.5 text-sm text-white focus:border-cyan-500 focus:outline-none"
                           >
                             <option value="">{gettext("— select fleet —")}</option>
 
@@ -738,7 +753,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                               ship.cost.hydrogen * qty * 1.0 %>
                             <div class="rounded-lg border border-gray-700 bg-gray-800/40 p-2">
                               <div class="flex items-center justify-between gap-1">
-                                <span class="text-[11px] font-semibold text-white leading-tight flex-1 pr-1 truncate">
+                                <span class="text-xs font-semibold text-white leading-tight flex-1 pr-1 truncate">
                                   {translate_dynamic(ship.name)}
                                 </span>
                                 <div class="flex items-center gap-0.5 shrink-0">
@@ -750,7 +765,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                                   >
                                     −
                                   </button>
-                                  <span class="w-6 text-center text-[11px] font-mono text-white">
+                                  <span class="w-6 text-center text-xs font-mono text-white">
                                     {qty}
                                   </span>
                                   <button
@@ -764,13 +779,13 @@ defmodule NexusDownfallWeb.PlanetLive do
                                 </div>
                               </div>
 
-                              <div class="flex items-center justify-between mt-1 text-[10px]">
+                              <div class="flex items-center justify-between mt-1 text-xs">
                                 <span class="text-gray-500">
                                   ⏱ {format_duration(ship.build_time_seconds * qty)}
                                 </span>
                               </div>
 
-                              <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px]">
+                              <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
                                 <span class="text-amber-500">
                                   ⛏ {format_resource(row_raw_materials)}
                                 </span>
@@ -808,7 +823,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                           if ship, do: acc + ship.cost.hydrogen * qty, else: acc
                         end) %>
                       <div class="border-t border-gray-800 p-3 shrink-0 flex flex-col gap-2">
-                        <div class="grid grid-cols-2 gap-y-1 text-[10px]">
+                        <div class="grid grid-cols-2 gap-y-1 text-xs">
                           <div class="text-gray-500">{gettext("Total Items:")}</div>
 
                           <div class="text-white font-semibold text-right">{total_items}</div>
@@ -821,7 +836,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                         </div>
 
                         <%= if total_items > 0 do %>
-                          <div class="bg-gray-900/60 rounded-lg px-2 py-1.5 text-[10px] flex flex-col gap-0.5">
+                          <div class="bg-gray-900/60 rounded-lg px-2 py-1.5 text-xs flex flex-col gap-0.5">
                             <div class="flex justify-between">
                               <span class="text-amber-400">⛏ Mat.</span>
                               <span class="text-amber-300">{format_resource(total_rm * 1.0)}</span>
@@ -843,7 +858,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                           phx-click="submit_build_order"
                           disabled={not can_build or total_items == 0}
                           class={[
-                            "w-full rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition",
+                            "w-full rounded-lg py-2 text-sm font-bold uppercase tracking-wider transition",
                             if(can_build and total_items > 0,
                               do: "bg-pink-600 hover:bg-pink-500 text-white cursor-pointer",
                               else: "bg-gray-800 text-gray-600 cursor-not-allowed"
@@ -961,9 +976,14 @@ defmodule NexusDownfallWeb.PlanetLive do
                           <%= for defense <- @defense_catalog do %>
                             <% qty_in_order = Map.get(@defense_order, defense.type, 0) %>
                             <% owned_qty = defense_quantity(@planet_defenses, defense.type) %>
+                            <% queued_qty =
+                              queued_defense_quantity(@defense_queue_items, defense.type) %>
+                            <% remaining_limit =
+                              defense_remaining_limit(defense, owned_qty, queued_qty, qty_in_order) %>
+                            <% limit_reached = remaining_limit == 0 %>
                             <form
                               phx-submit="add_to_defense_order"
-                              class="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-800/30 transition"
+                              class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/30 transition"
                             >
                               <input type="hidden" name="defense_type" value={defense.type} />
                               <div class="relative w-9 h-9 shrink-0 rounded-lg bg-gray-900/80 border border-gray-700/60 flex items-center justify-center text-[11px] font-bold text-cyan-300">
@@ -977,34 +997,49 @@ defmodule NexusDownfallWeb.PlanetLive do
 
                               <div class="flex-1 min-w-0">
                                 <div class="flex items-baseline gap-2 flex-wrap">
-                                  <span class="text-[12px] font-semibold text-white">
+                                  <button
+                                    type="button"
+                                    phx-click="show_defense_details"
+                                    phx-value-defense_type={defense.type}
+                                    data-unit-detail={"defense-#{defense.type}"}
+                                    class="text-left text-sm font-semibold text-white hover:text-cyan-300 transition"
+                                  >
                                     {translate_dynamic(defense.name)}
-                                  </span>
-                                  <span class="text-[10px] text-gray-500 shrink-0">
+                                  </button>
+                                  <span class="text-xs text-gray-500 shrink-0">
                                     {gettext("Owned")}: {owned_qty}
                                   </span>
+                                  <span class="text-xs text-gray-500 shrink-0">
+                                    {gettext("Queued")}: {queued_qty}
+                                  </span>
                                   <%= if Map.has_key?(defense, :max_per_planet) do %>
-                                    <span class="text-[10px] text-amber-400 shrink-0">
+                                    <span class="text-xs text-amber-400 shrink-0">
                                       {gettext("Limit")}: {defense.max_per_planet}
+                                    </span>
+                                    <span class="text-xs text-cyan-400 shrink-0">
+                                      {gettext("Available")}: {remaining_limit}
                                     </span>
                                   <% end %>
                                 </div>
 
-                                <p class="text-[10px] text-gray-500 mt-0.5 truncate">
+                                <p
+                                  class="text-xs text-gray-400 mt-1 leading-snug"
+                                  style="-webkit-line-clamp: 2; -webkit-box-orient: vertical; display: -webkit-box; overflow: hidden;"
+                                >
                                   {translate_dynamic(defense.description)}
                                 </p>
 
                                 <div class="flex items-center gap-3 mt-0.5 flex-wrap">
-                                  <span class="text-[10px] text-amber-400">
+                                  <span class="text-xs text-amber-400">
                                     Mat. {format_resource(defense.cost.raw_materials * 1.0)}
                                   </span>
-                                  <span class="text-[10px] text-blue-400">
+                                  <span class="text-xs text-blue-400">
                                     {gettext("Chips")} {format_resource(defense.cost.microchips * 1.0)}
                                   </span>
-                                  <span class="text-[10px] text-cyan-400">
+                                  <span class="text-xs text-cyan-400">
                                     H2 {format_resource(defense.cost.hydrogen * 1.0)}
                                   </span>
-                                  <span class="text-[10px] text-gray-500">
+                                  <span class="text-xs text-gray-500">
                                     ATK {defense.attack} / HP {defense.hull}
                                   </span>
                                 </div>
@@ -1015,16 +1050,17 @@ defmodule NexusDownfallWeb.PlanetLive do
                                   type="number"
                                   name="quantity"
                                   min="1"
+                                  max={if is_integer(remaining_limit), do: remaining_limit, else: nil}
                                   value="1"
-                                  disabled={not center_ready}
-                                  class="w-12 rounded-lg border border-gray-700 bg-gray-900 px-2 py-1 text-xs text-white text-center focus:border-cyan-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                  disabled={not center_ready or limit_reached}
+                                  class="w-14 rounded-lg border border-gray-700 bg-gray-900 px-2 py-1.5 text-sm text-white text-center focus:border-cyan-500 focus:outline-none disabled:text-gray-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <button
                                   type="submit"
-                                  disabled={not center_ready}
+                                  disabled={not center_ready or limit_reached}
                                   class={[
-                                    "rounded-lg px-2.5 py-1 text-xs font-semibold transition",
-                                    if(center_ready,
+                                    "rounded-lg px-3 py-1.5 text-sm font-semibold transition",
+                                    if(center_ready and not limit_reached,
                                       do: "bg-cyan-600 hover:bg-cyan-500 text-white cursor-pointer",
                                       else: "bg-gray-800 text-gray-600 cursor-not-allowed"
                                     )
@@ -1038,9 +1074,9 @@ defmodule NexusDownfallWeb.PlanetLive do
                         </div>
                       </div>
 
-                      <div class="w-64 shrink-0 flex flex-col border-l border-gray-800 overflow-hidden bg-gray-950/30">
+                      <div class="w-72 shrink-0 flex flex-col border-l border-gray-800 overflow-hidden bg-gray-950/30">
                         <div class="px-3 pt-3 pb-2 border-b border-gray-800 shrink-0">
-                          <h3 class="text-[11px] font-bold uppercase tracking-widest text-gray-500">
+                          <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500">
                             {gettext("Defense Summary")}
                           </h3>
                         </div>
@@ -1058,9 +1094,15 @@ defmodule NexusDownfallWeb.PlanetLive do
                           <% else %>
                             <%= for defense <- @defense_catalog, Map.get(@defense_order, defense.type, 0) > 0 do %>
                               <% qty = Map.get(@defense_order, defense.type, 0) %>
+                              <% owned_qty = defense_quantity(@planet_defenses, defense.type) %>
+                              <% queued_qty =
+                                queued_defense_quantity(@defense_queue_items, defense.type) %>
+                              <% remaining_limit =
+                                defense_remaining_limit(defense, owned_qty, queued_qty, qty) %>
+                              <% can_increment = remaining_limit != 0 %>
                               <div class="rounded-lg border border-gray-700 bg-gray-800/40 p-2">
                                 <div class="flex items-center justify-between gap-1">
-                                  <span class="text-[11px] font-semibold text-white leading-tight flex-1 pr-1 truncate">
+                                  <span class="text-xs font-semibold text-white leading-tight flex-1 pr-1 truncate">
                                     {translate_dynamic(defense.name)}
                                   </span>
                                   <div class="flex items-center gap-0.5 shrink-0">
@@ -1072,20 +1114,27 @@ defmodule NexusDownfallWeb.PlanetLive do
                                     >
                                       -
                                     </button>
-                                    <span class="w-6 text-center text-[11px] font-mono text-white">
+                                    <span class="w-6 text-center text-xs font-mono text-white">
                                       {qty}
                                     </span>
                                     <button
                                       phx-click="adjust_defense_order"
                                       phx-value-defense_type={defense.type}
                                       phx-value-delta="1"
-                                      class="w-5 h-5 rounded bg-gray-700 hover:bg-gray-600 text-white text-xs flex items-center justify-center leading-none"
+                                      disabled={not can_increment}
+                                      class={[
+                                        "w-5 h-5 rounded text-xs flex items-center justify-center leading-none",
+                                        if(can_increment,
+                                          do: "bg-gray-700 hover:bg-gray-600 text-white",
+                                          else: "bg-gray-800 text-gray-600 cursor-not-allowed"
+                                        )
+                                      ]}
                                     >
                                       +
                                     </button>
                                   </div>
                                 </div>
-                                <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px]">
+                                <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
                                   <span class="text-gray-500">
                                     {format_duration(defense.build_time_seconds * qty)}
                                   </span>
@@ -1115,7 +1164,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                             if defense, do: acc + defense.build_time_seconds * qty, else: acc
                           end) %>
                         <div class="border-t border-gray-800 p-3 shrink-0 flex flex-col gap-2">
-                          <div class="grid grid-cols-2 gap-y-1 text-[10px]">
+                          <div class="grid grid-cols-2 gap-y-1 text-xs">
                             <div class="text-gray-500">{gettext("Total Items:")}</div>
                             <div class="text-white font-semibold text-right">
                               {total_defense_items}
@@ -1130,7 +1179,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                             phx-click="submit_defense_order"
                             disabled={not center_ready or total_defense_items == 0}
                             class={[
-                              "w-full rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition",
+                              "w-full rounded-lg py-2 text-sm font-bold uppercase tracking-wider transition",
                               if(center_ready and total_defense_items > 0,
                                 do: "bg-cyan-600 hover:bg-cyan-500 text-white cursor-pointer",
                                 else: "bg-gray-800 text-gray-600 cursor-not-allowed"
@@ -1167,6 +1216,60 @@ defmodule NexusDownfallWeb.PlanetLive do
                   <p class="text-gray-500 text-sm">{gettext("Specialization system coming soon.")}</p>
                 </div>
               <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      <%= if @unit_detail do %>
+        <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/75 backdrop-blur-sm" phx-click="close_unit_details" />
+          <div class="relative z-10 w-full max-w-4xl overflow-hidden rounded-2xl border border-cyan-900/70 bg-gray-950 shadow-2xl">
+            <div class="grid gap-0 md:grid-cols-[320px_1fr]">
+              <div class="relative min-h-[260px] bg-gray-900">
+                <img
+                  src={@unit_detail.image_path}
+                  class="absolute inset-0 h-full w-full object-contain p-8"
+                  draggable="false"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-cyan-950/20" />
+              </div>
+
+              <div class="flex max-h-[78vh] flex-col overflow-y-auto p-6">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-cyan-400">
+                      {gettext("Details")}
+                    </p>
+                    <h3 class="mt-1 text-2xl font-bold leading-tight text-white">
+                      {translate_dynamic(@unit_detail.name)}
+                    </h3>
+                  </div>
+
+                  <button
+                    phx-click="close_unit_details"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-900 text-gray-400 transition hover:bg-gray-800 hover:text-white"
+                  >
+                    x
+                  </button>
+                </div>
+
+                <p class="mt-4 text-sm leading-relaxed text-gray-300">
+                  {translate_dynamic(@unit_detail.description)}
+                </p>
+
+                <div class="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  <%= for {label, value} <- @unit_detail.stats do %>
+                    <div class="rounded-lg border border-gray-800 bg-gray-900/70 px-3 py-2">
+                      <div class="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                        {label}
+                      </div>
+                      <div class="mt-1 break-words text-sm font-semibold text-gray-100">
+                        {value}
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1242,6 +1345,7 @@ defmodule NexusDownfallWeb.PlanetLive do
        defense_error: nil,
        defense_notice: nil,
        defense_order: %{},
+       selected_unit_details: nil,
        selected_fleet_id: first_fleet_id
      )}
   end
@@ -1256,12 +1360,25 @@ defmodule NexusDownfallWeb.PlanetLive do
        build_order: %{},
        defense_error: nil,
        defense_notice: nil,
-       defense_order: %{}
+       defense_order: %{},
+       selected_unit_details: nil
      )}
   end
 
   def handle_event("select_tab", %{"tab" => tab}, socket) do
     {:noreply, assign(socket, :selected_tab, tab)}
+  end
+
+  def handle_event("show_ship_details", %{"ship_type" => ship_type}, socket) do
+    {:noreply, assign(socket, :selected_unit_details, %{kind: "ship", type: ship_type})}
+  end
+
+  def handle_event("show_defense_details", %{"defense_type" => defense_type}, socket) do
+    {:noreply, assign(socket, :selected_unit_details, %{kind: "defense", type: defense_type})}
+  end
+
+  def handle_event("close_unit_details", _params, socket) do
+    {:noreply, assign(socket, :selected_unit_details, nil)}
   end
 
   def handle_event("toggle_user_menu", _params, socket) do
@@ -1529,8 +1646,21 @@ defmodule NexusDownfallWeb.PlanetLive do
       end
 
     current = Map.get(socket.assigns.defense_order, defense_type, 0)
-    new_order = Map.put(socket.assigns.defense_order, defense_type, current + qty)
-    {:noreply, assign(socket, :defense_order, new_order)}
+
+    case validate_defense_staging(socket.assigns, defense_type, qty) do
+      :ok ->
+        new_order = Map.put(socket.assigns.defense_order, defense_type, current + qty)
+
+        {:noreply,
+         assign(socket,
+           defense_order: new_order,
+           defense_error: nil,
+           defense_notice: nil
+         )}
+
+      {:error, message} ->
+        {:noreply, assign(socket, defense_error: message, defense_notice: nil)}
+    end
   end
 
   def handle_event(
@@ -1545,14 +1675,33 @@ defmodule NexusDownfallWeb.PlanetLive do
       end
 
     current = Map.get(socket.assigns.defense_order, defense_type, 0)
-    new_qty = max(0, current + delta)
 
-    new_order =
-      if new_qty == 0,
-        do: Map.delete(socket.assigns.defense_order, defense_type),
-        else: Map.put(socket.assigns.defense_order, defense_type, new_qty)
+    if delta > 0 do
+      case validate_defense_staging(socket.assigns, defense_type, delta) do
+        :ok ->
+          new_qty = current + delta
+          new_order = Map.put(socket.assigns.defense_order, defense_type, new_qty)
 
-    {:noreply, assign(socket, :defense_order, new_order)}
+          {:noreply,
+           assign(socket,
+             defense_order: new_order,
+             defense_error: nil,
+             defense_notice: nil
+           )}
+
+        {:error, message} ->
+          {:noreply, assign(socket, defense_error: message, defense_notice: nil)}
+      end
+    else
+      new_qty = max(0, current + delta)
+
+      new_order =
+        if new_qty == 0,
+          do: Map.delete(socket.assigns.defense_order, defense_type),
+          else: Map.put(socket.assigns.defense_order, defense_type, new_qty)
+
+      {:noreply, assign(socket, defense_order: new_order, defense_error: nil)}
+    end
   end
 
   def handle_event("submit_defense_order", _params, socket) do
@@ -1829,6 +1978,192 @@ defmodule NexusDownfallWeb.PlanetLive do
       if defense.defense_type == defense_type, do: defense.quantity
     end)
   end
+
+  defp queued_defense_quantity(queue_items, defense_type) do
+    queue_items
+    |> List.wrap()
+    |> Enum.reduce(0, fn item, acc ->
+      if item.defense_type == defense_type, do: acc + item.quantity, else: acc
+    end)
+  end
+
+  defp defense_remaining_limit(defense, owned_qty, queued_qty, staged_qty) do
+    case Map.get(defense, :max_per_planet) do
+      max when is_integer(max) -> max(max - owned_qty - queued_qty - staged_qty, 0)
+      _ -> :unlimited
+    end
+  end
+
+  defp validate_defense_staging(assigns, defense_type, requested_qty) do
+    defense = Enum.find(assigns.defense_catalog, &(&1.type == defense_type))
+
+    cond do
+      is_nil(defense) ->
+        {:error, gettext("Invalid defense request.")}
+
+      requested_qty <= 0 ->
+        {:error, gettext("Invalid defense request.")}
+
+      true ->
+        owned_qty = defense_quantity(assigns.planet_defenses, defense_type)
+        queued_qty = queued_defense_quantity(assigns.defense_queue_items, defense_type)
+        staged_qty = Map.get(assigns.defense_order, defense_type, 0)
+        remaining = defense_remaining_limit(defense, owned_qty, queued_qty, staged_qty)
+
+        cond do
+          remaining == :unlimited ->
+            :ok
+
+          remaining <= 0 ->
+            {:error,
+             gettext(
+               "Defense limit reached: existing and queued defenses already use all available slots."
+             )}
+
+          requested_qty > remaining ->
+            {:error,
+             Gettext.gettext(
+               NexusDownfallWeb.Gettext,
+               "Only %{count} more can be staged for this defense.",
+               count: remaining
+             )}
+
+          true ->
+            :ok
+        end
+    end
+  end
+
+  defp selected_unit_detail(nil), do: nil
+
+  defp selected_unit_detail(%{kind: "ship", type: type}) do
+    case Fleets.ship_definition(type) do
+      nil ->
+        nil
+
+      ship ->
+        %{
+          kind: :ship,
+          name: ship.name,
+          description: ship.description,
+          image_path: ship_image_path(ship),
+          stats: [
+            {gettext("Tier"), ship.tier},
+            {gettext("Hull"), ship.hull},
+            {gettext("Shield"), ship.shield},
+            {gettext("Attack"), ship.attack},
+            {gettext("Accuracy"), ship.accuracy},
+            {gettext("Agility"), ship.agility},
+            {gettext("Speed"), ship.speed},
+            {gettext("Fuel/s"), ship.fuel_per_s},
+            {gettext("Cargo"), ship.cargo},
+            {gettext("Build time"), format_duration(ship.build_time_seconds)},
+            {gettext("Raw Materials"), format_resource(ship.cost.raw_materials * 1.0)},
+            {gettext("Chips"), format_resource(ship.cost.microchips * 1.0)},
+            {gettext("Hydrogen"), format_resource(ship.cost.hydrogen * 1.0)}
+          ]
+        }
+    end
+  end
+
+  defp selected_unit_detail(%{kind: "defense", type: type}) do
+    case Defenses.defense_definition(type) do
+      nil ->
+        nil
+
+      defense ->
+        stats = [
+          {gettext("Tier"), defense.tier},
+          {gettext("Role"), defense_role_label(defense.role)},
+          {gettext("Hull"), defense.hull},
+          {gettext("Shield"), defense.shield},
+          {gettext("Attack"), defense.attack},
+          {gettext("Accuracy"), defense.accuracy},
+          {gettext("Energy"), defense.energy},
+          {gettext("Build time"), format_duration(defense.build_time_seconds)},
+          {gettext("Raw Materials"), format_resource(defense.cost.raw_materials * 1.0)},
+          {gettext("Chips"), format_resource(defense.cost.microchips * 1.0)},
+          {gettext("Hydrogen"), format_resource(defense.cost.hydrogen * 1.0)},
+          {gettext("Target priority"), target_priority_label(defense.target_priority)},
+          {gettext("Rules"), defense_rules_label(defense.rules)}
+        ]
+
+        stats =
+          case Map.get(defense, :max_per_planet) do
+            max when is_integer(max) -> stats ++ [{gettext("Limit"), max}]
+            _ -> stats
+          end
+
+        %{
+          kind: :defense,
+          name: defense.name,
+          description: defense.description,
+          image_path: defense_image_path(defense),
+          stats: stats
+        }
+    end
+  end
+
+  defp selected_unit_detail(_), do: nil
+
+  defp ship_image_path(%{tier: tier}) when tier >= 3, do: "/images/ships/ship-b.svg"
+  defp ship_image_path(_ship), do: "/images/ships/ship-a.svg"
+
+  defp defense_image_path(_defense), do: "/images/planet-images/defense-center.png"
+
+  defp target_priority_label([]), do: gettext("No target priority")
+
+  defp target_priority_label(targets) do
+    targets
+    |> Enum.map(&target_category_label/1)
+    |> Enum.join(" > ")
+  end
+
+  defp defense_rules_label([]), do: gettext("No special rules")
+
+  defp defense_rules_label(rules) do
+    rules
+    |> Enum.map(&defense_rule_label/1)
+    |> Enum.join(", ")
+  end
+
+  defp target_category_label("Light"), do: gettext("Light")
+  defp target_category_label("Medium"), do: gettext("Medium")
+  defp target_category_label("Heavy"), do: gettext("Heavy")
+  defp target_category_label("Capital"), do: gettext("Capital")
+  defp target_category_label("Civil"), do: gettext("Civil")
+  defp target_category_label("Siege"), do: gettext("Siege")
+  defp target_category_label("Support"), do: gettext("Support")
+  defp target_category_label("Conquest"), do: gettext("Conquest")
+  defp target_category_label(other), do: other
+
+  defp defense_rule_label("Fixed Defense"), do: gettext("Fixed Defense")
+  defp defense_rule_label("Saturation Fire"), do: gettext("Saturation Fire")
+  defp defense_rule_label("Anti-squadron Accuracy"), do: gettext("Anti-squadron Accuracy")
+  defp defense_rule_label("Piercing Shot"), do: gettext("Piercing Shot")
+  defp defense_rule_label("Ion Pulse"), do: gettext("Ion Pulse")
+  defp defense_rule_label("Shield Overload"), do: gettext("Shield Overload")
+  defp defense_rule_label("Critical Infrastructure"), do: gettext("Critical Infrastructure")
+  defp defense_rule_label("Anti-siege"), do: gettext("Anti-siege")
+  defp defense_rule_label("Orbital Interception"), do: gettext("Orbital Interception")
+  defp defense_rule_label("Anti-blockade"), do: gettext("Anti-blockade")
+  defp defense_rule_label("Conquest Resistance"), do: gettext("Conquest Resistance")
+  defp defense_rule_label(other), do: other
+
+  defp defense_role_label("Cheap anti-light defense"), do: gettext("Cheap anti-light defense")
+  defp defense_role_label("Precise anti-light defense"), do: gettext("Precise anti-light defense")
+  defp defense_role_label("Anti-medium defense"), do: gettext("Anti-medium defense")
+  defp defense_role_label("Heavy armor piercing"), do: gettext("Heavy armor piercing")
+  defp defense_role_label("Shield suppression"), do: gettext("Shield suppression")
+  defp defense_role_label("Anti-capital defense"), do: gettext("Anti-capital defense")
+  defp defense_role_label("Global protection"), do: gettext("Global protection")
+  defp defense_role_label("Bombardment counter"), do: gettext("Bombardment counter")
+  defp defense_role_label("Blockade counter"), do: gettext("Blockade counter")
+
+  defp defense_role_label("Anti-conquest infrastructure"),
+    do: gettext("Anti-conquest infrastructure")
+
+  defp defense_role_label(other), do: other
 
   defp translate_dynamic(msgid), do: Gettext.gettext(NexusDownfallWeb.Gettext, msgid)
 

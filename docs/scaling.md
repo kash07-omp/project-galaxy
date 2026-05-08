@@ -21,6 +21,7 @@ Nexus: Downfall should stay universe-first as it grows.
 - Workers must be idempotent. A retried or duplicate job should not apply the same gameplay result twice.
 - Transport missions spend fuel and cargo in a single locked dispatch transaction, then perform one locked target update on arrival and one fleet status update on return. Load scales with mission transitions, not connected clients; LiveView only renders PubSub updates and a local progress timer.
 - Planetary defense construction uses one durable queue per planet and one Oban completion per built unit. Queue inserts lock only the owning planet, the planet's defense rows and that planet's queue positions, so load scales with player build actions instead of connected clients. Under spikes, delayed workers slow construction completion but do not duplicate defenses because each active queue item is locked before mutation.
+- Ship and defense detail modals are client-side LiveView projections of already loaded catalog data. Defense limit checks in the UI reduce invalid clicks, but backend queue insertion remains the authoritative locked validation for concurrent sessions.
 
 ## Realtime topics
 

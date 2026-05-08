@@ -199,4 +199,21 @@ defmodule NexusDownfallWeb.PlanetLiveShipyardTest do
     assert ship_row_window =~ "2400"
     assert ship_row_window =~ "1800"
   end
+
+  test "clicking a ship name opens a detailed stats modal", %{conn: conn, planet: planet} do
+    {:ok, lv, _html} = live(conn, ~p"/planets/#{planet.id}")
+
+    render_click(lv, "select_building", %{"type" => "spaceport"})
+    render_click(lv, "select_tab", %{"tab" => "specific"})
+
+    html =
+      lv
+      |> element("[data-unit-detail='ship-light_fighter']")
+      |> render_click()
+
+    assert html =~ "Light Fighter"
+    assert html =~ "Fast and cheap attack craft"
+    assert html =~ "Fuel/s"
+    assert html =~ "Cargo"
+  end
 end
