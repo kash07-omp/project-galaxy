@@ -630,6 +630,7 @@ defmodule NexusDownfall.Fleets do
 
       update_fleet_status!(fleet.id, "outbound")
       mission = schedule_mission_action!(mission, "arrive", outbound_arrival_at)
+      :ok = notify_mission_updated(mission)
 
       :telemetry.execute(
         [:nexus_downfall, :fleets, :colonization_dispatched],
@@ -896,6 +897,7 @@ defmodule NexusDownfall.Fleets do
 
               update_fleet_status!(mission.fleet_id, "returning")
               schedule_mission_action!(mission, "return", return_at)
+              :ok = notify_mission_updated(mission)
 
               :telemetry.execute(
                 [:nexus_downfall, :fleets, :colonization_arrival_lost],
@@ -920,6 +922,7 @@ defmodule NexusDownfall.Fleets do
 
               update_fleet_status!(mission.fleet_id, "colonizing")
               schedule_mission_action!(mission, "complete_colonization", complete_at)
+              :ok = notify_mission_updated(mission)
 
               :telemetry.execute(
                 [:nexus_downfall, :fleets, :colonization_arrival_won],
@@ -981,6 +984,7 @@ defmodule NexusDownfall.Fleets do
 
               update_fleet_status!(mission.fleet_id, "returning")
               schedule_mission_action!(mission, "return", return_at)
+              :ok = notify_mission_updated(mission)
               :ok
 
             true ->
@@ -1022,6 +1026,7 @@ defmodule NexusDownfall.Fleets do
 
                 update_fleet_status!(mission.fleet_id, "returning")
                 schedule_mission_action!(mission, "return", return_at)
+                :ok = notify_mission_updated(mission)
               else
                 mission
                 |> FleetMission.changeset(%{
@@ -1033,6 +1038,7 @@ defmodule NexusDownfall.Fleets do
                 |> Repo.update!()
 
                 update_fleet_status!(mission.fleet_id, "idle")
+                :ok = notify_mission_updated(mission)
               end
 
               :telemetry.execute(
@@ -1080,6 +1086,7 @@ defmodule NexusDownfall.Fleets do
           |> Repo.update!()
 
           update_fleet_status!(mission.fleet_id, "idle")
+          :ok = notify_mission_updated(mission)
 
           :telemetry.execute(
             [:nexus_downfall, :fleets, :mission_returned],
@@ -1364,6 +1371,26 @@ defmodule NexusDownfall.Fleets do
         NexusDownfall.PubSub,
         fleet_updates_topic_for_user(user_id),
         {:fleet_ship_built, payload}
+      )
+    end
+
+    :ok
+  end
+
+  defp notify_mission_updated(mission) do
+    user_id =
+      Repo.one(
+        from uu in NexusDownfall.Accounts.UniverseUser,
+          where: uu.id == ^mission.universe_user_id,
+          select: uu.user_id
+      )
+
+    if is_integer(user_id) do
+      Phoenix.PubSub.broadcast(
+        NexusDownfall.PubSub,
+        fleet_updates_topic_for_user(user_id),
+        {:fleet_mission_updated,
+         %{mission_id: mission.id, fleet_id: mission.fleet_id, phase: mission.phase}}
       )
     end
 

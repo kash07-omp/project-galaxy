@@ -50,7 +50,7 @@ defmodule NexusDownfallWeb.GameComponents do
             active={@active_tab == "cities"}
           />
         <% else %>
-          <.game_nav_tab href="#" label={gettext("Cities")} active={@active_tab == "cities"} />
+          <.game_nav_tab href={~p"/planets"} label={gettext("Cities")} active={@active_tab == "cities"} />
         <% end %>
         <.game_nav_tab href="#" label={gettext("Research")} active={false} />
         <.game_nav_tab href="#" label={gettext("Laws")} active={false} />

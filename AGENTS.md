@@ -41,6 +41,11 @@ Entregar un MVP práctico y rápido, iterando por prioridad y manteniendo estabi
    - Todo texto visible al usuario (vistas, componentes, hooks/frontend, mensajes, labels, placeholders y tooltips) debe salir traducible para **español, inglés y francés**.
    - No introducir texto hardcodeado en un único idioma en UI o JS si es visible.
    - Al cerrar cada tarea, actualizar las entradas de Gettext/locale necesarias para mantener paridad en los tres idiomas.
+8. **Escalabilidad y robustez obligatorias (CRÍTICO)**:
+   - Toda implementación debe diseñarse para operar con **miles de usuarios concurrentes** y **cientos de misiones simultáneas** por universo.
+   - Priorizar soluciones **KISS** y eficientes: evitar polling agresivo por usuario, reducir trabajo redundante en DB y minimizar queries de alta frecuencia.
+   - Separar actualización visual y lógica de dominio: las transiciones críticas deben resolverse en backend (workers/eventos), no depender del número de clientes conectados.
+   - Antes de cerrar una tarea, evaluar y documentar de forma breve el impacto de carga (CPU/DB/red), concurrencia y degradación bajo pico.
 
 ## Resumen jugable (alto nivel)
 

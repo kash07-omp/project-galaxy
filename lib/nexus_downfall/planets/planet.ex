@@ -17,6 +17,7 @@ defmodule NexusDownfall.Planets.Planet do
     field :slot_type, :string, default: "planet"
     field :planet_subtype, :string
     field :raw_materials, :integer, default: 500
+    field :planet_image_id, :integer, default: 1
     field :microchips, :integer, default: 500
     field :hydrogen, :integer, default: 500
     field :food, :integer, default: 500

@@ -1,423 +1,1543 @@
 ## Locale: en (English)
 ## English is the default language — msgids are in English.
 ## Empty msgstr falls back to the msgid (English text).
-
 msgid ""
 msgstr ""
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-## Galaxy / Solar system
-msgid "System"
-msgstr "System"
+## Navigation
+msgid "Galaxia"
+msgstr ""
 
-msgid "Galaxy %{number}"
-msgstr "Galaxy %{number}"
+msgid "Ciudades"
+msgstr ""
 
-msgid "System %{number}"
-msgstr "System %{number}"
+msgid "Investigación"
+msgstr ""
 
-msgid "Own planet"
-msgstr "Own planet"
+msgid "Leyes"
+msgstr ""
 
-msgid "Your planet"
-msgstr "Your planet"
+msgid "Comercio"
+msgstr ""
 
-msgid "Colonised"
-msgstr "Colonised"
+msgid "Diplomacia"
+msgstr ""
 
-msgid "Uninhabited"
-msgstr "Uninhabited"
+msgid "Clanes"
+msgstr ""
 
-msgid "Asteroid belt"
-msgstr "Asteroid belt"
+msgid "Cartas"
+msgstr ""
 
-msgid "Empty"
-msgstr "Empty"
+msgid "Flota"
+msgstr ""
 
-msgid "Empty slot"
-msgstr "Empty slot"
+#: lib/nexus_downfall_web/components/game_components.ex:62
+#, elixir-autogen
+msgid "Ranking"
+msgstr ""
 
-msgid "Belt"
-msgstr "Belt"
+msgid "Tienda"
+msgstr ""
 
-msgid "Orbit"
-msgstr "Orbit"
+## User menu
+msgid "Ajustes"
+msgstr ""
 
-msgid "Region"
-msgstr "Region"
+msgid "Cerrar sesión"
+msgstr ""
 
-msgid "Go to Planet"
-msgstr "Go to Planet"
+## Building names
+msgid "Mina de Hidrógeno"
+msgstr ""
 
-msgid "Close"
-msgstr "Close"
+msgid "Fábrica de Chips"
+msgstr ""
 
-msgid "Click a planet to view info."
-msgstr "Click a planet to view info."
+msgid "Puerto Espacial"
+msgstr ""
 
-msgid "Slots"
-msgstr "Slots"
+msgid "Zona Residencial"
+msgstr ""
 
-msgid "Rocky"
-msgstr "Rocky"
+msgid "Centro de Mando"
+msgstr ""
 
-msgid "Gas giant"
-msgstr "Gas giant"
+msgid "Mina de Recursos"
+msgstr ""
 
-msgid "Ice"
-msgstr "Ice"
+msgid "Granja"
+msgstr ""
 
-msgid "Ocean"
-msgstr "Ocean"
+msgid "Centro de Investigación"
+msgstr ""
 
-msgid "Lava"
-msgstr "Lava"
+msgid "Generador de Energía"
+msgstr ""
 
-msgid "Desert"
-msgstr "Desert"
+msgid "Reactor Nuclear"
+msgstr ""
 
-## Fleets / Shipyard
-msgid "Fleet command"
-msgstr "Fleet command"
+msgid "Centro de Defensa"
+msgstr ""
 
-msgid "Command bridge"
-msgstr "Command bridge"
+msgid "Fábrica de Componentes"
+msgstr ""
 
-msgid "Fleet command center"
-msgstr "Fleet command center"
+## Modal tabs
+msgid "Información"
+msgstr ""
 
-msgid "Deploy and supervise your task forces from a tactical roster."
-msgstr "Deploy and supervise your task forces from a tactical roster."
+msgid "Específico"
+msgstr ""
 
-msgid "Fleet list"
-msgstr "Fleet list"
+msgid "Especialización"
+msgstr ""
 
-msgid "No fleets registered yet."
-msgstr "No fleets registered yet."
+## Energy section
+msgid "Producción de Energía"
+msgstr ""
 
-msgid "Create a fleet to start assigning ships from the spaceport queue."
-msgstr "Create a fleet to start assigning ships from the spaceport queue."
+msgid "Este edificio produce"
+msgstr ""
 
-msgid "Create new fleet"
-msgstr "Create new fleet"
+msgid "energía al nivel actual"
+msgstr ""
 
-msgid "Ships in fleet"
-msgstr "Ships in fleet"
+msgid "Balance del planeta"
+msgstr ""
 
-msgid "Total power"
-msgstr "Total power"
+msgid "producida"
+msgstr ""
 
-msgid "Fleet filters"
-msgstr "Fleet filters"
+msgid "consumida"
+msgstr ""
 
-msgid "Premium required"
-msgstr "Premium required"
+msgid "eficiencia"
+msgstr ""
 
-msgid "Advanced fleet filters are available with Premium command subscription."
-msgstr "Advanced fleet filters are available with Premium command subscription."
+## Production stats
+msgid "Producción de Hidrógeno"
+msgstr ""
 
-msgid "Filter by total power"
-msgstr "Filter by total power"
+msgid "Producción de Microchips"
+msgstr ""
 
-msgid "Filter by total ships"
-msgstr "Filter by total ships"
+msgid "Producción de Materias Primas"
+msgstr ""
 
-msgid "Filter by solar system"
-msgstr "Filter by solar system"
+msgid "Producción de Alimentos"
+msgstr ""
 
-msgid "Feature coming soon"
-msgstr "Feature coming soon"
+msgid "Por minuto"
+msgstr ""
 
-msgid "Create fleet"
-msgstr "Create fleet"
+msgid "Por hora"
+msgstr ""
 
-msgid "Fleet control nexus"
-msgstr "Fleet control nexus"
+msgid "Por día"
+msgstr ""
 
-msgid "Organize your fleets before missions go live. The roster remains central, while creation stays one click away in a guided modal."
-msgstr "Organize your fleets before missions go live. The roster remains central, while creation stays one click away in a guided modal."
+msgid "Por semana"
+msgstr ""
 
-msgid "New fleet"
-msgstr "New fleet"
+## Upgrade section
+msgid "Construcción inicial"
+msgstr ""
 
-msgid "Fleet roster"
-msgstr "Fleet roster"
+msgid "Mejora → Nivel"
+msgstr ""
 
-msgid "Review your home fleets, commanders and hangar counts from one place."
-msgstr "Review your home fleets, commanders and hangar counts from one place."
+msgid "Construcción en curso"
+msgstr ""
 
-msgid "No fleets on standby"
-msgstr "No fleets on standby"
+msgid "Mejorando a nivel"
+msgstr ""
 
-msgid "Create your first fleet to unlock ship assignments from the spaceport and prepare future missions."
-msgstr "Create your first fleet to unlock ship assignments from the spaceport and prepare future missions."
+msgid "restantes"
+msgstr ""
 
-msgid "Open fleet creation"
-msgstr "Open fleet creation"
+#, fuzzy
+msgid "Construir"
+msgstr "Cost"
 
-msgid "No ships assigned yet."
-msgstr "No ships assigned yet."
+msgid "Ya hay una construcción en progreso en este planeta."
+msgstr ""
 
-msgid "Operational overview"
-msgstr "Operational overview"
+## Settings page
+msgid "Ajustes de Cuenta"
+msgstr ""
 
-msgid "Home worlds"
-msgstr "Home worlds"
+msgid "Idioma"
+msgstr ""
 
-msgid "Ready fleets"
-msgstr "Ready fleets"
+msgid "Guardar"
+msgstr ""
 
-msgid "All fleets are currently docked and awaiting mission controls."
-msgstr "All fleets are currently docked and awaiting mission controls."
+msgid "Volver al mapa"
+msgstr ""
 
-msgid "Fleet creation workflow"
-msgstr "Fleet creation workflow"
+msgid "Idioma actualizado correctamente."
+msgstr ""
 
-msgid "Creation stays in a modal so the roster remains visible while you plan your next command slot."
-msgstr "Creation stays in a modal so the roster remains visible while you plan your next command slot."
+msgid "Error al guardar el idioma."
+msgstr ""
 
-msgid "Creation requests still require a valid name and one of your planets."
-msgstr "Creation requests still require a valid name and one of your planets."
+#: lib/nexus_downfall_web/live/planet_live.ex:992
+#: lib/nexus_downfall_web/live/planet_live.ex:1217
+#, elixir-autogen
+msgid "Planet not found."
+msgstr "Planet not found."
 
-msgid "Cancel"
-msgstr "Cancel"
+#: lib/nexus_downfall_web/live/planet_live.ex:459
+#: lib/nexus_downfall_web/live/planet_live.ex:981
+#: lib/nexus_downfall_web/live/planet_live.ex:985
+#, elixir-autogen, elixir-format
+msgid "A construction is already in progress on this planet."
+msgstr ""
 
-msgid "Create a named fleet, assign its home planet and optionally an admiral card."
-msgstr "Create a named fleet, assign its home planet and optionally an admiral card."
+#: lib/nexus_downfall_web/live/user_settings_live.ex:99
+#, elixir-autogen, elixir-format
+msgid "Account"
+msgstr ""
 
-msgid "Fleet name"
-msgstr "Fleet name"
+#: lib/nexus_downfall_web/live/user_settings_live.ex:16
+#: lib/nexus_downfall_web/live/user_settings_live.ex:32
+#: lib/nexus_downfall_web/live/user_settings_live.ex:36
+#, elixir-autogen, elixir-format
+msgid "Account Settings"
+msgstr ""
 
-msgid "Choose a name for your new fleet"
-msgstr "Choose a name for your new fleet"
+#: lib/nexus_downfall_web/live/fleet_live.ex:137
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr ""
 
-msgid "Home planet"
-msgstr "Home planet"
+#: lib/nexus_downfall_web/live/planet_live.ex:672
+#, elixir-autogen, elixir-format
+msgid "Add"
+msgstr ""
 
-msgid "Select one of your planets"
-msgstr "Select one of your planets"
+#: lib/nexus_downfall_web/live/planet_live.ex:841
+#, elixir-autogen, elixir-format
+msgid "Add Test Resources"
+msgstr ""
 
-msgid "Assigned admiral"
-msgstr "Assigned admiral"
+#: lib/nexus_downfall_web/live/planet_live.ex:713
+#, elixir-autogen, elixir-format
+msgid "Add ships from the list."
+msgstr ""
 
-msgid "No admiral"
-msgstr "No admiral"
+#: lib/nexus_downfall_web/live/planet_live.ex:1128
+#, elixir-autogen, elixir-format
+msgid "Add ships to the order first."
+msgstr ""
 
-msgid "Admiral Alpha Card"
-msgstr "Admiral Alpha Card"
-
-msgid "Admiral Beta Card"
-msgstr "Admiral Beta Card"
-
-msgid "Launch-ready fleet roster"
-msgstr "Launch-ready fleet roster"
-
-msgid "Fleets created here will later handle missions, routes and transports."
-msgstr "Fleets created here will later handle missions, routes and transports."
-
-msgid "fleets"
-msgstr "fleets"
-
-msgid "No fleets created yet."
-msgstr "No fleets created yet."
-
-msgid "Base planet"
-msgstr "Base planet"
-
-msgid "Total ships"
-msgstr "Total ships"
-
+#: lib/nexus_downfall_web/live/fleet_live.ex:132
+#, elixir-autogen, elixir-format
 msgid "Admiral"
 msgstr "Admiral"
 
-msgid "Status"
-msgstr "Status"
-
-msgid "Idle"
-msgstr "Idle"
-
-msgid "Ships"
-msgstr "Ships"
-
-msgid "units"
-msgstr "units"
-
-msgid "Fleet created successfully."
-msgstr "Fleet created successfully."
-
-msgid "Invalid fleet data."
-msgstr "Invalid fleet data."
-
-msgid "Home planet not found."
-msgstr "Home planet not found."
-
-msgid "Could not create the fleet."
-msgstr "Could not create the fleet."
-
-msgid "You do not own that card."
-msgstr "You do not own that card."
-
-msgid "Could not assign admiral."
-msgstr "Could not assign admiral."
-
-msgid "That admiral card is already assigned to another fleet."
-msgstr "That admiral card is already assigned to another fleet."
-
-msgid "Already assigned to another fleet."
-msgstr "Already assigned to another fleet."
-
-msgid "Unassign admiral"
-msgstr "Unassign admiral"
-
+#: lib/nexus_downfall_web/live/fleet_live.ex:708
+#, elixir-autogen, elixir-format
 msgid "Admiral assigned successfully."
 msgstr "Admiral assigned successfully."
 
+#: lib/nexus_downfall_web/live/fleet_live.ex:731
+#, elixir-autogen, elixir-format
 msgid "Admiral unassigned."
 msgstr "Admiral unassigned."
 
-msgid "Could not unassign admiral."
-msgstr "Could not unassign admiral."
+#: lib/nexus_downfall_web/live/planets_list_live.ex:80
+#, elixir-autogen, elixir-format
+msgid "Advanced Filters"
+msgstr ""
 
-msgid "Shipyard"
-msgstr "Shipyard"
+#: lib/nexus_downfall_web/live/fleet_live.ex:125
+#, elixir-autogen, elixir-format
+msgid "Advanced filters are visible but restricted to PRO commanders."
+msgstr ""
 
-## Ship names
-msgid "Light Freighter"
-msgstr "Light Freighter"
+#: lib/nexus_downfall_web/live/planets_list_live.ex:105
+#, elixir-autogen, elixir-format
+msgid "All"
+msgstr ""
 
-msgid "Heavy Freighter"
-msgstr "Heavy Freighter"
+#: lib/nexus_downfall_web/live/fleet_live.ex:103
+#, elixir-autogen, elixir-format
+msgid "All missions"
+msgstr ""
 
-msgid "Light Fighter"
-msgstr "Light Fighter"
+#: lib/nexus_downfall_web/live/fleet_live.ex:110
+#, elixir-autogen, elixir-format
+msgid "All planets"
+msgstr ""
 
-msgid "Corvette"
-msgstr "Corvette"
+#: lib/nexus_downfall_web/live/fleet_live.ex:322
+#, elixir-autogen, elixir-format
+msgid "Already assigned to another fleet."
+msgstr "Already assigned to another fleet."
 
-msgid "Missile Corvette"
-msgstr "Missile Corvette"
+#: lib/nexus_downfall_web/live/fleet_live.ex:982
+#, elixir-autogen, elixir-format
+msgid "Arrival in"
+msgstr ""
 
-msgid "Heavy Fighter"
-msgstr "Heavy Fighter"
+#: lib/nexus_downfall_web/live/fleet_live.ex:1007
+#, elixir-autogen, elixir-format
+msgid "Arrived"
+msgstr ""
 
-msgid "Frigate"
-msgstr "Frigate"
+#: lib/nexus_downfall_web/live/fleet_live.ex:187
+#, elixir-autogen, elixir-format
+msgid "Assign"
+msgstr ""
 
-msgid "Light Destroyer"
-msgstr "Light Destroyer"
+#: lib/nexus_downfall_web/live/fleet_live.ex:399
+#, elixir-autogen, elixir-format
+msgid "Assigned admiral"
+msgstr "Assigned admiral"
 
-msgid "Bomber"
-msgstr "Bomber"
+#: lib/nexus_downfall_web/live/solar_system_live.ex:88
+#: lib/nexus_downfall_web/live/solar_system_live.ex:229
+#, elixir-autogen, elixir-format
+msgid "Asteroid belt"
+msgstr "Asteroid belt"
 
-msgid "Blocker"
-msgstr "Blocker"
-
-msgid "Colonizer"
-msgstr "Colonizer"
-
-msgid "Cruiser"
-msgstr "Cruiser"
-
-msgid "Drone Carrier"
-msgstr "Drone Carrier"
-
-msgid "Electronic Warfare Cruiser"
-msgstr "Electronic Warfare Cruiser"
-
-msgid "Battleship"
-msgstr "Battleship"
-
-msgid "Leviathan"
-msgstr "Leviathan"
-
-msgid "Aphelion"
-msgstr "Aphelion"
-
-msgid "Exodus"
-msgstr "Exodus"
-
-msgid "Queue ship construction from this spaceport and assign each batch to a destination fleet."
-msgstr "Queue ship construction from this spaceport and assign each batch to a destination fleet."
-
-msgid "No fleets available. Create one first from Fleet."
-msgstr "No fleets available. Create one first from Fleet."
-
-msgid "Open Fleet command"
-msgstr "Open Fleet command"
-
-msgid "Build time"
-msgstr "Build time"
-
+#: lib/nexus_downfall_web/live/fleet_live.ex:828
+#, elixir-autogen, elixir-format
 msgid "Attack"
 msgstr "Attack"
 
-msgid "Hull"
-msgstr "Hull"
+#: lib/nexus_downfall_web/live/user_settings_live.ex:104
+#, elixir-autogen, elixir-format
+msgid "Back to map"
+msgstr ""
 
-msgid "Cargo"
-msgstr "Cargo"
+#: lib/nexus_downfall_web/live/solar_system_live.ex:217
+#, elixir-autogen, elixir-format
+msgid "Belt"
+msgstr "Belt"
 
-msgid "Speed"
-msgstr "Speed"
+#: lib/nexus_downfall_web/live/dashboard_live.ex:37
+#, elixir-autogen, elixir-format
+msgid "Browse Universes"
+msgstr ""
 
-msgid "Cost"
-msgstr "Cost"
+#: lib/nexus_downfall_web/live/planet_live.ex:475
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Build"
+msgstr "Build time"
 
-msgid "Target fleet"
-msgstr "Target fleet"
+#: lib/nexus_downfall_web/live/planet_live.ex:496
+#, elixir-autogen, elixir-format
+msgid "Build Queue"
+msgstr ""
 
-msgid "Quantity"
-msgstr "Quantity"
+#: lib/nexus_downfall_web/live/planet_live.ex:834
+#, elixir-autogen, elixir-format
+msgid "Build Ships"
+msgstr ""
 
-msgid "Queue ships"
-msgstr "Queue ships"
+#: lib/nexus_downfall_web/live/planet_live.ex:683
+#, elixir-autogen, elixir-format
+msgid "Build Summary"
+msgstr ""
 
-msgid "Shipyard queue"
-msgstr "Shipyard queue"
+#: lib/nexus_downfall_web/live/planets_list_live.ex:61
+#: lib/nexus_downfall_web/live/planets_list_live.ex:107
+#: lib/nexus_downfall_web/live/planets_list_live.ex:215
+#, elixir-autogen, elixir-format
+msgid "Building"
+msgstr ""
 
-msgid "No ships queued on this planet."
-msgstr "No ships queued on this planet."
+#: lib/nexus_downfall_web/live/fleet_live.ex:973
+#, elixir-autogen, elixir-format
+msgid "Building colony"
+msgstr ""
 
-msgid "In progress"
-msgstr "In progress"
+#: lib/nexus_downfall_web/live/fleet_live.ex:409
+#: lib/nexus_downfall_web/live/fleet_live.ex:488
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr "Cancel"
 
-msgid "Queued"
-msgstr "Queued"
+#: lib/nexus_downfall_web/components/game_components.ex:60
+#, elixir-autogen, elixir-format
+msgid "Cards"
+msgstr ""
 
+#: lib/nexus_downfall_web/live/fleet_live.ex:171
+#, elixir-autogen, elixir-format
+msgid "Change"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1441
+#, elixir-autogen, elixir-format
+msgid "Chip Factory"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1324
+#: lib/nexus_downfall_web/live/planets_list_live.ex:228
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Chips"
+msgstr "Ships"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:385
+#, elixir-autogen, elixir-format
+msgid "Choose a name for your new fleet"
+msgstr "Choose a name for your new fleet"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:291
+#, elixir-autogen, elixir-format
+msgid "Choose an admiral from your deck"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:646
+#, elixir-autogen, elixir-format
+msgid "Choose galaxy, system and planet before dispatching."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:424
+#, elixir-autogen, elixir-format
+msgid "Choose the mission type first, then narrow the target step by step."
+msgstr ""
+
+#: lib/nexus_downfall_web/components/game_components.ex:49
+#: lib/nexus_downfall_web/components/game_components.ex:53
+#, elixir-autogen, elixir-format
+msgid "Cities"
+msgstr ""
+
+#: lib/nexus_downfall_web/components/game_components.ex:59
+#, elixir-autogen, elixir-format
+msgid "Clans"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:198
+#, elixir-autogen, elixir-format
+msgid "Click a planet to view info."
+msgstr "Click a planet to view info."
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:194
+#, elixir-autogen, elixir-format
+msgid "Close"
+msgstr "Close"
+
+#: lib/nexus_downfall_web/live/galaxy_live.ex:185
+#: lib/nexus_downfall_web/live/solar_system_live.ex:91
+#: lib/nexus_downfall_web/live/solar_system_live.ex:140
+#: lib/nexus_downfall_web/live/solar_system_live.ex:228
+#, elixir-autogen, elixir-format
+msgid "Colonised"
+msgstr "Colonised"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:826
+#, elixir-autogen, elixir-format
+msgid "Colonization"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:661
+#, elixir-autogen, elixir-format
+msgid "Colonization mission dispatched."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:902
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Colonizing"
+msgstr "Colonizer"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:1006
+#, elixir-autogen, elixir-format
+msgid "Colony ready"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/dashboard_live.ex:24
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Command Bridge"
+msgstr "Command bridge"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1444
+#, elixir-autogen, elixir-format
+msgid "Command Center"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1339
+#, elixir-autogen, elixir-format
 msgid "Completed"
 msgstr "Completed"
 
-msgid "Ship construction queued."
-msgstr "Ship construction queued."
+#: lib/nexus_downfall_web/live/fleet_live.ex:981
+#, elixir-autogen, elixir-format
+msgid "Completion in"
+msgstr ""
 
-msgid "Spaceport level 1 is required to build ships."
-msgstr "Spaceport level 1 is required to build ships."
+#: lib/nexus_downfall_web/live/planet_live.ex:1451
+#, elixir-autogen, elixir-format
+msgid "Component Factory"
+msgstr ""
 
-msgid "Insufficient resources to queue ships."
-msgstr "Insufficient resources to queue ships."
+#: lib/nexus_downfall_web/live/planet_live.ex:425
+#, elixir-autogen, elixir-format
+msgid "Construction in progress"
+msgstr ""
 
+#: lib/nexus_downfall_web/live/planet_live.ex:1223
+#, elixir-autogen, elixir-format
+msgid "Could not add test resources."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:719
+#, elixir-autogen, elixir-format
+msgid "Could not assign admiral."
+msgstr "Could not assign admiral."
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:543
+#, elixir-autogen, elixir-format
+msgid "Could not create the fleet."
+msgstr "Could not create the fleet."
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:936
+#, elixir-autogen, elixir-format
+msgid "Could not dispatch mission."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1051
+#: lib/nexus_downfall_web/live/planet_live.ex:1268
+#, elixir-autogen, elixir-format
+msgid "Could not schedule ship construction. Please try again."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:735
+#, elixir-autogen, elixir-format
+msgid "Could not unassign admiral."
+msgstr "Could not unassign admiral."
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:144
+#, elixir-autogen, elixir-format
+msgid "Create a fleet to start assigning ships from the spaceport queue."
+msgstr "Create a fleet to start assigning ships from the spaceport queue."
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:373
+#, elixir-autogen, elixir-format
+msgid "Create a named fleet, assign its home planet and optionally an admiral card."
+msgstr "Create a named fleet, assign its home planet and optionally an admiral card."
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:71
+#, elixir-autogen, elixir-format
+msgid "Create and organize your operational fleets."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:372
+#: lib/nexus_downfall_web/live/fleet_live.ex:410
+#, elixir-autogen, elixir-format
+msgid "Create fleet"
+msgstr "Create fleet"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:145
+#, elixir-autogen, elixir-format
+msgid "Create new fleet"
+msgstr "Create new fleet"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1327
+#, elixir-autogen, elixir-format
+msgid "Credits"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:211
+#, elixir-autogen, elixir-format
+msgid "Current mission"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1450
+#, elixir-autogen, elixir-format
+msgid "Defense Center"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:105
+#, elixir-autogen, elixir-format
+msgid "Desert"
+msgstr "Desert"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:259
+#, elixir-autogen, elixir-format
+msgid "Destination"
+msgstr ""
+
+#: lib/nexus_downfall_web/components/game_components.ex:58
+#, elixir-autogen, elixir-format
+msgid "Diplomacy"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:489
+#, elixir-autogen, elixir-format
+msgid "Dispatch mission"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:217
+#: lib/nexus_downfall_web/live/solar_system_live.ex:230
+#, elixir-autogen, elixir-format
+msgid "Empty"
+msgstr "Empty"
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:94
+#, elixir-autogen, elixir-format
+msgid "Empty slot"
+msgstr "Empty slot"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1448
+#, elixir-autogen, elixir-format
+msgid "Energy Generator"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:362
+#, elixir-autogen, elixir-format
+msgid "Energy Production"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/user_settings_live.ex:125
+#, elixir-autogen, elixir-format
+msgid "Error saving language."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1351
+#, elixir-autogen, elixir-format
+msgid "Extracts hydrogen from atmospheric layers using advanced molecular separators. Hydrogen is vital for propelling fleets and powering fusion reactors."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1381
+#, elixir-autogen, elixir-format
+msgid "Extracts raw materials from the planetary subsoil with high-energy plasma drills. A fundamental resource for all construction and research."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1417
+#, elixir-autogen, elixir-format
+msgid "Factory specialized in advanced electronic components. Complements microchip production with a higher-precision manufacturing chain."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1446
+#, elixir-autogen, elixir-format
+msgid "Farm"
+msgstr ""
+
+#: lib/nexus_downfall_web/components/game_components.ex:61
+#: lib/nexus_downfall_web/live/fleet_live.ex:134
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Fleet"
+msgstr "Fleet list"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:92
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Fleet Filters"
+msgstr "Fleet filters"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:41
+#: lib/nexus_downfall_web/live/fleet_live.ex:70
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Fleet Management"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:40
+#, elixir-autogen, elixir-format
+msgid "Fleet Operations"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:507
+#, elixir-autogen, elixir-format
+msgid "Fleet created successfully."
+msgstr "Fleet created successfully."
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:928
+#, elixir-autogen, elixir-format
+msgid "Fleet is already on a mission."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:384
+#, elixir-autogen, elixir-format
+msgid "Fleet name"
+msgstr "Fleet name"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:116
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Fleet name..."
+msgstr "Fleet name"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:932
+#, elixir-autogen, elixir-format
+msgid "Fleet needs at least one Colonizer ship."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:590
+#: lib/nexus_downfall_web/live/fleet_live.ex:927
+#: lib/nexus_downfall_web/live/planet_live.ex:1037
+#: lib/nexus_downfall_web/live/planet_live.ex:1262
+#, elixir-autogen, elixir-format
 msgid "Fleet not found."
 msgstr "Fleet not found."
 
-msgid "Selected fleet is not available from this planet."
-msgstr "Selected fleet is not available from this planet."
+#: lib/nexus_downfall_web/live/planet_live.ex:1363
+#, elixir-autogen, elixir-format
+msgid "Fleet operations center. Manages launches, landings and maintenance. Enables trade routes, exploration missions and combat operations."
+msgstr ""
 
+#: lib/nexus_downfall_web/live/fleet_live.ex:47
+#: lib/nexus_downfall_web/live/fleet_live.ex:81
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Fleets"
+msgstr "fleets"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1326
+#, elixir-autogen, elixir-format
+msgid "Food"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1433
+#, elixir-autogen, elixir-format
+msgid "Food Production"
+msgstr ""
+
+#: lib/nexus_downfall_web/components/game_components.ex:40
+#: lib/nexus_downfall_web/components/game_components.ex:44
+#: lib/nexus_downfall_web/live/fleet_live.ex:448
+#: lib/nexus_downfall_web/live/fleet_live.ex:838
+#, elixir-autogen, elixir-format
+msgid "Galaxy"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/galaxy_live.ex:109
+#, elixir-autogen, elixir-format
+msgid "Galaxy %{number}"
+msgstr "Galaxy %{number}"
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "Gas giant"
+msgstr "Gas giant"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1399
+#, elixir-autogen, elixir-format
+msgid "Generates the energy needed to keep all planetary structures operational. A negative energy balance reduces overall productive efficiency."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:178
+#, elixir-autogen, elixir-format
+msgid "Go to Planet"
+msgstr "Go to Planet"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1405
+#, elixir-autogen, elixir-format
+msgid "High-efficiency nuclear fission reactor. Produces more energy per level than the conventional generator, ideal for planets with high industrial demand."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:389
+#, elixir-autogen, elixir-format
+msgid "Home planet"
+msgstr "Home planet"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:522
+#, elixir-autogen, elixir-format
+msgid "Home planet not found."
+msgstr "Home planet not found."
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1325
+#, elixir-autogen, elixir-format
+msgid "Hydrogen"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1440
+#, elixir-autogen, elixir-format
+msgid "Hydrogen Mine"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1424
+#, elixir-autogen, elixir-format
+msgid "Hydrogen Production"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1387
+#, elixir-autogen, elixir-format
+msgid "Hydroponic crops and bioreactors that produce food for the population. Without sufficient supply, overall productive efficiency decreases."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:232
+#, elixir-autogen, elixir-format
+msgid "H₂"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:102
+#, elixir-autogen, elixir-format
+msgid "Ice"
+msgstr "Ice"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:899
+#: lib/nexus_downfall_web/live/fleet_live.ex:900
+#: lib/nexus_downfall_web/live/planets_list_live.ex:109
+#: lib/nexus_downfall_web/live/planets_list_live.ex:215
+#, elixir-autogen, elixir-format
+msgid "Idle"
+msgstr "Idle"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:479
+#, elixir-autogen, elixir-format
+msgid "If another commander arrives first, your colonizer will automatically return."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1337
+#, elixir-autogen, elixir-format
+msgid "In progress"
+msgstr "In progress"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:294
+#, elixir-autogen, elixir-format
+msgid "Information"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:417
+#, elixir-autogen, elixir-format
+msgid "Initial Construction"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1031
+#: lib/nexus_downfall_web/live/planet_live.ex:1259
+#, elixir-autogen, elixir-format
+msgid "Insufficient resources to queue ships."
+msgstr "Insufficient resources to queue ships."
+
+#: lib/nexus_downfall_web/live/planet_live.ex:989
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Insufficient resources to start construction."
+msgstr "Insufficient resources to queue ships."
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:515
+#, elixir-autogen, elixir-format
+msgid "Invalid fleet data."
+msgstr "Invalid fleet data."
+
+#: lib/nexus_downfall_web/live/user_settings_live.ex:130
+#, elixir-autogen, elixir-format
+msgid "Invalid language."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:682
+#, elixir-autogen, elixir-format
+msgid "Invalid mission data."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1058
+#: lib/nexus_downfall_web/live/planet_live.ex:1271
+#, elixir-autogen, elixir-format
 msgid "Invalid shipyard request."
 msgstr "Invalid shipyard request."
 
-msgid "Ship A"
-msgstr "Ship A"
+#: lib/nexus_downfall_web/live/fleet_live.ex:935
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Invalid target planet."
+msgstr "Invalid fleet data."
 
-msgid "Ship B"
-msgstr "Ship B"
+#: lib/nexus_downfall_web/live/user_settings_live.ex:53
+#, elixir-autogen, elixir-format
+msgid "Language"
+msgstr ""
 
-msgid "Fast corvette prototype for early escort and interception tasks."
-msgstr "Fast corvette prototype for early escort and interception tasks."
+#: lib/nexus_downfall_web/live/user_settings_live.ex:122
+#, elixir-autogen, elixir-format
+msgid "Language updated successfully."
+msgstr ""
 
-msgid "Heavier frigate placeholder with better hull and transport capacity."
-msgstr "Heavier frigate placeholder with better hull and transport capacity."
+#: lib/nexus_downfall_web/live/solar_system_live.ex:104
+#, elixir-autogen, elixir-format
+msgid "Lava"
+msgstr "Lava"
 
-msgid "Planet not found."
-msgstr "Planet not found."
+#: lib/nexus_downfall_web/components/game_components.ex:56
+#, elixir-autogen, elixir-format
+msgid "Laws"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:264
+#, elixir-autogen, elixir-format
+msgid "Level"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "Location"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1357
+#, elixir-autogen, elixir-format
+msgid "Manufactures high-precision quantum microchips for ship construction and advanced technologies. Higher level means better performance and lower defect rate."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1427
+#: lib/nexus_downfall_web/live/planet_live.ex:1436
+#, elixir-autogen, elixir-format
+msgid "Microchip Production"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:101
+#: lib/nexus_downfall_web/live/fleet_live.ex:136
+#: lib/nexus_downfall_web/live/fleet_live.ex:437
+#, elixir-autogen, elixir-format
+msgid "Mission"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:42
+#, elixir-autogen, elixir-format
+msgid "Monitor each fleet, inspect every ship class and prepare mission dispatches."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:51
+#, elixir-autogen, elixir-format
+msgid "Monitor your planets, view resources and active constructions."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:121
+#, elixir-autogen, elixir-format
+msgid "Name"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:76
+#, elixir-autogen, elixir-format, fuzzy
+msgid "New Fleet"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:180
+#: lib/nexus_downfall_web/live/fleet_live.ex:401
+#, elixir-autogen, elixir-format
+msgid "No admiral"
+msgstr "No admiral"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:315
+#, elixir-autogen, elixir-format
+msgid "No admiral cards in your deck."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:572
+#, elixir-autogen, elixir-format
+msgid "No fleets at this planet. Create a fleet here first."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:143
+#, elixir-autogen, elixir-format
+msgid "No fleets registered yet."
+msgstr "No fleets registered yet."
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:148
+#, elixir-autogen, elixir-format
+msgid "No planets match your filters."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:934
+#, elixir-autogen, elixir-format
+msgid "No route found between origin and target."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:710
+#, elixir-autogen, elixir-format, fuzzy
+msgid "No ships staged yet."
+msgstr "No ships assigned yet."
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:933
+#, elixir-autogen, elixir-format
+msgid "Not enough hydrogen for the mission."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1449
+#, elixir-autogen, elixir-format
+msgid "Nuclear Reactor"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:103
+#, elixir-autogen, elixir-format
+msgid "Ocean"
+msgstr "Ocean"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:579
+#, elixir-autogen, elixir-format
+msgid "Open Fleet command"
+msgstr "Open Fleet command"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:852
+#: lib/nexus_downfall_web/live/solar_system_live.ex:165
+#, elixir-autogen, elixir-format
+msgid "Orbit"
+msgstr "Orbit"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:831
+#, elixir-autogen, elixir-format
+msgid "Orbital Bombardment"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:255
+#, elixir-autogen, elixir-format
+msgid "Origin"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:901
+#, elixir-autogen, elixir-format
+msgid "Outbound"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/galaxy_live.ex:181
+#, elixir-autogen, elixir-format
+msgid "Own planet"
+msgstr "Own planet"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:93
+#, elixir-autogen, elixir-format
+msgid "PRO"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:341
+#, elixir-autogen, elixir-format
+msgid "Per day"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:333
+#, elixir-autogen, elixir-format
+msgid "Per hour"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:325
+#, elixir-autogen, elixir-format
+msgid "Per minute"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:349
+#, elixir-autogen, elixir-format
+msgid "Per week"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:108
+#: lib/nexus_downfall_web/live/fleet_live.ex:205
+#: lib/nexus_downfall_web/live/fleet_live.ex:468
+#, elixir-autogen, elixir-format
+msgid "Planet"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:381
+#, elixir-autogen, elixir-format
+msgid "Planet Balance"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:86
+#, elixir-autogen, elixir-format
+msgid "Planet Name"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:830
+#, elixir-autogen, elixir-format
+msgid "Planetary Defense"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:48
+#, elixir-autogen, elixir-format
+msgid "Planetary Management"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1411
+#, elixir-autogen, elixir-format
+msgid "Planetary defense coordination center. Manages turrets, shields and early warning systems to protect the planet from external attacks."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1421
+#, elixir-autogen, elixir-format
+msgid "Planetary structure."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:57
+#, elixir-autogen, elixir-format
+msgid "Planets"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:67
+#: lib/nexus_downfall_web/live/planets_list_live.ex:122
+#: lib/nexus_downfall_web/live/planets_list_live.ex:206
+#, elixir-autogen, elixir-format
+msgid "Population"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:559
+#: lib/nexus_downfall_web/live/planets_list_live.ex:200
+#, elixir-autogen, elixir-format
+msgid "Position"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:213
+#, elixir-autogen, elixir-format
+msgid "Power"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1438
+#, elixir-autogen, elixir-format
+msgid "Production"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:504
+#, elixir-autogen, elixir-format
+msgid "Queue is empty"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1338
+#, elixir-autogen, elixir-format
+msgid "Queued"
+msgstr "Queued"
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:224
+#, elixir-autogen, elixir-format
+msgid "Raw"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1445
+#, elixir-autogen, elixir-format
+msgid "Raw Material Mine"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1323
+#, elixir-autogen, elixir-format
+msgid "Raw Materials"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1430
+#, elixir-autogen, elixir-format
+msgid "Raw Materials Production"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:59
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Ready"
+msgstr "Ready fleets"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:852
+#: lib/nexus_downfall_web/live/solar_system_live.ex:165
+#, elixir-autogen, elixir-format
+msgid "Region"
+msgstr "Region"
+
+#: lib/nexus_downfall_web/components/game_components.ex:55
+#, elixir-autogen, elixir-format
+msgid "Research"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1447
+#, elixir-autogen, elixir-format
+msgid "Research Center"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:132
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Reset"
+msgstr "Desert"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1443
+#, elixir-autogen, elixir-format
+msgid "Residential Area"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1369
+#, elixir-autogen, elixir-format
+msgid "Residential zone housing the planet's population. Higher levels increase capacity and quality of life, attracting new colonists to the system."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:974
+#, elixir-autogen, elixir-format
+msgid "Return progress"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:903
+#, elixir-autogen, elixir-format
+msgid "Returning"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:100
+#, elixir-autogen, elixir-format
+msgid "Rocky"
+msgstr "Rocky"
+
+#: lib/nexus_downfall_web/live/user_settings_live.ex:92
+#, elixir-autogen, elixir-format
+msgid "Save"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1393
+#, elixir-autogen, elixir-format
+msgid "Scientific and technological research center. Accelerates the development of new technologies and unlocks synergistic improvements for other structures."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:115
+#, elixir-autogen, elixir-format
+msgid "Search"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:90
+#, elixir-autogen, elixir-format
+msgid "Search..."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1121
+#, elixir-autogen, elixir-format
+msgid "Select a target fleet first."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:450
+#, elixir-autogen, elixir-format
+msgid "Select galaxy"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:391
+#, elixir-autogen, elixir-format
+msgid "Select one of your planets"
+msgstr "Select one of your planets"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:470
+#, elixir-autogen, elixir-format
+msgid "Select planet"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:460
+#, elixir-autogen, elixir-format
+msgid "Select system"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1043
+#: lib/nexus_downfall_web/live/planet_live.ex:1265
+#, elixir-autogen, elixir-format
+msgid "Selected fleet is not available from this planet."
+msgstr "Selected fleet is not available from this planet."
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:232
+#: lib/nexus_downfall_web/live/fleet_live.ex:423
+#, elixir-autogen, elixir-format
+msgid "Send mission"
+msgstr ""
+
+#: lib/nexus_downfall_web/components/game_components.ex:88
+#, elixir-autogen, elixir-format
+msgid "Settings"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:272
+#, elixir-autogen, elixir-format
+msgid "Ship Manifest"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1018
+#, elixir-autogen, elixir-format
+msgid "Ship construction queued."
+msgstr "Ship construction queued."
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:51
+#: lib/nexus_downfall_web/live/fleet_live.ex:85
+#, elixir-autogen, elixir-format
+msgid "Ships"
+msgstr "Ships"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1177
+#, elixir-autogen, elixir-format
+msgid "Ships queued successfully!"
+msgstr ""
+
+#: lib/nexus_downfall_web/components/game_components.ex:96
+#, elixir-autogen, elixir-format
+msgid "Sign out"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:203
+#, elixir-autogen, elixir-format
+msgid "Slots"
+msgstr "Slots"
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:115
+#, elixir-autogen, elixir-format
+msgid "Sort By"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1442
+#, elixir-autogen, elixir-format
+msgid "Spaceport"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1025
+#: lib/nexus_downfall_web/live/planet_live.ex:1256
+#, elixir-autogen, elixir-format
+msgid "Spaceport level 1 is required to build ships."
+msgstr "Spaceport level 1 is required to build ships."
+
+#: lib/nexus_downfall_web/live/planet_live.ex:299
+#, elixir-autogen, elixir-format
+msgid "Specialization"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:860
+#, elixir-autogen, elixir-format
+msgid "Specialization system coming soon."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:295
+#, elixir-autogen, elixir-format
+msgid "Specific"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:851
+#, elixir-autogen, elixir-format
+msgid "Specific structure information coming soon."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:99
+#: lib/nexus_downfall_web/live/planets_list_live.ex:210
+#, elixir-autogen, elixir-format
+msgid "Status"
+msgstr "Status"
+
+#: lib/nexus_downfall_web/components/game_components.ex:63
+#, elixir-autogen, elixir-format
+msgid "Store"
+msgstr ""
+
+## Galaxy / Solar system
+#: lib/nexus_downfall_web/live/fleet_live.ex:207
+#: lib/nexus_downfall_web/live/fleet_live.ex:458
+#: lib/nexus_downfall_web/live/fleet_live.ex:839
+#: lib/nexus_downfall_web/live/fleet_live.ex:842
+#: lib/nexus_downfall_web/live/fleet_live.ex:852
+#: lib/nexus_downfall_web/live/galaxy_live.ex:168
+#: lib/nexus_downfall_web/live/planets_list_live.ex:200
+#: lib/nexus_downfall_web/live/solar_system_live.ex:155
+#, elixir-autogen, elixir-format
+msgid "System"
+msgstr "System"
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:124
+#, elixir-autogen, elixir-format
+msgid "System %{number}"
+msgstr "System %{number}"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:686
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Target Fleet:"
+msgstr "Target fleet"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:930
+#, elixir-autogen, elixir-format
+msgid "Target planet is already occupied."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:931
+#, elixir-autogen, elixir-format
+msgid "Target planet is currently being colonized."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:929
+#, elixir-autogen, elixir-format
+msgid "Target planet not found."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1210
+#, elixir-autogen, elixir-format
+msgid "Test resources added to this planet."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:536
+#: lib/nexus_downfall_web/live/fleet_live.ex:716
+#, elixir-autogen, elixir-format
+msgid "That admiral card is already assigned to another fleet."
+msgstr "That admiral card is already assigned to another fleet."
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:639
+#, elixir-autogen, elixir-format
+msgid "That mission type is not implemented yet."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1375
+#, elixir-autogen, elixir-format
+msgid "The planet's nerve center. Coordinates all administrative, military and civilian operations. Its level determines the expansion limits of other structures."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:368
+#, elixir-autogen, elixir-format
+msgid "This building produces"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:483
+#, elixir-autogen, elixir-format
+msgid "This mission type is visible as a placeholder for now. Only Colonization is currently playable."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:793
+#, elixir-autogen, elixir-format
+msgid "Total Items:"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:123
+#, elixir-autogen, elixir-format
+msgid "Total Resources"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:797
+#, elixir-autogen, elixir-format
+msgid "Total Time:"
+msgstr ""
+
+#: lib/nexus_downfall_web/components/game_components.ex:57
+#, elixir-autogen, elixir-format
+msgid "Trade"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:829
+#, elixir-autogen, elixir-format
+msgid "Trade Blockade"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:827
+#, elixir-autogen, elixir-format
+msgid "Transport"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:972
+#: lib/nexus_downfall_web/live/fleet_live.ex:975
+#, elixir-autogen, elixir-format
+msgid "Travel progress"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:310
+#, elixir-autogen, elixir-format
+msgid "Unassign admiral"
+msgstr "Unassign admiral"
+
+#: lib/nexus_downfall_web/live/galaxy_live.ex:189
+#: lib/nexus_downfall_web/live/solar_system_live.ex:187
+#, elixir-autogen, elixir-format
+msgid "Uninhabited"
+msgstr "Uninhabited"
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:1055
+#, elixir-autogen, elixir-format
+msgid "Unknown"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:121
+#, elixir-autogen, elixir-format
+msgid "Unlock with PRO"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:848
+#: lib/nexus_downfall_web/live/fleet_live.ex:1059
+#, elixir-autogen, elixir-format
+msgid "Unnamed Planet"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:418
+#: lib/nexus_downfall_web/live/planet_live.ex:476
+#, elixir-autogen, elixir-format
+msgid "Upgrade → Level"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:268
+#: lib/nexus_downfall_web/live/planet_live.ex:429
+#, elixir-autogen, elixir-format
+msgid "Upgrading to level"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:247
+#, elixir-autogen, elixir-format
+msgid "View Details"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/dashboard_live.ex:51
+#, elixir-autogen, elixir-format
+msgid "View Planet"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:55
+#, elixir-autogen, elixir-format
+msgid "Worlds"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:529
+#: lib/nexus_downfall_web/live/fleet_live.ex:712
+#, elixir-autogen, elixir-format
+msgid "You do not own that card."
+msgstr "You do not own that card."
+
+#: lib/nexus_downfall_web/live/dashboard_live.ex:32
+#, elixir-autogen, elixir-format
+msgid "You have not joined any universe yet."
+msgstr ""
+
+#: lib/nexus_downfall_web/live/dashboard_live.ex:28
+#, elixir-autogen, elixir-format
+msgid "Your Universes"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:49
+#, elixir-autogen, elixir-format
+msgid "Your Worlds"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/solar_system_live.ex:139
+#: lib/nexus_downfall_web/live/solar_system_live.ex:173
+#: lib/nexus_downfall_web/live/solar_system_live.ex:227
+#, elixir-autogen, elixir-format
+msgid "Your planet"
+msgstr "Your planet"
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1188
+#, elixir-autogen, elixir-format
+msgid "batch(es) queued"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:408
+#, elixir-autogen, elixir-format
+msgid "consumed"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:393
+#, elixir-autogen, elixir-format
+msgid "efficiency"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:376
+#, elixir-autogen, elixir-format
+msgid "energy at current level"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:1188
+#, elixir-autogen, elixir-format
+msgid "failed"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planets_list_live.ex:241
+#, elixir-autogen, elixir-format
+msgid "fleets stationed"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:402
+#, elixir-autogen, elixir-format
+msgid "produced"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:438
+#, elixir-autogen, elixir-format
+msgid "remaining"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:826
+#, elixir-autogen, elixir-format
+msgid "requires Colonizer"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/fleet_live.ex:838
+#: lib/nexus_downfall_web/live/fleet_live.ex:839
+#, elixir-autogen, elixir-format
+msgid "targets"
+msgstr ""
+
+#: lib/nexus_downfall_web/live/planet_live.ex:693
+#, elixir-autogen, elixir-format
+msgid "— select fleet —"
+msgstr ""
+
