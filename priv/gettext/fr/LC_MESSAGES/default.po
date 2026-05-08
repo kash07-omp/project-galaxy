@@ -1567,6 +1567,18 @@ msgstr ""
 msgid "Cargo"
 msgstr "Cargaison"
 
+msgid "Cargo capacity"
+msgstr "Capacité de cargaison"
+
+msgid "Own planets"
+msgstr "Planètes possédées"
+
+msgid "Remaining"
+msgstr "Restant"
+
+msgid "Max"
+msgstr "Max"
+
 msgid "Hydrogen cargo is checked after reserving round-trip fuel."
 msgstr "La cargaison d'hydrogène est vérifiée après la réservation du carburant aller-retour."
 

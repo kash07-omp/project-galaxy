@@ -480,19 +480,41 @@ defmodule NexusDownfallWeb.FleetLive do
                     <%= gettext("If another commander arrives first, your colonizer will automatically return.") %>
                   </p>
                 <% else %>
+                  <div :if={owned_transport_targets(@planets, @selected_mission_fleet) != []} class="rounded-xl border border-emerald-500/20 bg-emerald-950/15 p-3">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-emerald-300"><%= gettext("Own planets") %></p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                      <%= for planet <- owned_transport_targets(@planets, @selected_mission_fleet) do %>
+                        <button type="button" phx-click="select_owned_transport_target" phx-value-galaxy_id={planet.solar_system.galaxy.id} phx-value-system_id={planet.solar_system_id} phx-value-target_planet_id={planet.id} class="rounded-lg border border-emerald-500/30 bg-emerald-950/35 px-3 py-2 text-left text-xs text-emerald-100 transition hover:border-emerald-300/70 hover:bg-emerald-900/40">
+                          <span class="block font-semibold text-white"><%= mission_planet_name(planet) %></span>
+                          <span class="text-emerald-300/80"><%= planet_coordinates(planet) %></span>
+                        </button>
+                      <% end %>
+                    </div>
+                  </div>
+
                   <div class="rounded-xl border border-cyan-500/20 bg-[#050f1d]/80 p-3">
                     <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-cyan-300"><%= gettext("Cargo") %></p>
                         <p class="mt-1 text-[11px] text-gray-400"><%= gettext("Hydrogen cargo is checked after reserving round-trip fuel.") %></p>
                       </div>
+                      <div class="rounded-lg border border-cyan-500/20 bg-[#031122] px-3 py-2 text-right">
+                        <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Cargo capacity") %></p>
+                        <p class="text-sm font-bold text-cyan-100"><%= format_number(transport_cargo_total(@mission_form)) %> / <%= format_number(transport_cargo_capacity(@selected_mission_fleet)) %></p>
+                        <p class="text-[11px] text-gray-400"><%= gettext("Remaining") %>: <%= format_number(transport_remaining_capacity(@mission_form, @selected_mission_fleet)) %></p>
+                      </div>
                     </div>
 
-                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                       <%= for resource <- transport_resource_fields() do %>
-                        <div>
+                        <div class="min-w-0">
                           <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500"><%= transport_resource_label(resource) %></label>
-                          <input type="number" name={to_string(resource)} min="0" step="1" value={Map.get(@mission_form, resource)} class="w-full rounded-lg border border-gray-700 bg-[#060d18] px-2.5 py-2 text-sm text-white placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none" />
+                          <div class="grid min-w-[7.5rem] grid-cols-1 gap-1.5">
+                            <input type="number" name={to_string(resource)} min="0" max={transport_resource_input_max(@mission_form, @selected_mission_fleet, resource)} step="1" value={Map.get(@mission_form, resource)} class="min-w-0 rounded-lg border border-gray-700 bg-[#060d18] px-2.5 py-2 text-sm tabular-nums text-white placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none" />
+                            <button type="button" phx-click="max_transport_resource" phx-value-resource={resource} class="w-full rounded-lg border border-cyan-500/40 bg-cyan-950/60 px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-cyan-200 transition hover:border-cyan-300/70 hover:bg-cyan-900/70">
+                              <%= gettext("Max") %>
+                            </button>
+                          </div>
                         </div>
                       <% end %>
                     </div>
@@ -506,7 +528,7 @@ defmodule NexusDownfallWeb.FleetLive do
 
               <div class="flex flex-col-reverse gap-3 border-t border-gray-800 pt-4 sm:flex-row sm:justify-end">
                 <button type="button" phx-click="close_send_mission_modal" class="rounded-lg border border-gray-700 bg-gray-950 px-4 py-2.5 text-sm font-medium text-gray-200 transition hover:border-gray-500"><%= gettext("Cancel") %></button>
-                <button type="submit" disabled={!mission_submit_enabled?(@mission_form)} class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-gray-700 disabled:text-gray-400"><%= gettext("Dispatch mission") %></button>
+                <button type="submit" disabled={!mission_submit_enabled?(@mission_form, @selected_mission_fleet)} class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-gray-700 disabled:text-gray-400"><%= gettext("Dispatch mission") %></button>
               </div>
             </form>
           </div>
@@ -630,7 +652,11 @@ defmodule NexusDownfallWeb.FleetLive do
 
   def handle_event("mission_form_changed", params, socket) do
     user_id = socket.assigns.current_user.id
-    mission_form = mission_form_from_params(params)
+    mission_form =
+      params
+      |> mission_form_from_params()
+      |> clamp_transport_cargo(socket.assigns.selected_mission_fleet)
+
     fleet_id = parse_optional_int(mission_form.fleet_id)
 
     if fleet_id do
@@ -648,10 +674,60 @@ defmodule NexusDownfallWeb.FleetLive do
     end
   end
 
+  def handle_event("select_owned_transport_target", params, socket) do
+    user_id = socket.assigns.current_user.id
+
+    mission_form =
+      socket.assigns.mission_form
+      |> Map.merge(%{
+        mission_type: "transport",
+        galaxy_id: Map.get(params, "galaxy_id", ""),
+        system_id: Map.get(params, "system_id", ""),
+        target_planet_id: Map.get(params, "target_planet_id", "")
+      })
+      |> clamp_transport_cargo(socket.assigns.selected_mission_fleet)
+
+    fleet_id = parse_optional_int(mission_form.fleet_id)
+    {galaxies, systems, planets} = load_mission_target_options(fleet_id, user_id, mission_form)
+
+    {:noreply,
+     socket
+     |> assign(:mission_form, mission_form)
+     |> assign(:mission_galaxies, galaxies)
+     |> assign(:mission_systems, systems)
+     |> assign(:mission_targets, planets)
+     |> assign(:mission_error, nil)}
+  end
+
+  def handle_event("max_transport_resource", %{"resource" => resource}, socket) do
+    resource = parse_transport_resource(resource)
+    mission_form = clamp_transport_cargo(socket.assigns.mission_form, socket.assigns.selected_mission_fleet)
+
+    mission_form =
+      if resource do
+        current = parse_form_amount(Map.get(mission_form, resource))
+        max_amount = current + transport_remaining_capacity(mission_form, socket.assigns.selected_mission_fleet)
+
+        mission_form
+        |> Map.put(resource, Integer.to_string(max_amount))
+        |> clamp_transport_cargo(socket.assigns.selected_mission_fleet)
+      else
+        mission_form
+      end
+
+    {:noreply,
+     socket
+     |> assign(:mission_form, mission_form)
+     |> assign(:mission_error, nil)}
+  end
+
   def handle_event("send_mission", params, socket) do
     user_id = socket.assigns.current_user.id
 
-    mission_form = mission_form_from_params(params)
+    mission_form =
+      params
+      |> mission_form_from_params()
+      |> clamp_transport_cargo(socket.assigns.selected_mission_fleet)
     fleet_id = parse_optional_int(mission_form.fleet_id)
     target_planet_id = parse_optional_int(mission_form.target_planet_id)
 
@@ -902,8 +978,17 @@ defmodule NexusDownfallWeb.FleetLive do
   defp transport_resource_label(:food), do: gettext("Food")
   defp transport_resource_label(:credits), do: gettext("Credits")
 
+  defp parse_transport_resource(resource) when is_binary(resource) do
+    Enum.find(transport_resource_fields(), &(to_string(&1) == resource))
+  end
+
+  defp parse_transport_resource(resource) when resource in [:raw_materials, :microchips, :hydrogen, :food, :credits],
+    do: resource
+
+  defp parse_transport_resource(_), do: nil
+
   defp planet_option_label(planet) do
-    "#{planet.name} - #{gettext("System")} #{planet.solar_system.number}"
+    "#{mission_planet_name(planet)} #{planet_coordinates(planet)}"
   end
 
   defp mission_target_label(target) do
@@ -913,20 +998,55 @@ defmodule NexusDownfallWeb.FleetLive do
         value -> value
       end
 
-    "#{name} - #{gettext("System")} #{target.solar_system_number} · #{gettext("Orbit")} #{target.orbit_position} · #{gettext("Region")} #{target.region}"
+    "#{name} [#{target.galaxy_number}:#{target.solar_system_number}:#{target.orbit_position}]"
   end
 
-  defp mission_submit_enabled?(%{mission_type: "colonization", target_planet_id: target_planet_id}), do: target_planet_id != ""
-  defp mission_submit_enabled?(%{mission_type: "transport", target_planet_id: target_planet_id} = form) do
-    target_planet_id != "" and transport_cargo_total(form) > 0
+  defp mission_submit_enabled?(%{mission_type: "colonization", target_planet_id: target_planet_id}, _fleet), do: target_planet_id != ""
+
+  defp mission_submit_enabled?(%{mission_type: "transport"} = form, fleet) do
+    total = transport_cargo_total(form)
+    form.target_planet_id != "" and total > 0 and total <= transport_cargo_capacity(fleet)
   end
 
-  defp mission_submit_enabled?(_form), do: false
+  defp mission_submit_enabled?(_form, _fleet), do: false
+
+  defp owned_transport_targets(planets, nil), do: planets || []
+
+  defp owned_transport_targets(planets, fleet) do
+    Enum.reject(planets || [], &(&1.id == fleet.home_planet_id))
+  end
+
+  defp transport_cargo_capacity(nil), do: 0
+  defp transport_cargo_capacity(fleet), do: Fleets.fleet_cargo_capacity(fleet)
 
   defp transport_cargo_total(form) do
     transport_resource_fields()
     |> Enum.reduce(0, fn field, acc -> acc + parse_form_amount(Map.get(form, field)) end)
   end
+
+  defp transport_remaining_capacity(form, fleet) do
+    max(transport_cargo_capacity(fleet) - transport_cargo_total(form), 0)
+  end
+
+  defp transport_resource_input_max(form, fleet, resource) do
+    current = parse_form_amount(Map.get(form, resource))
+    current + transport_remaining_capacity(form, fleet)
+  end
+
+  defp clamp_transport_cargo(%{mission_type: "transport"} = form, fleet) do
+    capacity = transport_cargo_capacity(fleet)
+
+    {form, _remaining} =
+      Enum.reduce(transport_resource_fields(), {form, capacity}, fn field, {acc, remaining} ->
+        amount = parse_form_amount(Map.get(acc, field))
+        clamped = min(amount, max(remaining, 0))
+        {Map.put(acc, field, Integer.to_string(clamped)), remaining - clamped}
+      end)
+
+    form
+  end
+
+  defp clamp_transport_cargo(form, _fleet), do: form
 
   defp parse_form_amount(value) when is_integer(value), do: max(value, 0)
   defp parse_form_amount(value) when is_binary(value) do
@@ -1183,6 +1303,19 @@ defmodule NexusDownfallWeb.FleetLive do
       value -> value
     end
   end
+
+  defp planet_coordinates(%{solar_system: %{galaxy: %{number: galaxy_number}, number: system_number}, orbit_position: orbit_position}) do
+    "[#{galaxy_number}:#{system_number}:#{orbit_position}]"
+  end
+
+  defp planet_coordinates(%{solar_system: %{number: system_number}, orbit_position: orbit_position}) do
+    "[?:#{system_number}:#{orbit_position}]"
+  end
+
+  defp planet_coordinates(_planet), do: "[?:?:?]"
+
+  defp format_number(value) when is_integer(value), do: Integer.to_string(value)
+  defp format_number(value), do: value |> parse_form_amount() |> Integer.to_string()
 
   defp format_duration(total_seconds) do
     hours = div(total_seconds, 3600)

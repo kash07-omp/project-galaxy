@@ -230,8 +230,9 @@ defmodule NexusDownfall.Fleets do
       from p in Planet,
         join: uu in assoc(p, :universe_user),
         join: s in assoc(p, :solar_system),
+        join: g in assoc(s, :galaxy),
         where: uu.user_id == ^user_id,
-        preload: [solar_system: s, universe_user: uu],
+        preload: [solar_system: {s, galaxy: g}, universe_user: uu],
         order_by: [asc: uu.universe_id, asc: p.name]
     )
   end
@@ -1393,6 +1394,17 @@ defmodule NexusDownfall.Fleets do
     fleet.ships
     |> List.wrap()
     |> Enum.find_value(0, fn ship -> if ship.ship_type == ship_type, do: ship.quantity end)
+  end
+
+  def fleet_cargo_capacity(fleet) do
+    fleet
+    |> Map.get(:ships, [])
+    |> case do
+      %Ecto.Association.NotLoaded{} -> []
+      ships -> ships || []
+    end
+    |> fleet_ship_counts()
+    |> total_cargo_capacity()
   end
 
   def fleet_updates_topic_for_user(user_id) when is_integer(user_id) do

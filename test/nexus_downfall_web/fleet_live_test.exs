@@ -426,26 +426,22 @@ defmodule NexusDownfallWeb.FleetLiveTest do
 
     rendered_open = render(live_view)
     assert rendered_open =~ "Cargo"
+    assert rendered_open =~ "Cargo capacity"
+    assert rendered_open =~ "Own planets"
+    assert rendered_open =~ "Transport Target"
+    assert rendered_open =~ "[1:1:7]"
     assert rendered_open =~ "Hydrogen cargo is checked after reserving round-trip fuel."
 
     live_view
-    |> form("form[phx-submit='send_mission']", %{
-      "fleet_id" => to_string(fleet.id),
-      "mission_type" => "transport",
-      "galaxy_id" => to_string(system.galaxy.id),
-      "raw_materials" => "1000"
-    })
-    |> render_change()
+    |> element("button[phx-click='max_transport_resource'][phx-value-resource='raw_materials']")
+    |> render_click()
+
+    rendered_max = render(live_view)
+    assert rendered_max =~ "5000 / 5000"
 
     live_view
-    |> form("form[phx-submit='send_mission']", %{
-      "fleet_id" => to_string(fleet.id),
-      "mission_type" => "transport",
-      "galaxy_id" => to_string(system.galaxy.id),
-      "system_id" => to_string(system.id),
-      "raw_materials" => "1000"
-    })
-    |> render_change()
+    |> element("button[phx-click='select_owned_transport_target'][phx-value-target_planet_id='#{target.id}']")
+    |> render_click()
 
     live_view
     |> form("form[phx-submit='send_mission']", %{
@@ -454,11 +450,67 @@ defmodule NexusDownfallWeb.FleetLiveTest do
       "galaxy_id" => to_string(system.galaxy.id),
       "system_id" => to_string(system.id),
       "target_planet_id" => to_string(target.id),
-      "raw_materials" => "1000"
+      "raw_materials" => "5000"
     })
     |> render_submit()
 
     rendered_success = render(live_view)
     assert rendered_success =~ "Transport mission dispatched."
+  end
+
+  test "transport targets include inhabited planets from other players and show compact coordinates", %{
+    conn: conn,
+    user: user,
+    universe_user: universe_user,
+    planet: planet
+  } do
+    system = Repo.preload(planet, :solar_system).solar_system |> Repo.preload(:galaxy)
+    universe = Repo.get!(NexusDownfall.Universe.UniverseRecord, universe_user.universe_id)
+    rival_user = create_user()
+    rival_universe_user = create_universe_user(universe, rival_user)
+    rival_target = create_owned_planet(system, rival_universe_user, 8, "Rival Trade Hub")
+
+    {:ok, fleet} =
+      Fleets.create_fleet_for_user(user.id, %{
+        "name" => "Open Trade Fleet #{System.unique_integer([:positive])}",
+        "planet_id" => planet.id
+      })
+
+    Repo.update_all(
+      from(fs in NexusDownfall.Fleets.FleetShip,
+        where: fs.fleet_id == ^fleet.id and fs.ship_type == "light_freighter"
+      ),
+      set: [quantity: 1]
+    )
+
+    {:ok, live_view, _html} = live(conn, ~p"/fleet")
+
+    live_view
+    |> element("button[phx-click='open_send_mission_modal'][phx-value-fleet_id='#{fleet.id}']")
+    |> render_click()
+
+    live_view
+    |> form("form[phx-submit='send_mission']", %{
+      "fleet_id" => to_string(fleet.id),
+      "mission_type" => "transport",
+      "galaxy_id" => to_string(system.galaxy.id),
+      "raw_materials" => "1"
+    })
+    |> render_change()
+
+    live_view
+    |> form("form[phx-submit='send_mission']", %{
+      "fleet_id" => to_string(fleet.id),
+      "mission_type" => "transport",
+      "galaxy_id" => to_string(system.galaxy.id),
+      "system_id" => to_string(system.id),
+      "raw_materials" => "1"
+    })
+    |> render_change()
+
+    rendered = render(live_view)
+    assert rendered =~ "Rival Trade Hub [1:1:8]"
+    refute rendered =~ "Region"
+    assert rendered =~ "value=\"#{rival_target.id}\""
   end
 end
