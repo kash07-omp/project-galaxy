@@ -32,6 +32,9 @@ defmodule NexusDownfallWeb.FleetLive do
         current_user={@current_user}
         show_user_menu={@show_user_menu}
         active_tab="fleet"
+        notifications={@topbar_notifications}
+        notifications_unread_count={@topbar_notifications_unread_count}
+        show_notifications_menu={@show_notifications_menu}
       />
       <main class="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_16%_12%,#12385f_0%,#071426_28%,#050912_55%,#03060d_100%)] p-3 md:p-5">
         <div class="mx-auto max-w-[1500px]">

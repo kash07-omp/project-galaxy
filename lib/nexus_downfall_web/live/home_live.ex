@@ -29,6 +29,9 @@ defmodule NexusDownfallWeb.HomeLive do
           active_tab="overview"
           show_game_nav={false}
           logo_path={~p"/dashboard"}
+          notifications={assigns[:topbar_notifications] || []}
+          notifications_unread_count={assigns[:topbar_notifications_unread_count] || 0}
+          show_notifications_menu={assigns[:show_notifications_menu] || false}
         />
       <% else %>
         <nav class="flex h-10 items-center justify-between border-b border-cyan-900/60 bg-[#041127]/90 px-4 backdrop-blur sm:px-6">

@@ -107,6 +107,9 @@ defmodule NexusDownfallWeb.GalaxyLive do
         active_tab="galaxy"
         galaxy_id={@galaxy.id}
         context_label={gettext("Galaxy %{number}", number: @galaxy.number)}
+        notifications={@topbar_notifications}
+        notifications_unread_count={@topbar_notifications_unread_count}
+        show_notifications_menu={@show_notifications_menu}
       />
 
       <!-- ══════ GALAXY MAP ══════ -->

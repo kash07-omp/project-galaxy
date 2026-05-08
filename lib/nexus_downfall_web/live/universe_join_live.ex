@@ -22,6 +22,9 @@ defmodule NexusDownfallWeb.UniverseJoinLive do
         show_user_menu={@show_user_menu}
         show_game_nav={false}
         logo_path={~p"/universes"}
+        notifications={@topbar_notifications}
+        notifications_unread_count={@topbar_notifications_unread_count}
+        show_notifications_menu={@show_notifications_menu}
       />
 
       <main class="relative min-h-[calc(100vh-2.5rem)] px-4 py-8 sm:px-8 lg:px-12">

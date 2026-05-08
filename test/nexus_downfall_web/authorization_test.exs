@@ -10,6 +10,7 @@ defmodule NexusDownfallWeb.AuthorizationTest do
   @protected_routes [
     "/dashboard",
     "/universes",
+    "/notifications",
     "/fleet",
     "/planets",
     "/galaxies/1",

@@ -50,16 +50,22 @@ defmodule NexusDownfallWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :authenticated_onboarding,
-      on_mount: [{NexusDownfallWeb.UserAuth, :ensure_authenticated}] do
+      on_mount: [
+        {NexusDownfallWeb.UserAuth, :ensure_authenticated},
+        {NexusDownfallWeb.NotificationHooks, :default}
+      ] do
       live "/universes", UniverseListLive, :index
       live "/universes/:slug/join", UniverseJoinLive, :new
       live "/users/settings", UserSettingsLive, :edit
+      live "/notifications", NotificationsLive, :index
+      live "/notifications/:id", NotificationsLive, :show
     end
 
     live_session :require_universe_membership,
       on_mount: [
         {NexusDownfallWeb.UserAuth, :ensure_authenticated},
-        {NexusDownfallWeb.UserAuth, :ensure_joined_universe}
+        {NexusDownfallWeb.UserAuth, :ensure_joined_universe},
+        {NexusDownfallWeb.NotificationHooks, :default}
       ] do
       live "/dashboard", DashboardLive, :index
       live "/fleet", FleetLive, :index

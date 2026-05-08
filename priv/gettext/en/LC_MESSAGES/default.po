@@ -267,6 +267,87 @@ msgstr "Check back soon. New battlefronts open regularly."
 msgid "Universe"
 msgstr "Universe"
 
+msgid "Notifications"
+msgstr ""
+
+msgid "Unread"
+msgstr ""
+
+msgid "No notifications yet."
+msgstr ""
+
+msgid "View all notifications"
+msgstr ""
+
+msgid "Battle won"
+msgstr ""
+
+msgid "Battle lost"
+msgstr ""
+
+msgid "Battle ended in draw"
+msgstr ""
+
+msgid "Notification"
+msgstr ""
+
+msgid "Open for details."
+msgstr ""
+
+msgid "%{rounds} rounds resolved."
+msgstr ""
+
+msgid "Command Relay"
+msgstr ""
+
+msgid "Battle reports and strategic system alerts are stored here."
+msgstr ""
+
+msgid "Recent Notifications"
+msgstr ""
+
+msgid "Select a notification to view details."
+msgstr ""
+
+msgid "Battle Report"
+msgstr ""
+
+msgid "Victory"
+msgstr ""
+
+msgid "Defeat"
+msgstr ""
+
+msgid "Draw"
+msgstr ""
+
+msgid "Outcome"
+msgstr ""
+
+msgid "Rounds"
+msgstr ""
+
+msgid "Attacker Losses"
+msgstr ""
+
+msgid "Defender Losses"
+msgstr ""
+
+msgid "No losses"
+msgstr ""
+
+msgid "Attacker Cost"
+msgstr ""
+
+msgid "Defender Cost"
+msgstr ""
+
+msgid "Looted Resources"
+msgstr ""
+
+msgid "RM %{raw} · MC %{chips} · H2 %{hydro}"
+msgstr ""
+
 msgid "Galaxies"
 msgstr "Galaxies"
 

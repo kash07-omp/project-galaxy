@@ -111,6 +111,9 @@ defmodule NexusDownfallWeb.PlanetLive do
         active_tab="cities"
         galaxy_id={@galaxy_id}
         planet_id={@planet.id}
+        notifications={@topbar_notifications}
+        notifications_unread_count={@topbar_notifications_unread_count}
+        show_notifications_menu={@show_notifications_menu}
       />
       <!-- ══════ RESOURCE BAR ══════ -->
       <div class="flex items-center gap-3 bg-gray-950/95 border-b border-gray-800 px-4 h-9 shrink-0 z-20 text-[11px] overflow-x-auto">

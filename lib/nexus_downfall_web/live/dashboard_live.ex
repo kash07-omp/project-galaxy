@@ -16,6 +16,9 @@ defmodule NexusDownfallWeb.DashboardLive do
         current_user={@current_user}
         show_user_menu={@show_user_menu}
         active_tab={nil}
+        notifications={@topbar_notifications}
+        notifications_unread_count={@topbar_notifications_unread_count}
+        show_notifications_menu={@show_notifications_menu}
       />
       <main class="flex-1 p-6">
         <h1 class="text-xl font-bold text-cyan-400 tracking-widest uppercase mb-6">

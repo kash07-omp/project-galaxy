@@ -280,6 +280,87 @@ msgstr "Vuelve pronto. Se abren nuevos frentes de batalla con frecuencia."
 msgid "Universe"
 msgstr "Universo"
 
+msgid "Notifications"
+msgstr "Notificaciones"
+
+msgid "Unread"
+msgstr "Sin leer"
+
+msgid "No notifications yet."
+msgstr "Aún no hay notificaciones."
+
+msgid "View all notifications"
+msgstr "Ver todas las notificaciones"
+
+msgid "Battle won"
+msgstr "Batalla ganada"
+
+msgid "Battle lost"
+msgstr "Batalla perdida"
+
+msgid "Battle ended in draw"
+msgstr "Batalla finalizada en empate"
+
+msgid "Notification"
+msgstr "Notificación"
+
+msgid "Open for details."
+msgstr "Abrir para ver detalles."
+
+msgid "%{rounds} rounds resolved."
+msgstr "%{rounds} rondas resueltas."
+
+msgid "Command Relay"
+msgstr "Relé de Mando"
+
+msgid "Battle reports and strategic system alerts are stored here."
+msgstr "Aquí se almacenan los informes de batalla y las alertas estratégicas del sistema."
+
+msgid "Recent Notifications"
+msgstr "Notificaciones recientes"
+
+msgid "Select a notification to view details."
+msgstr "Selecciona una notificación para ver su detalle."
+
+msgid "Battle Report"
+msgstr "Informe de batalla"
+
+msgid "Victory"
+msgstr "Victoria"
+
+msgid "Defeat"
+msgstr "Derrota"
+
+msgid "Draw"
+msgstr "Empate"
+
+msgid "Outcome"
+msgstr "Resultado"
+
+msgid "Rounds"
+msgstr "Rondas"
+
+msgid "Attacker Losses"
+msgstr "Pérdidas del atacante"
+
+msgid "Defender Losses"
+msgstr "Pérdidas del defensor"
+
+msgid "No losses"
+msgstr "Sin pérdidas"
+
+msgid "Attacker Cost"
+msgstr "Coste del atacante"
+
+msgid "Defender Cost"
+msgstr "Coste del defensor"
+
+msgid "Looted Resources"
+msgstr "Recursos saqueados"
+
+msgid "RM %{raw} · MC %{chips} · H2 %{hydro}"
+msgstr "MP %{raw} · MC %{chips} · H2 %{hydro}"
+
 msgid "Galaxies"
 msgstr "Galaxias"
 

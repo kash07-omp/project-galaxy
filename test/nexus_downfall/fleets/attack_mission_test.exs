@@ -6,6 +6,7 @@ defmodule NexusDownfall.Fleets.AttackMissionTest do
   alias NexusDownfall.Accounts.UniverseUser
   alias NexusDownfall.Fleets
   alias NexusDownfall.Fleets.{Fleet, FleetMission, FleetShip}
+  alias NexusDownfall.Notifications.Notification
   alias NexusDownfall.Planets
   alias NexusDownfall.Planets.{Defense, Defenses, Planet}
   alias NexusDownfall.Repo
@@ -142,11 +143,12 @@ defmodule NexusDownfall.Fleets.AttackMissionTest do
 
     set_fleet_ships(fleet.id, %{"corvette" => 20})
 
-    %{attacker: attacker, home_planet: home_planet, target_planet: target_planet, fleet: fleet}
+    %{attacker: attacker, defender: defender, home_planet: home_planet, target_planet: target_planet, fleet: fleet}
   end
 
   test "dispatches attack and resolves planetary defenses on arrival", %{
     attacker: attacker,
+    defender: defender,
     home_planet: home_planet,
     target_planet: target_planet,
     fleet: fleet
@@ -181,6 +183,40 @@ defmodule NexusDownfall.Fleets.AttackMissionTest do
              0
 
     assert Repo.get_by!(FleetShip, fleet_id: fleet.id, ship_type: "corvette").quantity >= 0
+
+    attacker_notification =
+      Repo.one!(
+        from n in Notification,
+          where: n.user_id == ^attacker.id and n.type == "battle_report",
+          order_by: [desc: n.id],
+          limit: 1
+      )
+
+    defender_notification =
+      Repo.one!(
+        from n in Notification,
+          where: n.user_id == ^defender.id and n.type == "battle_report",
+          order_by: [desc: n.id],
+          limit: 1
+      )
+
+    assert attacker_notification.payload["recipient_role"] == "attacker"
+    assert defender_notification.payload["recipient_role"] == "defender"
+
+    assert attacker_notification.payload["mission_id"] == mission.id
+    assert defender_notification.payload["mission_id"] == mission.id
+
+    assert is_list(attacker_notification.payload["attacker_losses"])
+    assert is_list(attacker_notification.payload["defender_losses"])
+
+    assert is_map(attacker_notification.payload["attacker_total_cost"])
+    assert is_map(attacker_notification.payload["defender_total_cost"])
+
+    assert attacker_notification.payload["looted_resources"] == %{
+             "raw_materials" => 0,
+             "microchips" => 0,
+             "hydrogen" => 0
+           }
   end
 
   test "rejects attacks against own or empty planets", %{

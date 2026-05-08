@@ -16,6 +16,9 @@ defmodule NexusDownfallWeb.UniverseListLive do
         show_user_menu={@show_user_menu}
         show_game_nav={false}
         logo_path={~p"/universes"}
+        notifications={@topbar_notifications}
+        notifications_unread_count={@topbar_notifications_unread_count}
+        show_notifications_menu={@show_notifications_menu}
       />
       <main class="relative min-h-[calc(100vh-2.5rem)] overflow-hidden px-4 py-8 sm:px-8 lg:px-12">
         <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(34,211,238,0.24),transparent_35%),radial-gradient(circle_at_88%_15%,rgba(59,130,246,0.26),transparent_28%),radial-gradient(circle_at_60%_90%,rgba(16,185,129,0.14),transparent_30%)]" />
