@@ -238,6 +238,20 @@ defmodule NexusDownfall.Fleets do
     )
   end
 
+  @doc "Returns active mission map keyed by fleet_id for the given fleets."
+  def list_active_missions_for_fleets(fleet_ids) when is_list(fleet_ids) do
+    if fleet_ids == [] do
+      %{}
+    else
+      Repo.all(
+        from m in FleetMission,
+          where: m.fleet_id in ^fleet_ids and m.phase in ^@active_mission_phases,
+          preload: [:origin_planet, :target_planet]
+      )
+      |> Map.new(fn mission -> {mission.fleet_id, mission} end)
+    end
+  end
+
   def list_fleets_for_universe_user(universe_user_id) do
     Repo.all(
       from f in Fleet,

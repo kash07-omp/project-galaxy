@@ -15,9 +15,11 @@ defmodule NexusDownfallWeb.FleetLive do
         NexusDownfall.PubSub,
         Fleets.fleet_updates_topic_for_user(socket.assigns.current_user.id)
       )
+
+      Process.send_after(self(), :mission_tick, 1_000)
     end
 
-    {:ok, assign_fleet_page(socket)}
+    {:ok, socket |> assign(:now, DateTime.utc_now() |> DateTime.truncate(:second)) |> assign_fleet_page()}
   end
 
   def render(assigns) do
@@ -231,6 +233,39 @@ defmodule NexusDownfallWeb.FleetLive do
                               </button>
                             </div>
                           </div>
+
+                          <%= if mission = @active_missions_by_fleet[fleet.id] do %>
+                            <div class="rounded-lg border border-cyan-500/20 bg-[#031122]/80 px-3 py-2">
+                              <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                <p class="text-[10px] font-semibold uppercase tracking-wide text-cyan-300">
+                                  <%= gettext("Travel progress") %>
+                                </p>
+                                <p class="text-[11px] text-gray-300"><%= mission_progress_label(mission, @now) %></p>
+                              </div>
+
+                              <div class="h-2 w-full overflow-hidden rounded-full bg-cyan-950/70">
+                                <div
+                                  class="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-500"
+                                  style={"width: #{mission_progress_percent(mission, @now)}%"}
+                                />
+                              </div>
+
+                              <div class="mt-2 grid gap-1 text-[11px] text-gray-400 md:grid-cols-3">
+                                <p>
+                                  <span class="text-gray-500"><%= gettext("Origin") %>:</span>
+                                  <span class="text-gray-200"> <%= mission_planet_name(mission.origin_planet) %></span>
+                                </p>
+                                <p>
+                                  <span class="text-gray-500"><%= gettext("Destination") %>:</span>
+                                  <span class="text-gray-200"> <%= mission_planet_name(mission.target_planet) %></span>
+                                </p>
+                                <p>
+                                  <span class="text-gray-500"><%= gettext("Arrival in") %>:</span>
+                                  <span class="text-gray-200"> <%= mission_remaining_label(mission, @now) %></span>
+                                </p>
+                              </div>
+                            </div>
+                          <% end %>
 
                           <%!-- Row 2: ship manifest - full width below fleet info --%>
                           <div class="rounded-lg border border-cyan-500/10 bg-[#030a15]/60 p-2">
@@ -705,14 +740,25 @@ defmodule NexusDownfallWeb.FleetLive do
     {:noreply, assign_fleet_page(socket)}
   end
 
+  def handle_info(:mission_tick, socket) do
+    if connected?(socket), do: Process.send_after(self(), :mission_tick, 1_000)
+
+    {:noreply,
+     socket
+     |> assign(:now, DateTime.utc_now() |> DateTime.truncate(:second))
+     |> assign_fleet_page()}
+  end
+
   defp assign_fleet_page(socket) do
     user_id = socket.assigns.current_user.id
     planets = Fleets.list_planets_for_user(user_id)
     fleets = Fleets.list_fleets_for_user(user_id)
+    active_missions = Fleets.list_active_missions_for_fleets(Enum.map(fleets, & &1.id))
 
     socket
     |> assign(:planets, planets)
     |> assign(:fleets, fleets)
+    |> assign(:active_missions_by_fleet, active_missions)
     |> assign(:fleet_metrics, fleet_metrics(fleets, planets))
     |> assign(:premium_access, premium_access?(socket.assigns.current_user))
     |> assign(:ship_catalog, Fleets.ship_catalog())
@@ -890,6 +936,71 @@ defmodule NexusDownfallWeb.FleetLive do
       quantity = Fleets.ship_quantity(fleet, ship.type)
       acc + quantity * ship.attack + quantity * ship.hull
     end)
+  end
+
+  defp mission_progress_percent(mission, now) do
+    {start_at, end_at} = mission_time_window(mission)
+
+    total_seconds = max(DateTime.diff(end_at, start_at, :second), 1)
+    elapsed_seconds = DateTime.diff(now, start_at, :second)
+
+    elapsed_seconds
+    |> max(0)
+    |> min(total_seconds)
+    |> Kernel./(total_seconds)
+    |> Kernel.*(100)
+    |> Float.round(1)
+  end
+
+  defp mission_progress_label(mission, now) do
+    percent = mission_progress_percent(mission, now)
+    "#{percent}%"
+  end
+
+  defp mission_remaining_label(mission, now) do
+    {_start_at, end_at} = mission_time_window(mission)
+    remaining = max(DateTime.diff(end_at, now, :second), 0)
+
+    if remaining == 0 do
+      gettext("Arrived")
+    else
+      format_duration(remaining)
+    end
+  end
+
+  defp mission_time_window(%{phase: "outbound", outbound_arrival_at: arrival_at, outbound_travel_seconds: seconds}) do
+    {DateTime.add(arrival_at, -seconds, :second), arrival_at}
+  end
+
+  defp mission_time_window(%{phase: "colonizing", colonization_complete_at: complete_at, colonization_seconds: seconds}) do
+    {DateTime.add(complete_at, -seconds, :second), complete_at}
+  end
+
+  defp mission_time_window(%{phase: "returning", return_arrival_at: arrival_at, return_travel_seconds: seconds}) do
+    {DateTime.add(arrival_at, -seconds, :second), arrival_at}
+  end
+
+  defp mission_time_window(mission), do: {mission.inserted_at, mission.inserted_at}
+
+  defp mission_planet_name(nil), do: gettext("Unknown")
+
+  defp mission_planet_name(planet) do
+    case String.trim(planet.name || "") do
+      "" -> gettext("Unnamed Planet")
+      value -> value
+    end
+  end
+
+  defp format_duration(total_seconds) do
+    hours = div(total_seconds, 3600)
+    minutes = div(rem(total_seconds, 3600), 60)
+    seconds = rem(total_seconds, 60)
+
+    if hours > 0 do
+      :io_lib.format("~2..0B:~2..0B:~2..0B", [hours, minutes, seconds]) |> to_string()
+    else
+      :io_lib.format("~2..0B:~2..0B", [minutes, seconds]) |> to_string()
+    end
   end
 
   defp premium_access?(user) do

@@ -674,3 +674,199 @@ msgstr "Frégate placeholder plus lourde, avec une meilleure coque et une meille
 
 msgid "Planet not found."
 msgstr "Planète introuvable."
+
+## Fleet LiveView missing keys
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Advanced filters are visible but restricted to PRO commanders."
+msgstr "Les filtres avancés sont visibles, mais réservés aux commandants PRO."
+
+msgid "All missions"
+msgstr "Toutes les missions"
+
+msgid "All planets"
+msgstr "Toutes les planètes"
+
+msgid "Arrival in"
+msgstr "Arrivée dans"
+
+msgid "Arrived"
+msgstr "Arrivé"
+
+msgid "Assign"
+msgstr "Assigner"
+
+msgid "Change"
+msgstr "Changer"
+
+msgid "Choose an admiral from your deck"
+msgstr "Choisissez un amiral depuis votre deck"
+
+msgid "Choose galaxy, system and planet before dispatching."
+msgstr "Choisissez galaxie, système et planète avant d'envoyer."
+
+msgid "Choose the mission type first, then narrow the target step by step."
+msgstr "Choisissez d'abord le type de mission, puis affinez la cible étape par étape."
+
+msgid "Colonization"
+msgstr "Colonisation"
+
+msgid "Colonization mission dispatched."
+msgstr "Mission de colonisation envoyée."
+
+msgid "Colonizing"
+msgstr "En colonisation"
+
+msgid "Could not dispatch mission."
+msgstr "Impossible d'envoyer la mission."
+
+msgid "Create and organize your operational fleets."
+msgstr "Créez et organisez vos flottes opérationnelles."
+
+msgid "Current mission"
+msgstr "Mission en cours"
+
+msgid "Destination"
+msgstr "Destination"
+
+msgid "Dispatch mission"
+msgstr "Envoyer la mission"
+
+msgid "Fleet Filters"
+msgstr "Filtres de flotte"
+
+msgid "Fleet is already on a mission."
+msgstr "La flotte est déjà en mission."
+
+msgid "Fleet Management"
+msgstr "Gestion des flottes"
+
+msgid "Fleet name..."
+msgstr "Nom de la flotte..."
+
+msgid "Fleet needs at least one Colonizer ship."
+msgstr "La flotte nécessite au moins un vaisseau Colonizer."
+
+msgid "Fleet Operations"
+msgstr "Opérations de flotte"
+
+msgid "Fleets"
+msgstr "Flottes"
+
+msgid "If another commander arrives first, your colonizer will automatically return."
+msgstr "Si un autre commandant arrive en premier, votre colonisateur reviendra automatiquement."
+
+msgid "Invalid mission data."
+msgstr "Données de mission invalides."
+
+msgid "Invalid target planet."
+msgstr "Planète cible invalide."
+
+msgid "Location"
+msgstr "Position"
+
+msgid "Mission"
+msgstr "Mission"
+
+msgid "Monitor each fleet, inspect every ship class and prepare mission dispatches."
+msgstr "Surveillez chaque flotte, inspectez chaque classe de vaisseau et préparez les envois de mission."
+
+msgid "New Fleet"
+msgstr "Nouvelle flotte"
+
+msgid "No admiral cards in your deck."
+msgstr "Aucune carte d'amiral dans votre deck."
+
+msgid "No route found between origin and target."
+msgstr "Aucune route trouvée entre l'origine et la cible."
+
+msgid "Not enough hydrogen for the mission."
+msgstr "Hydrogène insuffisant pour la mission."
+
+msgid "Orbital Bombardment"
+msgstr "Bombardement orbital"
+
+msgid "Origin"
+msgstr "Origine"
+
+msgid "Outbound"
+msgstr "En route"
+
+msgid "Planet"
+msgstr "Planète"
+
+msgid "Planetary Defense"
+msgstr "Défense planétaire"
+
+msgid "Power"
+msgstr "Puissance"
+
+msgid "PRO"
+msgstr "PRO"
+
+msgid "Ready"
+msgstr "Prête"
+
+msgid "requires Colonizer"
+msgstr "nécessite un Colonizer"
+
+msgid "Returning"
+msgstr "Retour"
+
+msgid "Search"
+msgstr "Rechercher"
+
+msgid "Select galaxy"
+msgstr "Sélectionnez une galaxie"
+
+msgid "Select planet"
+msgstr "Sélectionnez une planète"
+
+msgid "Select system"
+msgstr "Sélectionnez un système"
+
+msgid "Send mission"
+msgstr "Envoyer mission"
+
+msgid "Ship Manifest"
+msgstr "Composition des vaisseaux"
+
+msgid "Target planet is already occupied."
+msgstr "La planète cible est déjà occupée."
+
+msgid "Target planet is currently being colonized."
+msgstr "La planète cible est en cours de colonisation."
+
+msgid "Target planet not found."
+msgstr "Planète cible introuvable."
+
+msgid "targets"
+msgstr "cibles"
+
+msgid "That mission type is not implemented yet."
+msgstr "Ce type de mission n'est pas encore implémenté."
+
+msgid "This mission type is visible as a placeholder for now. Only Colonization is currently playable."
+msgstr "Ce type de mission est affiché en placeholder pour le moment. Seule la Colonisation est jouable actuellement."
+
+msgid "Trade Blockade"
+msgstr "Blocus commercial"
+
+msgid "Transport"
+msgstr "Transport"
+
+msgid "Travel progress"
+msgstr "Progression du trajet"
+
+msgid "Unknown"
+msgstr "Inconnu"
+
+msgid "Unlock with PRO"
+msgstr "Débloquer avec PRO"
+
+msgid "Unnamed Planet"
+msgstr "Planète sans nom"
+
+msgid "Worlds"
+msgstr "Mondes"
