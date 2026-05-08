@@ -238,7 +238,7 @@ defmodule NexusDownfallWeb.FleetLive do
                             <div class="rounded-lg border border-cyan-500/20 bg-[#031122]/80 px-3 py-2">
                               <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                                 <p class="text-[10px] font-semibold uppercase tracking-wide text-cyan-300">
-                                  <%= gettext("Travel progress") %>
+                                  <%= mission_progress_title(mission, @now) %>
                                 </p>
                                 <p class="text-[11px] text-gray-300"><%= mission_progress_label(mission, @now) %></p>
                               </div>
@@ -253,14 +253,14 @@ defmodule NexusDownfallWeb.FleetLive do
                               <div class="mt-2 grid gap-1 text-[11px] text-gray-400 md:grid-cols-3">
                                 <p>
                                   <span class="text-gray-500"><%= gettext("Origin") %>:</span>
-                                  <span class="text-gray-200"> <%= mission_planet_name(mission.origin_planet) %></span>
+                                  <span class="text-gray-200"> <%= mission_origin_name(mission) %></span>
                                 </p>
                                 <p>
                                   <span class="text-gray-500"><%= gettext("Destination") %>:</span>
-                                  <span class="text-gray-200"> <%= mission_planet_name(mission.target_planet) %></span>
+                                  <span class="text-gray-200"> <%= mission_destination_name(mission) %></span>
                                 </p>
                                 <p>
-                                  <span class="text-gray-500"><%= gettext("Arrival in") %>:</span>
+                                  <span class="text-gray-500"><%= mission_eta_label(mission, @now) %>:</span>
                                   <span class="text-gray-200"> <%= mission_remaining_label(mission, @now) %></span>
                                 </p>
                               </div>
@@ -740,19 +740,29 @@ defmodule NexusDownfallWeb.FleetLive do
     {:noreply, assign_fleet_page(socket)}
   end
 
-  def handle_info(:mission_tick, socket) do
-    if connected?(socket), do: Process.send_after(self(), :mission_tick, 1_000)
+  def handle_info({:fleet_mission_updated, _payload}, socket) do
+    {:noreply, assign_fleet_page(socket)}
+  end
 
-    {:noreply,
-     socket
-     |> assign(:now, DateTime.utc_now() |> DateTime.truncate(:second))
-     |> assign_fleet_page()}
+  def handle_info(:mission_tick, socket) do
+    new_socket = assign(socket, :now, DateTime.utc_now() |> DateTime.truncate(:second))
+
+    if connected?(new_socket) do
+      # Adaptive tick: 1s when active missions exist, 2s baseline (reduces polling load)
+      # Note: active_missions_by_fleet only contains missions in active phases (outbound/colonizing/returning)
+      has_active_missions = !Enum.empty?(new_socket.assigns[:active_missions_by_fleet] || %{})
+      interval = if has_active_missions, do: 1_000, else: 2_000
+      Process.send_after(self(), :mission_tick, interval)
+    end
+
+    {:noreply, new_socket}
   end
 
   defp assign_fleet_page(socket) do
     user_id = socket.assigns.current_user.id
     planets = Fleets.list_planets_for_user(user_id)
     fleets = Fleets.list_fleets_for_user(user_id)
+
     active_missions = Fleets.list_active_missions_for_fleets(Enum.map(fleets, & &1.id))
 
     socket
@@ -825,8 +835,8 @@ defmodule NexusDownfallWeb.FleetLive do
   defp mission_option_label(label, true, _suffix), do: label
   defp mission_option_label(label, false, suffix), do: "#{label} (#{suffix})"
 
-  defp mission_galaxy_label(galaxy), do: "#{gettext("Galaxy")} #{galaxy.number} · #{galaxy.free_planets} #{gettext("targets")}" 
-  defp mission_system_label(system), do: "#{gettext("System")} #{system.number} · #{system.free_planets} #{gettext("targets")}" 
+  defp mission_galaxy_label(galaxy), do: "#{gettext("Galaxy")} #{galaxy.number} · #{galaxy.free_planets} #{gettext("targets")}"
+  defp mission_system_label(system), do: "#{gettext("System")} #{system.number} · #{system.free_planets} #{gettext("targets")}"
 
   defp planet_option_label(planet) do
     "#{planet.name} - #{gettext("System")} #{planet.solar_system.number}"
@@ -939,7 +949,7 @@ defmodule NexusDownfallWeb.FleetLive do
   end
 
   defp mission_progress_percent(mission, now) do
-    {start_at, end_at} = mission_time_window(mission)
+    {start_at, end_at} = mission_time_window(mission, now)
 
     total_seconds = max(DateTime.diff(end_at, start_at, :second), 1)
     elapsed_seconds = DateTime.diff(now, start_at, :second)
@@ -957,30 +967,90 @@ defmodule NexusDownfallWeb.FleetLive do
     "#{percent}%"
   end
 
+  defp mission_progress_title(mission, now) do
+    case mission_display_phase(mission, now) do
+      :outbound -> gettext("Travel progress")
+      :colonizing -> gettext("Building colony")
+      :returning -> gettext("Return progress")
+      _ -> gettext("Travel progress")
+    end
+  end
+
+  defp mission_eta_label(mission, now) do
+    case mission_display_phase(mission, now) do
+      :colonizing -> gettext("Completion in")
+      _ -> gettext("Arrival in")
+    end
+  end
+
+  defp mission_origin_name(%{phase: "returning"} = mission), do: mission_planet_name(mission.target_planet)
+  defp mission_origin_name(mission), do: mission_planet_name(mission.origin_planet)
+
+  defp mission_destination_name(%{phase: "returning"} = mission), do: mission_planet_name(mission.origin_planet)
+  defp mission_destination_name(%{phase: "colonizing"} = mission), do: mission_planet_name(mission.target_planet)
+  defp mission_destination_name(mission), do: mission_planet_name(mission.target_planet)
+
   defp mission_remaining_label(mission, now) do
-    {_start_at, end_at} = mission_time_window(mission)
+    {_start_at, end_at} = mission_time_window(mission, now)
     remaining = max(DateTime.diff(end_at, now, :second), 0)
 
     if remaining == 0 do
-      gettext("Arrived")
+      mission_completed_label(mission, now)
     else
       format_duration(remaining)
     end
   end
 
-  defp mission_time_window(%{phase: "outbound", outbound_arrival_at: arrival_at, outbound_travel_seconds: seconds}) do
-    {DateTime.add(arrival_at, -seconds, :second), arrival_at}
+  defp mission_completed_label(mission, now) do
+    case mission_display_phase(mission, now) do
+      :colonizing -> gettext("Colony ready")
+      _ -> gettext("Arrived")
+    end
   end
 
-  defp mission_time_window(%{phase: "colonizing", colonization_complete_at: complete_at, colonization_seconds: seconds}) do
-    {DateTime.add(complete_at, -seconds, :second), complete_at}
+  defp mission_time_window(mission, now) do
+    case mission_display_phase(mission, now) do
+      :outbound ->
+        arrival_at = mission.outbound_arrival_at
+        {DateTime.add(arrival_at, -mission.outbound_travel_seconds, :second), arrival_at}
+
+      :colonizing ->
+        {start_at, end_at} = mission_colonizing_window(mission)
+        {start_at, end_at}
+
+      :returning ->
+        arrival_at = mission.return_arrival_at
+        {DateTime.add(arrival_at, -mission.return_travel_seconds, :second), arrival_at}
+
+      _ ->
+        {mission.inserted_at, mission.inserted_at}
+    end
   end
 
-  defp mission_time_window(%{phase: "returning", return_arrival_at: arrival_at, return_travel_seconds: seconds}) do
-    {DateTime.add(arrival_at, -seconds, :second), arrival_at}
+  defp mission_colonizing_window(%{phase: "colonizing", colonization_complete_at: complete_at} = mission)
+       when not is_nil(complete_at) do
+    {DateTime.add(complete_at, -mission.colonization_seconds, :second), complete_at}
   end
 
-  defp mission_time_window(mission), do: {mission.inserted_at, mission.inserted_at}
+  defp mission_colonizing_window(%{outbound_arrival_at: outbound_arrival_at} = mission) do
+    end_at = DateTime.add(outbound_arrival_at, mission.colonization_seconds, :second)
+    {outbound_arrival_at, end_at}
+  end
+
+  defp mission_display_phase(%{phase: "outbound", outbound_arrival_at: outbound_arrival_at}, now)
+       when not is_nil(outbound_arrival_at) do
+    if DateTime.compare(now, outbound_arrival_at) in [:eq, :gt] do
+      # If worker delivery is delayed, show colonization progress instead of an outbound bar stuck at 100%.
+      :colonizing
+    else
+      :outbound
+    end
+  end
+
+  defp mission_display_phase(%{phase: "outbound"}, _now), do: :outbound
+  defp mission_display_phase(%{phase: "colonizing"}, _now), do: :colonizing
+  defp mission_display_phase(%{phase: "returning"}, _now), do: :returning
+  defp mission_display_phase(_mission, _now), do: :outbound
 
   defp mission_planet_name(nil), do: gettext("Unknown")
 

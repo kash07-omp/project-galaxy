@@ -252,6 +252,26 @@ defmodule NexusDownfall.Fleets do
     end
   end
 
+  @doc "Forces overdue mission transitions for the provided fleets (scheduler catch-up)."
+  def catch_up_overdue_missions_for_fleets(fleet_ids) when is_list(fleet_ids) do
+    if fleet_ids == [] do
+      :ok
+    else
+      now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+      Repo.all(
+        from m in FleetMission,
+          where: m.fleet_id in ^fleet_ids and m.phase in ^@active_mission_phases
+      )
+      |> Enum.each(fn mission ->
+        action = overdue_mission_action(mission, now)
+        if action, do: process_mission_transition(mission.id, action)
+      end)
+
+      :ok
+    end
+  end
+
   def list_fleets_for_universe_user(universe_user_id) do
     Repo.all(
       from f in Fleet,
@@ -1076,6 +1096,23 @@ defmodule NexusDownfall.Fleets do
       {:error, reason} -> reason
     end
   end
+
+  defp overdue_mission_action(%{phase: "outbound", outbound_arrival_at: at}, now)
+       when not is_nil(at) do
+    if DateTime.compare(now, at) in [:eq, :gt], do: "arrive", else: nil
+  end
+
+  defp overdue_mission_action(%{phase: "colonizing", colonization_complete_at: at}, now)
+       when not is_nil(at) do
+    if DateTime.compare(now, at) in [:eq, :gt], do: "complete_colonization", else: nil
+  end
+
+  defp overdue_mission_action(%{phase: "returning", return_arrival_at: at}, now)
+       when not is_nil(at) do
+    if DateTime.compare(now, at) in [:eq, :gt], do: "return", else: nil
+  end
+
+  defp overdue_mission_action(_mission, _now), do: nil
 
   def total_ships(fleet) do
     Enum.reduce(fleet.ships || [], 0, fn ship, acc -> acc + ship.quantity end)

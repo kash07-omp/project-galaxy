@@ -870,3 +870,15 @@ msgstr "Planète sans nom"
 
 msgid "Worlds"
 msgstr "Mondes"
+
+msgid "Building colony"
+msgstr "Construction de colonie"
+
+msgid "Return progress"
+msgstr "Progression du retour"
+
+msgid "Completion in"
+msgstr "Termine dans"
+
+msgid "Colony ready"
+msgstr "Colonie prête"
