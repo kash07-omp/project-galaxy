@@ -34,6 +34,9 @@ defmodule NexusDownfall.GameplaySettings do
       "landing_seconds" => 20,
       "seconds_per_hyperlink_hop" => 40,
       "seconds_per_orbit_step" => 6
+    },
+    "combat" => %{
+      "max_rounds" => 6
     }
   }
 
@@ -97,6 +100,11 @@ defmodule NexusDownfall.GameplaySettings do
     all() |> Map.fetch!("fleet_travel")
   end
 
+  @spec combat_settings() :: map()
+  def combat_settings do
+    all() |> Map.fetch!("combat")
+  end
+
   defp settings_path do
     default_path = Path.join([:code.priv_dir(:nexus_downfall), "settings", "gameplay.json"])
     Application.get_env(:nexus_downfall, :gameplay_settings_path, default_path)
@@ -104,13 +112,18 @@ defmodule NexusDownfall.GameplaySettings do
 
   defp parse_settings_file({:ok, contents}) do
     case Jason.decode(contents) do
-      {:ok, settings} when is_map(settings) -> settings
+      {:ok, settings} when is_map(settings) ->
+        settings
+
       {:ok, _invalid} ->
         Logger.warning("Gameplay settings JSON must contain an object at root. Using defaults.")
         %{}
 
       {:error, reason} ->
-        Logger.warning("Could not parse gameplay settings JSON: #{Exception.message(reason)}. Using defaults.")
+        Logger.warning(
+          "Could not parse gameplay settings JSON: #{Exception.message(reason)}. Using defaults."
+        )
+
         %{}
     end
   end
@@ -135,6 +148,7 @@ defmodule NexusDownfall.GameplaySettings do
     min_seconds = sanitize_non_negative_int(Map.get(colonization, "min_seconds"), 60)
 
     travel = Map.get(settings, "fleet_travel", %{})
+    combat = Map.get(settings, "combat", %{})
 
     planet = Map.get(settings, "planet", %{})
 
@@ -164,6 +178,9 @@ defmodule NexusDownfall.GameplaySettings do
           sanitize_non_negative_int(Map.get(travel, "seconds_per_hyperlink_hop"), 40),
         "seconds_per_orbit_step" =>
           sanitize_non_negative_int(Map.get(travel, "seconds_per_orbit_step"), 6)
+      },
+      "combat" => %{
+        "max_rounds" => sanitize_positive_int(Map.get(combat, "max_rounds"), 6)
       }
     }
   end
@@ -205,6 +222,17 @@ defmodule NexusDownfall.GameplaySettings do
   end
 
   defp sanitize_non_negative_int(_value, default), do: default
+
+  defp sanitize_positive_int(value, _default) when is_integer(value), do: max(value, 1)
+
+  defp sanitize_positive_int(value, default) when is_binary(value) do
+    case Integer.parse(value) do
+      {int, ""} -> max(int, 1)
+      _ -> default
+    end
+  end
+
+  defp sanitize_positive_int(_value, default), do: default
 
   defp atomize_map_keys(map) do
     Map.new(map, fn {key, value} -> {String.to_existing_atom(key), value} end)

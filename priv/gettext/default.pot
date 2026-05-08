@@ -1933,3 +1933,18 @@ msgstr ""
 
 msgid "Conquest ark. Takes planets and sustains occupations, but is not a main combat ship."
 msgstr ""
+
+msgid "Combat sortie"
+msgstr ""
+
+msgid "The fleet will fight all ready defenders and surviving ships will return automatically."
+msgstr ""
+
+msgid "This mission type is visible as a placeholder for now. Only Colonization, Transport and Attack are currently playable."
+msgstr ""
+
+msgid "Attack mission dispatched."
+msgstr ""
+
+msgid "Fleet needs at least one ship."
+msgstr ""

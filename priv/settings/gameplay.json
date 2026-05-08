@@ -28,5 +28,8 @@
     "landing_seconds": 20,
     "seconds_per_hyperlink_hop": 40,
     "seconds_per_orbit_step": 6
+  },
+  "combat": {
+    "max_rounds": 6
   }
 }

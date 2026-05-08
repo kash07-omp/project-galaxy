@@ -14,9 +14,11 @@ defmodule NexusDownfall.Fleets do
 
   alias NexusDownfall.Fleets.{Fleet, FleetMission, FleetShip, Pathfinder, ShipyardQueueItem}
   alias NexusDownfall.Accounts.UniverseUser
+  alias NexusDownfall.Combat
   alias NexusDownfall.GameplaySettings
   alias NexusDownfall.Planets
-  alias NexusDownfall.Planets.{Building, Planet, ProductionEngine}
+  alias NexusDownfall.Planets.Defenses, as: PlanetDefenses
+  alias NexusDownfall.Planets.{Building, Defense, Planet, ProductionEngine}
   alias NexusDownfall.Repo
   alias NexusDownfall.Universe.{Galaxy, Hyperlink, SolarSystem}
   alias NexusDownfall.Workers.{FleetMissionWorker, ShipConstructionCompleteWorker}
@@ -35,164 +37,300 @@ defmodule NexusDownfall.Fleets do
 
   @ship_catalog %{
     "light_freighter" => %{
-      type: "light_freighter", tier: 1,
+      type: "light_freighter",
+      tier: 1,
       name: "Light Freighter",
       description: "Cheap and fast transport. Ideal for early raids and first logistics routes.",
-      hull: 120, shield: 15, attack: 5, accuracy: 35, agility: 55, speed: 110,
-      fuel_per_s: 0.8, cargo: 5000,
+      hull: 120,
+      shield: 15,
+      attack: 5,
+      accuracy: 35,
+      agility: 55,
+      speed: 110,
+      fuel_per_s: 0.8,
+      cargo: 5000,
       cost: %{raw_materials: 1500, microchips: 800, hydrogen: 300},
       build_time_seconds: 120
     },
     "heavy_freighter" => %{
-      type: "heavy_freighter", tier: 1,
+      type: "heavy_freighter",
+      tier: 1,
       name: "Heavy Freighter",
       description: "Moves large resource loads, but slows the fleet and needs an escort.",
-      hull: 420, shield: 60, attack: 20, accuracy: 30, agility: 25, speed: 70,
-      fuel_per_s: 2.4, cargo: 25000,
+      hull: 420,
+      shield: 60,
+      attack: 20,
+      accuracy: 30,
+      agility: 25,
+      speed: 70,
+      fuel_per_s: 2.4,
+      cargo: 25000,
       cost: %{raw_materials: 6000, microchips: 3500, hydrogen: 1600},
       build_time_seconds: 300
     },
     "light_fighter" => %{
-      type: "light_fighter", tier: 1,
+      type: "light_fighter",
+      tier: 1,
       name: "Light Fighter",
-      description: "Fast and cheap attack craft. Excellent for hunting freighters and exposed bombers.",
-      hull: 90, shield: 20, attack: 35, accuracy: 68, agility: 85, speed: 150,
-      fuel_per_s: 1.2, cargo: 60,
+      description:
+        "Fast and cheap attack craft. Excellent for hunting freighters and exposed bombers.",
+      hull: 90,
+      shield: 20,
+      attack: 35,
+      accuracy: 68,
+      agility: 85,
+      speed: 150,
+      fuel_per_s: 1.2,
+      cargo: 60,
       cost: %{raw_materials: 1200, microchips: 600, hydrogen: 450},
       build_time_seconds: 90
     },
     "corvette" => %{
-      type: "corvette", tier: 1,
+      type: "corvette",
+      tier: 1,
       name: "Corvette",
-      description: "First stable military ship. Protects freighters and gives early fleets consistency.",
-      hull: 220, shield: 45, attack: 80, accuracy: 60, agility: 62, speed: 115,
-      fuel_per_s: 2.0, cargo: 120,
+      description:
+        "First stable military ship. Protects freighters and gives early fleets consistency.",
+      hull: 220,
+      shield: 45,
+      attack: 80,
+      accuracy: 60,
+      agility: 62,
+      speed: 115,
+      fuel_per_s: 2.0,
+      cargo: 120,
       cost: %{raw_materials: 3500, microchips: 1800, hydrogen: 900},
       build_time_seconds: 180
     },
     "missile_corvette" => %{
-      type: "missile_corvette", tier: 1,
+      type: "missile_corvette",
+      tier: 1,
       name: "Missile Corvette",
-      description: "Opening burst damage ship. Strong against shields and light defenses, weak in long battles.",
-      hull: 180, shield: 25, attack: 145, accuracy: 52, agility: 50, speed: 95,
-      fuel_per_s: 2.8, cargo: 80,
+      description:
+        "Opening burst damage ship. Strong against shields and light defenses, weak in long battles.",
+      hull: 180,
+      shield: 25,
+      attack: 145,
+      accuracy: 52,
+      agility: 50,
+      speed: 95,
+      fuel_per_s: 2.8,
+      cargo: 80,
       cost: %{raw_materials: 4200, microchips: 2500, hydrogen: 1800},
       build_time_seconds: 200
     },
     "heavy_fighter" => %{
-      type: "heavy_fighter", tier: 2,
+      type: "heavy_fighter",
+      tier: 2,
       name: "Heavy Fighter",
-      description: "Fast ship for serious raids. Carries its own cargo and hits vulnerable targets hard.",
-      hull: 320, shield: 70, attack: 130, accuracy: 72, agility: 78, speed: 135,
-      fuel_per_s: 5.2, cargo: 900,
+      description:
+        "Fast ship for serious raids. Carries its own cargo and hits vulnerable targets hard.",
+      hull: 320,
+      shield: 70,
+      attack: 130,
+      accuracy: 72,
+      agility: 78,
+      speed: 135,
+      fuel_per_s: 5.2,
+      cargo: 900,
       cost: %{raw_materials: 13000, microchips: 6500, hydrogen: 5500},
       build_time_seconds: 400
     },
     "frigate" => %{
-      type: "frigate", tier: 2,
+      type: "frigate",
+      tier: 2,
       name: "Frigate",
       description: "Mid-game military core. Useful for attack, defense and escort duties.",
-      hull: 550, shield: 120, attack: 190, accuracy: 64, agility: 45, speed: 85,
-      fuel_per_s: 4.5, cargo: 300,
+      hull: 550,
+      shield: 120,
+      attack: 190,
+      accuracy: 64,
+      agility: 45,
+      speed: 85,
+      fuel_per_s: 4.5,
+      cargo: 300,
       cost: %{raw_materials: 15000, microchips: 9000, hydrogen: 4000},
       build_time_seconds: 500
     },
     "light_destroyer" => %{
-      type: "light_destroyer", tier: 2,
+      type: "light_destroyer",
+      tier: 2,
       name: "Light Destroyer",
       description: "Direct counter to fighter swarms, corvettes and raiding fleets.",
-      hull: 680, shield: 160, attack: 150, accuracy: 78, agility: 42, speed: 75,
-      fuel_per_s: 5.0, cargo: 200,
+      hull: 680,
+      shield: 160,
+      attack: 150,
+      accuracy: 78,
+      agility: 42,
+      speed: 75,
+      fuel_per_s: 5.0,
+      cargo: 200,
       cost: %{raw_materials: 18000, microchips: 12000, hydrogen: 4500},
       build_time_seconds: 550
     },
     "bomber" => %{
-      type: "bomber", tier: 2,
+      type: "bomber",
+      tier: 2,
       name: "Bomber",
       description: "Specialized ship for destroying defenses. It needs an escort.",
-      hull: 900, shield: 160, attack: 520, accuracy: 45, agility: 20, speed: 50,
-      fuel_per_s: 10.0, cargo: 500,
+      hull: 900,
+      shield: 160,
+      attack: 520,
+      accuracy: 45,
+      agility: 20,
+      speed: 50,
+      fuel_per_s: 10.0,
+      cargo: 500,
       cost: %{raw_materials: 52000, microchips: 38000, hydrogen: 24000},
       build_time_seconds: 1200
     },
     "blocker" => %{
-      type: "blocker", tier: 2,
+      type: "blocker",
+      tier: 2,
       name: "Blocker",
-      description: "Designed for planetary blockade missions. It wins through strategic control, not raw damage.",
-      hull: 1500, shield: 450, attack: 120, accuracy: 55, agility: 18, speed: 42,
-      fuel_per_s: 12.0, cargo: 3000,
+      description:
+        "Designed for planetary blockade missions. It wins through strategic control, not raw damage.",
+      hull: 1500,
+      shield: 450,
+      attack: 120,
+      accuracy: 55,
+      agility: 18,
+      speed: 42,
+      fuel_per_s: 12.0,
+      cargo: 3000,
       cost: %{raw_materials: 60000, microchips: 50000, hydrogen: 30000},
       build_time_seconds: 1500
     },
     "colonizer" => %{
-      type: "colonizer", tier: 2,
+      type: "colonizer",
+      tier: 2,
       name: "Colonizer",
       description: "Enables new colonies. Strategic, expensive and worth protecting.",
-      hull: 1800, shield: 500, attack: 20, accuracy: 25, agility: 8, speed: 35,
-      fuel_per_s: 18.0, cargo: 100_000,
+      hull: 1800,
+      shield: 500,
+      attack: 20,
+      accuracy: 25,
+      agility: 8,
+      speed: 35,
+      fuel_per_s: 18.0,
+      cargo: 100_000,
       cost: %{raw_materials: 120_000, microchips: 85_000, hydrogen: 70_000},
       build_time_seconds: 3000
     },
     "cruiser" => %{
-      type: "cruiser", tier: 3,
+      type: "cruiser",
+      tier: 3,
       name: "Cruiser",
       description: "Reliable heavy ship. Protects bombers, blockers and strategic craft.",
-      hull: 1200, shield: 300, attack: 380, accuracy: 62, agility: 32, speed: 65,
-      fuel_per_s: 8.5, cargo: 1000,
+      hull: 1200,
+      shield: 300,
+      attack: 380,
+      accuracy: 62,
+      agility: 32,
+      speed: 65,
+      fuel_per_s: 8.5,
+      cargo: 1000,
       cost: %{raw_materials: 42000, microchips: 26000, hydrogen: 12000},
       build_time_seconds: 1000
     },
     "carrier" => %{
-      type: "carrier", tier: 3,
+      type: "carrier",
+      tier: 3,
       name: "Drone Carrier",
-      description: "Enhances allied fighters and light ships. Should not be deployed without escort.",
-      hull: 2500, shield: 700, attack: 220, accuracy: 58, agility: 15, speed: 45,
-      fuel_per_s: 16.0, cargo: 2500,
+      description:
+        "Enhances allied fighters and light ships. Should not be deployed without escort.",
+      hull: 2500,
+      shield: 700,
+      attack: 220,
+      accuracy: 58,
+      agility: 15,
+      speed: 45,
+      fuel_per_s: 16.0,
+      cargo: 2500,
       cost: %{raw_materials: 125_000, microchips: 95_000, hydrogen: 55_000},
       build_time_seconds: 2500
     },
     "ew_cruiser" => %{
-      type: "ew_cruiser", tier: 3,
+      type: "ew_cruiser",
+      tier: 3,
       name: "Electronic Warfare Cruiser",
-      description: "Technical support ship. Weakens enemy shields and improves attacks against hardened targets.",
-      hull: 800, shield: 1000, attack: 60, accuracy: 80, agility: 28, speed: 60,
-      fuel_per_s: 13.0, cargo: 300,
+      description:
+        "Technical support ship. Weakens enemy shields and improves attacks against hardened targets.",
+      hull: 800,
+      shield: 1000,
+      attack: 60,
+      accuracy: 80,
+      agility: 28,
+      speed: 60,
+      fuel_per_s: 13.0,
+      cargo: 300,
       cost: %{raw_materials: 90_000, microchips: 125_000, hydrogen: 60_000},
       build_time_seconds: 2200
     },
     "battleship" => %{
-      type: "battleship", tier: 3,
+      type: "battleship",
+      tier: 3,
       name: "Battleship",
-      description: "Large-ship hunter. Excellent against blockers, cruisers, carriers and top-tier hulls.",
-      hull: 4200, shield: 1100, attack: 1250, accuracy: 58, agility: 10, speed: 35,
-      fuel_per_s: 22.0, cargo: 3000,
+      description:
+        "Large-ship hunter. Excellent against blockers, cruisers, carriers and top-tier hulls.",
+      hull: 4200,
+      shield: 1100,
+      attack: 1250,
+      accuracy: 58,
+      agility: 10,
+      speed: 35,
+      fuel_per_s: 22.0,
+      cargo: 3000,
       cost: %{raw_materials: 220_000, microchips: 150_000, hydrogen: 90_000},
       build_time_seconds: 4000
     },
     "leviathan" => %{
-      type: "leviathan", tier: 4,
+      type: "leviathan",
+      tier: 4,
       name: "Leviathan",
       description: "Top-tier direct combat ship. Built to decide fleet wars.",
-      hull: 22000, shield: 6500, attack: 5500, accuracy: 62, agility: 4, speed: 18,
-      fuel_per_s: 90.0, cargo: 10_000,
+      hull: 22000,
+      shield: 6500,
+      attack: 5500,
+      accuracy: 62,
+      agility: 4,
+      speed: 18,
+      fuel_per_s: 90.0,
+      cargo: 10_000,
       cost: %{raw_materials: 1_500_000, microchips: 1_200_000, hydrogen: 750_000},
       build_time_seconds: 20000
     },
     "aphelion" => %{
-      type: "aphelion", tier: 4,
+      type: "aphelion",
+      tier: 4,
       name: "Aphelion",
-      description: "Strategic bombardment platform. Destroys defenses and planetary infrastructure.",
-      hull: 16000, shield: 4500, attack: 2200, accuracy: 45, agility: 3, speed: 16,
-      fuel_per_s: 120.0, cargo: 5000,
+      description:
+        "Strategic bombardment platform. Destroys defenses and planetary infrastructure.",
+      hull: 16000,
+      shield: 4500,
+      attack: 2200,
+      accuracy: 45,
+      agility: 3,
+      speed: 16,
+      fuel_per_s: 120.0,
+      cargo: 5000,
       cost: %{raw_materials: 1_300_000, microchips: 1_700_000, hydrogen: 1_000_000},
       build_time_seconds: 20000
     },
     "exodus" => %{
-      type: "exodus", tier: 4,
+      type: "exodus",
+      tier: 4,
       name: "Exodus",
-      description: "Conquest ark. Takes planets and sustains occupations, but is not a main combat ship.",
-      hull: 28000, shield: 8000, attack: 900, accuracy: 35, agility: 2, speed: 12,
-      fuel_per_s: 150.0, cargo: 250_000,
+      description:
+        "Conquest ark. Takes planets and sustains occupations, but is not a main combat ship.",
+      hull: 28000,
+      shield: 8000,
+      attack: 900,
+      accuracy: 35,
+      agility: 2,
+      speed: 12,
+      fuel_per_s: 150.0,
+      cargo: 250_000,
       cost: %{raw_materials: 2_000_000, microchips: 1_500_000, hydrogen: 1_300_000},
       build_time_seconds: 25000
     }
@@ -324,8 +462,12 @@ defmodule NexusDownfall.Fleets do
     Repo.transaction(fn ->
       planet_id = parse_int!(Map.get(attrs, "planet_id") || Map.get(attrs, :planet_id))
       name = normalize_name(Map.get(attrs, "name") || Map.get(attrs, :name))
-      admiral_name = normalize_optional(Map.get(attrs, "admiral_name") || Map.get(attrs, :admiral_name))
-      admiral_card_id = parse_optional_int(Map.get(attrs, "admiral_card_id") || Map.get(attrs, :admiral_card_id))
+
+      admiral_name =
+        normalize_optional(Map.get(attrs, "admiral_name") || Map.get(attrs, :admiral_name))
+
+      admiral_card_id =
+        parse_optional_int(Map.get(attrs, "admiral_card_id") || Map.get(attrs, :admiral_card_id))
 
       planet = owned_planet_for_update(planet_id, user_id)
 
@@ -640,6 +782,100 @@ defmodule NexusDownfall.Fleets do
     end
   end
 
+  @doc "Lists galaxies that contain enemy inhabited attack targets."
+  def list_attackable_galaxies_for_fleet(fleet_id, user_id, limit \\ 50) do
+    case fleet_for_user(fleet_id, user_id) do
+      nil ->
+        {:error, :fleet_not_found}
+
+      fleet ->
+        galaxies =
+          Repo.all(
+            from g in Galaxy,
+              join: s in assoc(g, :solar_systems),
+              join: p in assoc(s, :planets),
+              where: g.universe_id == ^fleet.universe_id,
+              where:
+                p.slot_type == "planet" and not is_nil(p.universe_user_id) and
+                  p.universe_user_id != ^fleet.universe_user_id and p.id != ^fleet.home_planet_id,
+              group_by: [g.id, g.number],
+              order_by: [asc: g.number],
+              limit: ^limit,
+              select: %{
+                id: g.id,
+                number: g.number,
+                free_planets: count(p.id)
+              }
+          )
+
+        {:ok, galaxies}
+    end
+  end
+
+  @doc "Lists systems inside a galaxy that contain enemy attack targets."
+  def list_attackable_systems_for_fleet(fleet_id, user_id, galaxy_id, limit \\ 100) do
+    case fleet_for_user(fleet_id, user_id) do
+      nil ->
+        {:error, :fleet_not_found}
+
+      fleet ->
+        systems =
+          Repo.all(
+            from s in SolarSystem,
+              join: g in assoc(s, :galaxy),
+              join: p in assoc(s, :planets),
+              where: g.id == ^galaxy_id and g.universe_id == ^fleet.universe_id,
+              where:
+                p.slot_type == "planet" and not is_nil(p.universe_user_id) and
+                  p.universe_user_id != ^fleet.universe_user_id and p.id != ^fleet.home_planet_id,
+              group_by: [s.id, s.number],
+              order_by: [asc: s.number],
+              limit: ^limit,
+              select: %{
+                id: s.id,
+                number: s.number,
+                free_planets: count(p.id)
+              }
+          )
+
+        {:ok, systems}
+    end
+  end
+
+  @doc "Lists enemy inhabited planets inside a system."
+  def list_attackable_planets_for_fleet(fleet_id, user_id, system_id, limit \\ 50) do
+    case fleet_for_user(fleet_id, user_id) do
+      nil ->
+        {:error, :fleet_not_found}
+
+      fleet ->
+        planets =
+          Repo.all(
+            from p in Planet,
+              join: s in assoc(p, :solar_system),
+              join: g in assoc(s, :galaxy),
+              where: s.id == ^system_id and g.universe_id == ^fleet.universe_id,
+              where:
+                p.slot_type == "planet" and not is_nil(p.universe_user_id) and
+                  p.universe_user_id != ^fleet.universe_user_id and p.id != ^fleet.home_planet_id,
+              order_by: [asc: p.orbit_position, asc: p.region],
+              limit: ^limit,
+              select: %{
+                id: p.id,
+                name: p.name,
+                orbit_position: p.orbit_position,
+                region: p.region,
+                solar_system_id: s.id,
+                solar_system_number: s.number,
+                galaxy_id: g.id,
+                galaxy_number: g.number
+              }
+          )
+
+        {:ok, planets}
+    end
+  end
+
   @doc "Dispatches a colonization mission for a fleet owned by the user."
   def dispatch_colonization_mission_for_user(fleet_id, user_id, target_planet_id) do
     Repo.transaction(fn ->
@@ -685,13 +921,25 @@ defmodule NexusDownfall.Fleets do
       end
 
       route_system_ids =
-        resolve_route_ids!(origin_planet.solar_system_id, target_planet.solar_system_id, fleet.universe_id)
+        resolve_route_ids!(
+          origin_planet.solar_system_id,
+          target_planet.solar_system_id,
+          fleet.universe_id
+        )
 
       outbound_travel_seconds =
-        travel_seconds(route_system_ids, origin_planet.orbit_position, target_planet.orbit_position)
+        travel_seconds(
+          route_system_ids,
+          origin_planet.orbit_position,
+          target_planet.orbit_position
+        )
 
       return_travel_seconds =
-        travel_seconds(Enum.reverse(route_system_ids), target_planet.orbit_position, origin_planet.orbit_position)
+        travel_seconds(
+          Enum.reverse(route_system_ids),
+          target_planet.orbit_position,
+          origin_planet.orbit_position
+        )
 
       colonization_seconds = GameplaySettings.colonization_seconds()
 
@@ -801,13 +1049,25 @@ defmodule NexusDownfall.Fleets do
       if cargo_total > cargo_capacity, do: Repo.rollback(:cargo_exceeds_capacity)
 
       route_system_ids =
-        resolve_route_ids!(origin_planet.solar_system_id, target_planet.solar_system_id, fleet.universe_id)
+        resolve_route_ids!(
+          origin_planet.solar_system_id,
+          target_planet.solar_system_id,
+          fleet.universe_id
+        )
 
       outbound_travel_seconds =
-        travel_seconds(route_system_ids, origin_planet.orbit_position, target_planet.orbit_position)
+        travel_seconds(
+          route_system_ids,
+          origin_planet.orbit_position,
+          target_planet.orbit_position
+        )
 
       return_travel_seconds =
-        travel_seconds(Enum.reverse(route_system_ids), target_planet.orbit_position, origin_planet.orbit_position)
+        travel_seconds(
+          Enum.reverse(route_system_ids),
+          target_planet.orbit_position,
+          origin_planet.orbit_position
+        )
 
       hydrogen_cost =
         trunc(
@@ -823,7 +1083,10 @@ defmodule NexusDownfall.Fleets do
       end
 
       origin_planet
-      |> Ecto.Changeset.cast(deducted_resource_attrs(origin_planet, deductions), @transport_resource_fields)
+      |> Ecto.Changeset.cast(
+        deducted_resource_attrs(origin_planet, deductions),
+        @transport_resource_fields
+      )
       |> Repo.update!()
 
       now = DateTime.utc_now() |> DateTime.truncate(:second)
@@ -859,6 +1122,128 @@ defmodule NexusDownfall.Fleets do
       :telemetry.execute(
         [:nexus_downfall, :fleets, :transport_dispatched],
         %{count: 1, cargo_units: cargo_total, hydrogen_cost: hydrogen_cost},
+        %{mission_id: mission.id, fleet_id: fleet.id, target_planet_id: target_planet.id}
+      )
+
+      Repo.preload(mission, [:fleet, :origin_planet, :target_planet])
+    end)
+    |> normalize_transaction_result()
+  rescue
+    ArgumentError -> {:error, :invalid_dispatch_request}
+    Ecto.InvalidChangesetError -> {:error, :invalid_dispatch_request}
+    Ecto.ConstraintError -> {:error, :fleet_busy}
+  end
+
+  @doc "Dispatches an attack mission that resolves combat on arrival, then returns survivors."
+  def dispatch_attack_mission_for_user(fleet_id, user_id, target_planet_id) do
+    Repo.transaction(fn ->
+      fleet =
+        fleet_for_user_for_update(fleet_id, user_id)
+        |> Repo.preload([:ships, :home_planet])
+
+      if is_nil(fleet), do: Repo.rollback(:fleet_not_found)
+      if fleet.status != "idle", do: Repo.rollback(:fleet_busy)
+
+      origin_planet =
+        Repo.one(
+          from p in Planet,
+            where: p.id == ^fleet.home_planet_id,
+            preload: [:solar_system],
+            lock: "FOR UPDATE"
+        )
+
+      if is_nil(origin_planet), do: Repo.rollback(:origin_not_found)
+
+      origin_planet = refresh_planet_resources!(origin_planet)
+
+      target_planet =
+        Repo.one(
+          from p in Planet,
+            where:
+              p.id == ^target_planet_id and
+                p.universe_id == ^fleet.universe_id and
+                p.slot_type == "planet",
+            preload: [:solar_system]
+        )
+
+      if is_nil(target_planet), do: Repo.rollback(:target_not_found)
+      if origin_planet.id == target_planet.id, do: Repo.rollback(:invalid_target)
+      if is_nil(target_planet.universe_user_id), do: Repo.rollback(:target_unavailable)
+
+      if target_planet.universe_user_id == fleet.universe_user_id,
+        do: Repo.rollback(:invalid_target)
+
+      :ok = enforce_active_fleet_limit!(fleet.universe_user_id)
+
+      ship_counts = fleet_ship_counts(fleet.ships)
+
+      if Enum.sum(Map.values(ship_counts)) <= 0 do
+        Repo.rollback(:empty_fleet)
+      end
+
+      route_system_ids =
+        resolve_route_ids!(
+          origin_planet.solar_system_id,
+          target_planet.solar_system_id,
+          fleet.universe_id
+        )
+
+      outbound_travel_seconds =
+        travel_seconds(
+          route_system_ids,
+          origin_planet.orbit_position,
+          target_planet.orbit_position
+        )
+
+      return_travel_seconds =
+        travel_seconds(
+          Enum.reverse(route_system_ids),
+          target_planet.orbit_position,
+          origin_planet.orbit_position
+        )
+
+      hydrogen_cost =
+        trunc(
+          Float.ceil(
+            total_fuel_per_second(ship_counts) * (outbound_travel_seconds + return_travel_seconds)
+          )
+        )
+
+      if origin_planet.hydrogen < hydrogen_cost, do: Repo.rollback(:insufficient_hydrogen)
+
+      origin_planet
+      |> Ecto.Changeset.cast(%{hydrogen: origin_planet.hydrogen - hydrogen_cost}, [:hydrogen])
+      |> Repo.update!()
+
+      now = DateTime.utc_now() |> DateTime.truncate(:second)
+      outbound_arrival_at = DateTime.add(now, outbound_travel_seconds, :second)
+
+      mission =
+        %FleetMission{}
+        |> FleetMission.changeset(%{
+          mission_type: "attack",
+          phase: "outbound",
+          route_system_ids: route_system_ids,
+          outbound_travel_seconds: outbound_travel_seconds,
+          colonization_seconds: 0,
+          return_travel_seconds: return_travel_seconds,
+          hydrogen_cost: hydrogen_cost,
+          outbound_arrival_at: outbound_arrival_at,
+          fleet_id: fleet.id,
+          origin_planet_id: origin_planet.id,
+          target_planet_id: target_planet.id,
+          universe_user_id: fleet.universe_user_id,
+          universe_id: fleet.universe_id
+        })
+        |> Repo.insert!()
+
+      update_fleet_status!(fleet.id, "outbound")
+      mission = schedule_mission_action!(mission, "arrive", outbound_arrival_at)
+      :ok = notify_mission_updated(mission)
+
+      :telemetry.execute(
+        [:nexus_downfall, :fleets, :attack_dispatched],
+        %{count: 1, hydrogen_cost: hydrogen_cost},
         %{mission_id: mission.id, fleet_id: fleet.id, target_planet_id: target_planet.id}
       )
 
@@ -936,7 +1321,10 @@ defmodule NexusDownfall.Fleets do
           end
 
           planet
-          |> Ecto.Changeset.cast(ProductionEngine.deduct_cost(planet, total_cost), Map.keys(total_cost))
+          |> Ecto.Changeset.cast(
+            ProductionEngine.deduct_cost(planet, total_cost),
+            Map.keys(total_cost)
+          )
           |> Repo.update!()
 
           next_position =
@@ -951,6 +1339,7 @@ defmodule NexusDownfall.Fleets do
 
           now = DateTime.utc_now() |> DateTime.truncate(:second)
           build_seconds = ship_build_time_seconds(ship_type)
+
           has_active =
             Repo.exists?(
               from q in ShipyardQueueItem,
@@ -988,7 +1377,7 @@ defmodule NexusDownfall.Fleets do
             %{planet_id: planet.id, fleet_id: fleet.id, ship_type: ship_type}
           )
 
-          Repo.preload(item, [fleet: [:ships]])
+          Repo.preload(item, fleet: [:ships])
       end
     end)
     |> normalize_transaction_result()
@@ -1075,7 +1464,8 @@ defmodule NexusDownfall.Fleets do
       {:ok, :noop} ->
         :ok
 
-      {:error, reason} -> reason
+      {:error, reason} ->
+        reason
     end
   end
 
@@ -1108,6 +1498,7 @@ defmodule NexusDownfall.Fleets do
           case mission.mission_type do
             "transport" -> process_transport_arrival!(mission, target_planet, now)
             "colonization" -> process_colonization_arrival!(mission, target_planet, now)
+            "attack" -> process_attack_arrival!(mission, target_planet, now)
             _ -> :noop
           end
       end
@@ -1116,6 +1507,98 @@ defmodule NexusDownfall.Fleets do
       {:ok, :ok} -> :ok
       {:ok, :noop} -> :ok
       {:error, reason} -> reason
+    end
+  end
+
+  defp process_attack_arrival!(mission, target_planet, now) do
+    cond do
+      is_nil(target_planet.universe_user_id) or
+          target_planet.universe_user_id == mission.universe_user_id ->
+        return_at = DateTime.add(now, mission.return_travel_seconds, :second)
+
+        mission =
+          mission
+          |> FleetMission.changeset(%{
+            phase: "returning",
+            result_reason: "target_unavailable",
+            return_arrival_at: return_at,
+            current_oban_job_id: nil
+          })
+          |> Repo.update!()
+
+        update_fleet_status!(mission.fleet_id, "returning")
+        schedule_mission_action!(mission, "return", return_at)
+        :ok = notify_mission_updated(mission)
+        :ok
+
+      true ->
+        {attacker_groups, defender_groups} = combat_groups_for_attack!(mission, target_planet)
+
+        result =
+          Combat.resolve_rounds(attacker_groups, defender_groups,
+            seed: mission.id,
+            max_rounds: combat_max_rounds()
+          )
+
+        apply_combat_losses!(result.attacker_losses)
+        apply_combat_losses!(result.defender_losses)
+
+        attacker_survivors =
+          result.attacker_remaining
+          |> Map.values()
+          |> Enum.sum()
+
+        result_reason = attack_result_reason(result.outcome)
+
+        mission =
+          if attacker_survivors > 0 do
+            return_at = DateTime.add(now, mission.return_travel_seconds, :second)
+
+            mission
+            |> FleetMission.changeset(%{
+              phase: "returning",
+              result_reason: result_reason,
+              return_arrival_at: return_at,
+              current_oban_job_id: nil
+            })
+            |> Repo.update!()
+            |> tap(fn updated_mission ->
+              update_fleet_status!(updated_mission.fleet_id, "returning")
+              schedule_mission_action!(updated_mission, "return", return_at)
+            end)
+          else
+            mission
+            |> FleetMission.changeset(%{
+              phase: "completed",
+              result_reason: result_reason,
+              completed_at: now,
+              current_oban_job_id: nil
+            })
+            |> Repo.update!()
+            |> tap(fn updated_mission ->
+              update_fleet_status!(updated_mission.fleet_id, "idle")
+            end)
+          end
+
+        :ok = notify_mission_updated(mission)
+
+        :telemetry.execute(
+          [:nexus_downfall, :combat, :attack_resolved],
+          %{
+            count: 1,
+            rounds: length(result.rounds),
+            attacker_losses: result.attacker_losses |> Map.values() |> Enum.sum(),
+            defender_losses: result.defender_losses |> Map.values() |> Enum.sum()
+          },
+          %{
+            mission_id: mission.id,
+            fleet_id: mission.fleet_id,
+            target_planet_id: mission.target_planet_id,
+            outcome: result.outcome
+          }
+        )
+
+        :ok
     end
   end
 
@@ -1183,7 +1666,10 @@ defmodule NexusDownfall.Fleets do
       cargo = cargo_from_mission(mission)
 
       target_planet
-      |> Ecto.Changeset.cast(added_resource_attrs(target_planet, cargo), @transport_resource_fields)
+      |> Ecto.Changeset.cast(
+        added_resource_attrs(target_planet, cargo),
+        @transport_resource_fields
+      )
       |> Repo.update!()
     end
 
@@ -1191,7 +1677,8 @@ defmodule NexusDownfall.Fleets do
       mission
       |> FleetMission.changeset(%{
         phase: "returning",
-        result_reason: if(target_available?, do: "transport_delivered", else: "target_unavailable"),
+        result_reason:
+          if(target_available?, do: "transport_delivered", else: "target_unavailable"),
         return_arrival_at: return_at,
         current_oban_job_id: nil
       })
@@ -1204,7 +1691,11 @@ defmodule NexusDownfall.Fleets do
     :telemetry.execute(
       [:nexus_downfall, :fleets, :transport_delivered],
       %{count: 1, cargo_units: cargo_total(cargo_from_mission(mission))},
-      %{mission_id: mission.id, target_planet_id: mission.target_planet_id, delivered: target_available?}
+      %{
+        mission_id: mission.id,
+        target_planet_id: mission.target_planet_id,
+        delivered: target_available?
+      }
     )
 
     :ok
@@ -1373,6 +1864,155 @@ defmodule NexusDownfall.Fleets do
     end
   end
 
+  defp combat_groups_for_attack!(mission, target_planet) do
+    attacker_fleet =
+      Repo.one!(
+        from f in Fleet,
+          where: f.id == ^mission.fleet_id,
+          preload: [:admiral_card],
+          lock: "FOR UPDATE"
+      )
+
+    attacker_ship_rows =
+      Repo.all(
+        from fs in FleetShip,
+          where: fs.fleet_id == ^attacker_fleet.id,
+          lock: "FOR UPDATE",
+          order_by: [asc: fs.ship_type]
+      )
+
+    defense_rows =
+      Repo.all(
+        from d in Defense,
+          where: d.planet_id == ^target_planet.id,
+          lock: "FOR UPDATE",
+          order_by: [asc: d.defense_type]
+      )
+
+    defender_fleets =
+      Repo.all(
+        from f in Fleet,
+          where:
+            f.home_planet_id == ^target_planet.id and
+              f.universe_user_id == ^target_planet.universe_user_id and
+              f.status == "idle",
+          preload: [:admiral_card],
+          lock: "FOR UPDATE",
+          order_by: [asc: f.id]
+      )
+
+    defender_fleet_ids = Enum.map(defender_fleets, & &1.id)
+
+    defender_ship_rows =
+      if defender_fleet_ids == [] do
+        []
+      else
+        Repo.all(
+          from fs in FleetShip,
+            where: fs.fleet_id in ^defender_fleet_ids,
+            lock: "FOR UPDATE",
+            order_by: [asc: fs.fleet_id, asc: fs.ship_type]
+        )
+      end
+
+    attacker_bonuses = Combat.bonuses_from_card(attacker_fleet.admiral_card)
+
+    defender_bonus_by_fleet_id =
+      Map.new(defender_fleets, &{&1.id, Combat.bonuses_from_card(&1.admiral_card)})
+
+    attacker_groups =
+      Enum.flat_map(attacker_ship_rows, fn ship_row ->
+        case ship_definition(ship_row.ship_type) do
+          nil ->
+            []
+
+          definition ->
+            [
+              Combat.ship_group(
+                {:fleet_ship, ship_row.id},
+                ship_row.ship_type,
+                ship_row.quantity,
+                definition,
+                attacker_bonuses
+              )
+            ]
+        end
+      end)
+
+    defender_ship_groups =
+      Enum.flat_map(defender_ship_rows, fn ship_row ->
+        case ship_definition(ship_row.ship_type) do
+          nil ->
+            []
+
+          definition ->
+            [
+              Combat.ship_group(
+                {:fleet_ship, ship_row.id},
+                ship_row.ship_type,
+                ship_row.quantity,
+                definition,
+                Map.get(defender_bonus_by_fleet_id, ship_row.fleet_id, [])
+              )
+            ]
+        end
+      end)
+
+    defense_groups =
+      Enum.flat_map(defense_rows, fn defense_row ->
+        case PlanetDefenses.defense_definition(defense_row.defense_type) do
+          nil ->
+            []
+
+          definition ->
+            [
+              Combat.defense_group(
+                {:defense, defense_row.id},
+                defense_row.defense_type,
+                defense_row.quantity,
+                definition
+              )
+            ]
+        end
+      end)
+
+    {attacker_groups, defender_ship_groups ++ defense_groups}
+  end
+
+  defp apply_combat_losses!(losses) do
+    Enum.each(losses, fn
+      {{:fleet_ship, fleet_ship_id}, quantity_lost} ->
+        ship_row =
+          Repo.one!(from fs in FleetShip, where: fs.id == ^fleet_ship_id, lock: "FOR UPDATE")
+
+        ship_row
+        |> FleetShip.changeset(%{quantity: max(ship_row.quantity - quantity_lost, 0)})
+        |> Repo.update!()
+
+      {{:defense, defense_id}, quantity_lost} ->
+        defense_row = Repo.one!(from d in Defense, where: d.id == ^defense_id, lock: "FOR UPDATE")
+
+        defense_row
+        |> Defense.changeset(%{
+          quantity: max(defense_row.quantity - quantity_lost, 0),
+          damaged_quantity: 0
+        })
+        |> Repo.update!()
+
+      {_unknown_id, _quantity_lost} ->
+        :ok
+    end)
+  end
+
+  defp combat_max_rounds do
+    GameplaySettings.combat_settings()
+    |> Map.get("max_rounds", 6)
+  end
+
+  defp attack_result_reason(:attacker_victory), do: "attack_victory"
+  defp attack_result_reason(:defender_victory), do: "attack_defeat"
+  defp attack_result_reason(:draw), do: "attack_draw"
+
   defp overdue_mission_action(%{phase: "outbound", outbound_arrival_at: at}, now)
        when not is_nil(at) do
     if DateTime.compare(now, at) in [:eq, :gt], do: "arrive", else: nil
@@ -1435,8 +2075,12 @@ defmodule NexusDownfall.Fleets do
       )
 
     cond do
-      is_nil(ship) -> Repo.rollback(:colonizer_missing)
-      ship.quantity < 1 -> Repo.rollback(:colonizer_missing)
+      is_nil(ship) ->
+        Repo.rollback(:colonizer_missing)
+
+      ship.quantity < 1 ->
+        Repo.rollback(:colonizer_missing)
+
       true ->
         ship
         |> FleetShip.changeset(%{quantity: ship.quantity - 1})
@@ -1488,7 +2132,12 @@ defmodule NexusDownfall.Fleets do
   defp resolve_route_ids!(origin_system_id, target_system_id, universe_id) do
     topology = universe_topology(universe_id)
 
-    case Pathfinder.shortest_path(topology.systems, topology.hyperlinks, origin_system_id, target_system_id) do
+    case Pathfinder.shortest_path(
+           topology.systems,
+           topology.hyperlinks,
+           origin_system_id,
+           target_system_id
+         ) do
       {:ok, route} -> route
       {:error, :no_route} -> Repo.rollback(:no_route)
       {:error, :unknown_system} -> Repo.rollback(:unknown_system)
@@ -1665,7 +2314,11 @@ defmodule NexusDownfall.Fleets do
     if active_missions_count >= active_fleet_limit do
       :telemetry.execute(
         [:nexus_downfall, :fleets, :dispatch_rejected_active_limit],
-        %{count: 1, active_missions: active_missions_count, active_fleet_limit: active_fleet_limit},
+        %{
+          count: 1,
+          active_missions: active_missions_count,
+          active_fleet_limit: active_fleet_limit
+        },
         %{universe_user_id: universe_user_id}
       )
 

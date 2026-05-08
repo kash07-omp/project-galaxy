@@ -2096,3 +2096,18 @@ msgstr "Plateforme de bombardement strategique. Detruit defenses et infrastructu
 
 msgid "Conquest ark. Takes planets and sustains occupations, but is not a main combat ship."
 msgstr "Arche de conquete. Prend des planetes et soutient les occupations, mais n est pas un vaisseau de combat principal."
+
+msgid "Combat sortie"
+msgstr "Sortie de combat"
+
+msgid "The fleet will fight all ready defenders and surviving ships will return automatically."
+msgstr "La flotte combattra tous les defenseurs prets et les vaisseaux survivants rentreront automatiquement."
+
+msgid "This mission type is visible as a placeholder for now. Only Colonization, Transport and Attack are currently playable."
+msgstr "Ce type de mission est affiche comme espace reserve. Pour l'instant, seules Colonisation, Transport et Attaque sont jouables."
+
+msgid "Attack mission dispatched."
+msgstr "Mission d'attaque envoyee."
+
+msgid "Fleet needs at least one ship."
+msgstr "La flotte a besoin d'au moins un vaisseau."

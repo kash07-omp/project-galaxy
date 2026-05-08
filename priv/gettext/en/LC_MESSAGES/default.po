@@ -2073,3 +2073,18 @@ msgstr "Strategic bombardment platform. Destroys defenses and planetary infrastr
 
 msgid "Conquest ark. Takes planets and sustains occupations, but is not a main combat ship."
 msgstr "Conquest ark. Takes planets and sustains occupations, but is not a main combat ship."
+
+msgid "Combat sortie"
+msgstr "Combat sortie"
+
+msgid "The fleet will fight all ready defenders and surviving ships will return automatically."
+msgstr "The fleet will fight all ready defenders and surviving ships will return automatically."
+
+msgid "This mission type is visible as a placeholder for now. Only Colonization, Transport and Attack are currently playable."
+msgstr "This mission type is visible as a placeholder for now. Only Colonization, Transport and Attack are currently playable."
+
+msgid "Attack mission dispatched."
+msgstr "Attack mission dispatched."
+
+msgid "Fleet needs at least one ship."
+msgstr "Fleet needs at least one ship."

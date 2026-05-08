@@ -132,8 +132,12 @@ Para hacer este viaje la flota consumirá el recurso Hidrógeno. El cálculo de 
 
 - **Misión de colonización**: una flota con al menos una nave Colonizer puede viajar a un planeta libre. El primero que llega inicia la colonización; durante ese tiempo el planeta deja de aceptar nuevas colonizaciones. Si la colonia se completa, se consume una nave colonizadora, el planeta pasa al jugador con estructuras y recursos iniciales configurables y las naves restantes regresan a la base. Si otro jugador llegó antes, la flota retorna automáticamente.
 - **Misión de transporte**: una flota puede llevar Materia Prima, Microchips, Hidrógeno, Comida y Créditos a un planeta habitado del mismo universo. El despacho valida capacidad total de bodega y disponibilidad real del planeta origen, reservando primero el hidrógeno de ida y vuelta; al llegar entrega la carga en backend y programa el retorno automático.
-- **Misión de ataque**: combate contra flotas/defensas del objetivo, con resultado de victoria, empate o derrota y notificación de reporte.
+- **Misión de ataque**: una flota puede viajar a un planeta enemigo habitado, consumir hidrógeno de ida y vuelta y resolver combate al llegar contra defensas planetarias y flotas defensoras inactivas en el planeta. El combate MVP usa hasta 6 rondas simultáneas con grupos agregados por tipo de unidad, prioridades de objetivo por clase, bonificaciones de cartas de almirante y resultados `attack_victory`, `attack_draw` o `attack_defeat`. Las naves supervivientes retornan automáticamente; si el atacante queda destruido la misión se completa sin retorno.
 - Futuro: bombardeo orbital y bloqueo planetario.
+
+#### Impacto de carga del combate MVP
+
+La resolución no itera nave a nave: agrega naves y defensas por tipo, por lo que el coste CPU es proporcional a `rondas * grupos_atacantes * grupos_defensores` y se mantiene estable incluso con miles de unidades del mismo tipo. La transición ocurre en Oban dentro de una transacción con bloqueos por misión, planeta, filas de naves y defensas afectadas; no depende de LiveView ni del número de clientes conectados. Bajo picos de ataques simultáneos sobre un mismo planeta, PostgreSQL serializa las resoluciones mediante los bloqueos del planeta/defensas, degradando en cola de workers en vez de producir estados inconsistentes.
 
 ### Defensas planetarias
 

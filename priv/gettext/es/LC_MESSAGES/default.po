@@ -2096,3 +2096,18 @@ msgstr "Plataforma de bombardeo estrategico. Destruye defensas e infraestructura
 
 msgid "Conquest ark. Takes planets and sustains occupations, but is not a main combat ship."
 msgstr "Arca de conquista. Toma planetas y sostiene ocupaciones, pero no es una nave principal de combate."
+
+msgid "Combat sortie"
+msgstr "Salida de combate"
+
+msgid "The fleet will fight all ready defenders and surviving ships will return automatically."
+msgstr "La flota combatira contra todos los defensores listos y las naves supervivientes volveran automaticamente."
+
+msgid "This mission type is visible as a placeholder for now. Only Colonization, Transport and Attack are currently playable."
+msgstr "Este tipo de mision se muestra como marcador temporal. Por ahora solo Colonizacion, Transporte y Ataque son jugables."
+
+msgid "Attack mission dispatched."
+msgstr "Mision de ataque enviada."
+
+msgid "Fleet needs at least one ship."
+msgstr "La flota necesita al menos una nave."

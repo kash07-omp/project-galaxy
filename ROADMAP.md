@@ -102,7 +102,7 @@ Introducir PvP base con misión de ataque simplificada y reportes.
 
 ### Tareas
 - [x] Creación de defensas (funcionará de forma similar a la creación de naves desde el espaciopuerto pero creando defensas desde el centro de defensa. Hay que procurar reutilizar todo el código posible.).
-- [ ] Misión de combate, incluyendo resolver combate por rondas (atacante/defensor) contando con las defensas del planeta. Tipo Ogame pero aplicando reglas de Nexus y sus naves/defensas y contando con bonificaciones de almirantes y/o gobernadores (otro tipo de cartas) asignadas al planeta.
+- [x] Misión de combate, incluyendo resolver combate por rondas (atacante/defensor) contando con las defensas del planeta. Tipo Ogame pero aplicando reglas de Nexus y sus naves/defensas y contando con bonificaciones de almirantes y/o gobernadores (otro tipo de cartas) asignadas al planeta.
 - [ ] Resultado de combate: victoria/empate/derrota.
 - [ ] Saqueo según capacidad de carga restante.
 - [ ] Opciones sobre población enemiga (`Sin piedad` / `Ignorar civiles`) en versión simplificada.

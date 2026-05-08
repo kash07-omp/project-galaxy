@@ -4,7 +4,7 @@ defmodule NexusDownfall.Fleets.FleetMission do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @mission_types ["colonization", "transport"]
+  @mission_types ["colonization", "transport", "attack"]
   @active_phases ["outbound", "colonizing", "returning"]
   @terminal_phases ["completed", "failed"]
   @phases @active_phases ++ @terminal_phases
