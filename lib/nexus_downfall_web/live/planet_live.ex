@@ -35,41 +35,46 @@ defmodule NexusDownfallWeb.PlanetLive do
 
   def mount(%{"id" => planet_id}, _session, socket) do
     current_user_id = socket.assigns.current_user.id
-    {planet, buildings, rates, display, now} = load_planet_state(planet_id, current_user_id)
-    shipyard = Fleets.shipyard_panel_for_user_planet(planet_id, current_user_id)
+    case safe_load_planet_state(planet_id, current_user_id) do
+      {:ok, {planet, buildings, rates, display, now}} ->
+        shipyard = Fleets.shipyard_panel_for_user_planet(planet_id, current_user_id)
 
-    # Load galaxy_id for nav link
-    system = Repo.get!(SolarSystem, planet.solar_system_id)
-    galaxy_id = system.galaxy_id
+        # Load galaxy_id for nav link
+        system = Repo.get!(SolarSystem, planet.solar_system_id)
+        galaxy_id = system.galaxy_id
 
-    if connected?(socket), do: schedule_ui_tick()
+        if connected?(socket), do: schedule_ui_tick()
 
-    {:ok,
-     socket
-     |> assign(:planet, planet)
-     |> assign(:buildings, buildings)
-     |> assign(:rates, rates)
-     |> assign(:display, display)
-     |> assign(:now, now)
-     |> assign(:spaceport_fleets, shipyard.fleets)
-     |> assign(:shipyard_queue_items, shipyard.queue_items)
-     |> assign(:ship_catalog, shipyard.ship_catalog)
-     |> assign(:selected, nil)
-     |> assign(:selected_tab, "info")
-     |> assign(:show_user_menu, false)
-     |> assign(:galaxy_id, galaxy_id)
-     |> assign(:dev_tools_enabled, Mix.env() != :prod)
-     |> assign(:error, nil)
-     |> assign(:shipyard_error, nil)
-     |> assign(:shipyard_notice, nil)
-     |> assign(:build_order, %{})
-     |> assign(
-       :selected_fleet_id,
-       case shipyard.fleets do
-         [f | _] -> to_string(f.id)
-         [] -> nil
-       end
-     )}
+        {:ok,
+         socket
+         |> assign(:planet, planet)
+         |> assign(:buildings, buildings)
+         |> assign(:rates, rates)
+         |> assign(:display, display)
+         |> assign(:now, now)
+         |> assign(:spaceport_fleets, shipyard.fleets)
+         |> assign(:shipyard_queue_items, shipyard.queue_items)
+         |> assign(:ship_catalog, shipyard.ship_catalog)
+         |> assign(:selected, nil)
+         |> assign(:selected_tab, "info")
+         |> assign(:show_user_menu, false)
+         |> assign(:galaxy_id, galaxy_id)
+         |> assign(:dev_tools_enabled, Mix.env() != :prod)
+         |> assign(:error, nil)
+         |> assign(:shipyard_error, nil)
+         |> assign(:shipyard_notice, nil)
+         |> assign(:build_order, %{})
+         |> assign(
+           :selected_fleet_id,
+           case shipyard.fleets do
+             [f | _] -> to_string(f.id)
+             [] -> nil
+           end
+         )}
+
+      {:error, :not_found} ->
+        {:ok, redirect(socket, to: ~p"/404")}
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -1292,6 +1297,15 @@ defmodule NexusDownfallWeb.PlanetLive do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     {planet, buildings, rates, resource_display(planet), now}
+  end
+
+  defp safe_load_planet_state(planet_id, current_user_id) do
+    try do
+      {:ok, load_planet_state(planet_id, current_user_id)}
+    rescue
+      Ecto.NoResultsError ->
+        {:error, :not_found}
+    end
   end
 
   defp resource_display(planet) do

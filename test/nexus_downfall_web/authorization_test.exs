@@ -41,4 +41,19 @@ defmodule NexusDownfallWeb.AuthorizationTest do
       assert {:error, {:redirect, %{to: "/universes"}}} = live(conn, "/fleet")
     end
   end
+
+  describe "not found routing" do
+    test "renders custom 404 page on unknown route", %{conn: conn} do
+      conn = get(conn, "/totally-unknown-route")
+
+      assert html_response(conn, 404) =~ "Aliens Playing Poker"
+      assert html_response(conn, 404) =~ "/images/404aliens.png"
+    end
+
+    test "renders custom 404 page on /404 route", %{conn: conn} do
+      conn = get(conn, "/404")
+
+      assert html_response(conn, 404) =~ "Aliens Playing Poker"
+    end
+  end
 end

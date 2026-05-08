@@ -39,6 +39,7 @@ defmodule NexusDownfallWeb.Router do
     pipe_through :browser
 
     live "/", HomeLive, :index
+    get "/404", ErrorPageController, :not_found
     delete "/users/log_out", UserSessionController, :delete
   end
 
@@ -80,5 +81,11 @@ defmodule NexusDownfallWeb.Router do
 
       live_dashboard "/dashboard", metrics: NexusDownfallWeb.Telemetry
     end
+  end
+
+  scope "/", NexusDownfallWeb do
+    pipe_through :browser
+
+    get "/*path", ErrorPageController, :not_found
   end
 end

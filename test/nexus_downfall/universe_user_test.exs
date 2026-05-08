@@ -7,9 +7,12 @@ defmodule NexusDownfall.UniverseUserTest do
   alias NexusDownfall.Universe.UniverseRecord
 
   defp create_user do
+    uniq = System.unique_integer([:positive])
+
     {:ok, user} =
       Accounts.register_user(%{
-        email: "player#{System.unique_integer()}@example.com",
+        account_name: "p#{uniq}",
+        email: "player#{uniq}@example.com",
         password: "correcthorsebatterystaple!"
       })
 
