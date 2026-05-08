@@ -12,12 +12,16 @@ defmodule NexusDownfall.Fleets do
 
   import Ecto.Query
 
-  alias NexusDownfall.Fleets.{Fleet, FleetShip, ShipyardQueueItem}
+  alias NexusDownfall.Fleets.{Fleet, FleetMission, FleetShip, Pathfinder, ShipyardQueueItem}
+  alias NexusDownfall.GameplaySettings
   alias NexusDownfall.Planets
   alias NexusDownfall.Planets.{Building, Planet, ProductionEngine}
   alias NexusDownfall.Repo
-  alias NexusDownfall.Workers.ShipConstructionCompleteWorker
+  alias NexusDownfall.Universe.{Galaxy, Hyperlink, SolarSystem}
+  alias NexusDownfall.Workers.{FleetMissionWorker, ShipConstructionCompleteWorker}
   alias NexusDownfall.Cards
+
+  @active_mission_phases ["outbound", "colonizing", "returning"]
 
   @ship_catalog %{
     "light_freighter" => %{
@@ -397,6 +401,235 @@ defmodule NexusDownfall.Fleets do
     |> normalize_transaction_result()
   end
 
+  @doc "Lists galaxies that still contain valid colonization targets for the fleet."
+  def list_colonizable_galaxies_for_fleet(fleet_id, user_id, limit \\ 50) do
+    case fleet_for_user(fleet_id, user_id) do
+      nil ->
+        {:error, :fleet_not_found}
+
+      fleet ->
+        galaxies =
+          Repo.all(
+            from g in Galaxy,
+              join: s in assoc(g, :solar_systems),
+              join: p in assoc(s, :planets),
+              left_join: m in FleetMission,
+              on: m.target_planet_id == p.id and m.phase == "colonizing",
+              where: g.universe_id == ^fleet.universe_id,
+              where:
+                p.slot_type == "planet" and is_nil(p.universe_user_id) and
+                  p.id != ^fleet.home_planet_id and is_nil(m.id),
+              group_by: [g.id, g.number],
+              order_by: [asc: g.number],
+              limit: ^limit,
+              select: %{
+                id: g.id,
+                number: g.number,
+                free_planets: count(p.id)
+              }
+          )
+
+        {:ok, galaxies}
+    end
+  end
+
+  @doc "Lists systems inside a galaxy that still contain valid colonization targets."
+  def list_colonizable_systems_for_fleet(fleet_id, user_id, galaxy_id, limit \\ 100) do
+    case fleet_for_user(fleet_id, user_id) do
+      nil ->
+        {:error, :fleet_not_found}
+
+      fleet ->
+        systems =
+          Repo.all(
+            from s in SolarSystem,
+              join: g in assoc(s, :galaxy),
+              join: p in assoc(s, :planets),
+              left_join: m in FleetMission,
+              on: m.target_planet_id == p.id and m.phase == "colonizing",
+              where: g.id == ^galaxy_id and g.universe_id == ^fleet.universe_id,
+              where:
+                p.slot_type == "planet" and is_nil(p.universe_user_id) and
+                  p.id != ^fleet.home_planet_id and is_nil(m.id),
+              group_by: [s.id, s.number],
+              order_by: [asc: s.number],
+              limit: ^limit,
+              select: %{
+                id: s.id,
+                number: s.number,
+                free_planets: count(p.id)
+              }
+          )
+
+        {:ok, systems}
+    end
+  end
+
+  @doc "Lists colonizable planets inside a system."
+  def list_colonizable_planets_for_fleet(fleet_id, user_id, system_id, limit \\ 50) do
+    case fleet_for_user(fleet_id, user_id) do
+      nil ->
+        {:error, :fleet_not_found}
+
+      fleet ->
+        planets =
+          Repo.all(
+            from p in Planet,
+              join: s in assoc(p, :solar_system),
+              join: g in assoc(s, :galaxy),
+              left_join: m in FleetMission,
+              on: m.target_planet_id == p.id and m.phase == "colonizing",
+              where: s.id == ^system_id and g.universe_id == ^fleet.universe_id,
+              where:
+                p.slot_type == "planet" and is_nil(p.universe_user_id) and
+                  p.id != ^fleet.home_planet_id and is_nil(m.id),
+              order_by: [asc: p.orbit_position, asc: p.region],
+              limit: ^limit,
+              select: %{
+                id: p.id,
+                name: p.name,
+                orbit_position: p.orbit_position,
+                region: p.region,
+                solar_system_id: s.id,
+                solar_system_number: s.number,
+                galaxy_id: g.id,
+                galaxy_number: g.number
+              }
+          )
+
+        {:ok, planets}
+    end
+  end
+
+  @doc "Dispatches a colonization mission for a fleet owned by the user."
+  def dispatch_colonization_mission_for_user(fleet_id, user_id, target_planet_id) do
+    Repo.transaction(fn ->
+      fleet =
+        fleet_for_user_for_update(fleet_id, user_id)
+        |> Repo.preload([:ships, :home_planet])
+
+      if is_nil(fleet), do: Repo.rollback(:fleet_not_found)
+      if fleet.status != "idle", do: Repo.rollback(:fleet_busy)
+
+      origin_planet =
+        Repo.one(
+          from p in Planet,
+            where: p.id == ^fleet.home_planet_id,
+            preload: [:solar_system],
+            lock: "FOR UPDATE"
+        )
+
+      if is_nil(origin_planet), do: Repo.rollback(:origin_not_found)
+
+      origin_planet = refresh_planet_resources!(origin_planet)
+
+      target_planet =
+        Repo.one(
+          from p in Planet,
+            where:
+              p.id == ^target_planet_id and
+                p.universe_id == ^fleet.universe_id and
+                p.slot_type == "planet",
+            preload: [:solar_system]
+        )
+
+      if is_nil(target_planet), do: Repo.rollback(:target_not_found)
+      if origin_planet.id == target_planet.id, do: Repo.rollback(:invalid_target)
+      if not is_nil(target_planet.universe_user_id), do: Repo.rollback(:target_unavailable)
+      if target_planet_colonizing?(target_planet.id), do: Repo.rollback(:target_colonizing)
+
+      ship_counts = fleet_ship_counts(fleet.ships)
+
+      if Map.get(ship_counts, "colonizer", 0) < 1 do
+        Repo.rollback(:colonizer_required)
+      end
+
+      route_system_ids =
+        resolve_route_ids!(origin_planet.solar_system_id, target_planet.solar_system_id, fleet.universe_id)
+
+      outbound_travel_seconds =
+        travel_seconds(route_system_ids, origin_planet.orbit_position, target_planet.orbit_position)
+
+      return_travel_seconds =
+        travel_seconds(Enum.reverse(route_system_ids), target_planet.orbit_position, origin_planet.orbit_position)
+
+      colonization_seconds = GameplaySettings.colonization_seconds()
+
+      outbound_fuel_per_s = total_fuel_per_second(ship_counts)
+      return_fuel_per_s = ship_counts |> consume_one_colonizer_count() |> total_fuel_per_second()
+
+      hydrogen_cost =
+        trunc(
+          Float.ceil(
+            outbound_fuel_per_s * outbound_travel_seconds +
+              return_fuel_per_s * return_travel_seconds
+          )
+        )
+
+      if origin_planet.hydrogen < hydrogen_cost, do: Repo.rollback(:insufficient_hydrogen)
+
+      origin_planet
+      |> Ecto.Changeset.cast(%{hydrogen: origin_planet.hydrogen - hydrogen_cost}, [:hydrogen])
+      |> Repo.update!()
+
+      now = DateTime.utc_now() |> DateTime.truncate(:second)
+      outbound_arrival_at = DateTime.add(now, outbound_travel_seconds, :second)
+
+      mission =
+        %FleetMission{}
+        |> FleetMission.changeset(%{
+          mission_type: "colonization",
+          phase: "outbound",
+          route_system_ids: route_system_ids,
+          outbound_travel_seconds: outbound_travel_seconds,
+          colonization_seconds: colonization_seconds,
+          return_travel_seconds: return_travel_seconds,
+          hydrogen_cost: hydrogen_cost,
+          outbound_arrival_at: outbound_arrival_at,
+          fleet_id: fleet.id,
+          origin_planet_id: origin_planet.id,
+          target_planet_id: target_planet.id,
+          universe_user_id: fleet.universe_user_id,
+          universe_id: fleet.universe_id
+        })
+        |> Repo.insert!()
+
+      update_fleet_status!(fleet.id, "outbound")
+      mission = schedule_mission_action!(mission, "arrive", outbound_arrival_at)
+
+      :telemetry.execute(
+        [:nexus_downfall, :fleets, :colonization_dispatched],
+        %{count: 1},
+        %{mission_id: mission.id, fleet_id: fleet.id, target_planet_id: target_planet.id}
+      )
+
+      Repo.preload(mission, [:fleet, :origin_planet, :target_planet])
+    end)
+    |> normalize_transaction_result()
+  rescue
+    ArgumentError -> {:error, :invalid_dispatch_request}
+    Ecto.ConstraintError -> {:error, :fleet_busy}
+  end
+
+  @doc "Processes mission transitions triggered by Oban workers."
+  def process_mission_transition(mission_id, action) do
+    case action do
+      "arrive" -> process_mission_arrival(mission_id)
+      "complete_colonization" -> process_mission_colonization_completion(mission_id)
+      "return" -> process_mission_return(mission_id)
+      _ -> :ok
+    end
+  end
+
+  def get_active_mission_for_fleet(fleet_id) do
+    Repo.one(
+      from m in FleetMission,
+        where: m.fleet_id == ^fleet_id and m.phase in ^@active_mission_phases,
+        order_by: [desc: m.inserted_at],
+        limit: 1
+    )
+  end
+
   def enqueue_ship_construction_for_user(planet_id, user_id, attrs) do
     Repo.transaction(fn ->
       fleet_id = parse_int!(Map.get(attrs, "fleet_id") || Map.get(attrs, :fleet_id))
@@ -586,6 +819,250 @@ defmodule NexusDownfall.Fleets do
     end
   end
 
+  defp process_mission_arrival(mission_id) do
+    Repo.transaction(fn ->
+      mission =
+        Repo.one(
+          from m in FleetMission,
+            where: m.id == ^mission_id,
+            lock: "FOR UPDATE"
+        )
+
+      cond do
+        is_nil(mission) ->
+          :noop
+
+        mission.phase != "outbound" ->
+          :noop
+
+        true ->
+          target_planet =
+            Repo.one!(
+              from p in Planet,
+                where: p.id == ^mission.target_planet_id,
+                lock: "FOR UPDATE"
+            )
+
+          now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+          cond do
+            not is_nil(target_planet.universe_user_id) or
+                target_planet_colonizing?(target_planet.id, mission.id) ->
+              return_at = DateTime.add(now, mission.return_travel_seconds, :second)
+
+              mission =
+                mission
+                |> FleetMission.changeset(%{
+                  phase: "returning",
+                  result_reason: "late_arrival",
+                  return_arrival_at: return_at,
+                  current_oban_job_id: nil
+                })
+                |> Repo.update!()
+
+              update_fleet_status!(mission.fleet_id, "returning")
+              schedule_mission_action!(mission, "return", return_at)
+
+              :telemetry.execute(
+                [:nexus_downfall, :fleets, :colonization_arrival_lost],
+                %{count: 1},
+                %{mission_id: mission.id, target_planet_id: mission.target_planet_id}
+              )
+
+              :ok
+
+            true ->
+              complete_at = DateTime.add(now, mission.colonization_seconds, :second)
+
+              mission =
+                mission
+                |> FleetMission.changeset(%{
+                  phase: "colonizing",
+                  result_reason: nil,
+                  colonization_complete_at: complete_at,
+                  current_oban_job_id: nil
+                })
+                |> Repo.update!()
+
+              update_fleet_status!(mission.fleet_id, "colonizing")
+              schedule_mission_action!(mission, "complete_colonization", complete_at)
+
+              :telemetry.execute(
+                [:nexus_downfall, :fleets, :colonization_arrival_won],
+                %{count: 1},
+                %{mission_id: mission.id, target_planet_id: mission.target_planet_id}
+              )
+
+              :ok
+          end
+      end
+    end)
+    |> case do
+      {:ok, :ok} -> :ok
+      {:ok, :noop} -> :ok
+      {:error, reason} -> reason
+    end
+  end
+
+  defp process_mission_colonization_completion(mission_id) do
+    Repo.transaction(fn ->
+      mission =
+        Repo.one(
+          from m in FleetMission,
+            where: m.id == ^mission_id,
+            lock: "FOR UPDATE"
+        )
+
+      cond do
+        is_nil(mission) ->
+          :noop
+
+        mission.phase != "colonizing" ->
+          :noop
+
+        true ->
+          target_planet =
+            Repo.one!(
+              from p in Planet,
+                where: p.id == ^mission.target_planet_id,
+                lock: "FOR UPDATE"
+            )
+
+          now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+          cond do
+            not is_nil(target_planet.universe_user_id) and
+                target_planet.universe_user_id != mission.universe_user_id ->
+              return_at = DateTime.add(now, mission.return_travel_seconds, :second)
+
+              mission =
+                mission
+                |> FleetMission.changeset(%{
+                  phase: "returning",
+                  result_reason: "target_unavailable",
+                  return_arrival_at: return_at,
+                  current_oban_job_id: nil
+                })
+                |> Repo.update!()
+
+              update_fleet_status!(mission.fleet_id, "returning")
+              schedule_mission_action!(mission, "return", return_at)
+              :ok
+
+            true ->
+              claimed_planet =
+                target_planet
+                |> Ecto.Changeset.cast(
+                  %{
+                    universe_user_id: mission.universe_user_id,
+                    name: default_colony_name(target_planet, mission)
+                  },
+                  [:universe_user_id, :name]
+                )
+                |> Repo.update!()
+
+              {:ok, _} = Planets.ensure_building_slots(claimed_planet.id)
+              :ok = Planets.apply_starter_setup(claimed_planet.id)
+
+              consume_colonizer_from_fleet!(mission.fleet_id)
+
+              remaining_ships =
+                Repo.one(
+                  from fs in FleetShip,
+                    where: fs.fleet_id == ^mission.fleet_id,
+                    select: coalesce(sum(fs.quantity), 0)
+                ) || 0
+
+              if remaining_ships > 0 do
+                return_at = DateTime.add(now, mission.return_travel_seconds, :second)
+
+                mission =
+                  mission
+                  |> FleetMission.changeset(%{
+                    phase: "returning",
+                    result_reason: "colonization_success",
+                    return_arrival_at: return_at,
+                    current_oban_job_id: nil
+                  })
+                  |> Repo.update!()
+
+                update_fleet_status!(mission.fleet_id, "returning")
+                schedule_mission_action!(mission, "return", return_at)
+              else
+                mission
+                |> FleetMission.changeset(%{
+                  phase: "completed",
+                  result_reason: "colonization_success",
+                  completed_at: now,
+                  current_oban_job_id: nil
+                })
+                |> Repo.update!()
+
+                update_fleet_status!(mission.fleet_id, "idle")
+              end
+
+              :telemetry.execute(
+                [:nexus_downfall, :fleets, :colonization_completed],
+                %{count: 1},
+                %{mission_id: mission.id, target_planet_id: mission.target_planet_id}
+              )
+
+              :ok
+          end
+      end
+    end)
+    |> case do
+      {:ok, :ok} -> :ok
+      {:ok, :noop} -> :ok
+      {:error, reason} -> reason
+    end
+  end
+
+  defp process_mission_return(mission_id) do
+    Repo.transaction(fn ->
+      mission =
+        Repo.one(
+          from m in FleetMission,
+            where: m.id == ^mission_id,
+            lock: "FOR UPDATE"
+        )
+
+      cond do
+        is_nil(mission) ->
+          :noop
+
+        mission.phase != "returning" ->
+          :noop
+
+        true ->
+          now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+          mission
+          |> FleetMission.changeset(%{
+            phase: "completed",
+            completed_at: now,
+            current_oban_job_id: nil
+          })
+          |> Repo.update!()
+
+          update_fleet_status!(mission.fleet_id, "idle")
+
+          :telemetry.execute(
+            [:nexus_downfall, :fleets, :mission_returned],
+            %{count: 1},
+            %{mission_id: mission.id, fleet_id: mission.fleet_id}
+          )
+
+          :ok
+      end
+    end)
+    |> case do
+      {:ok, :ok} -> :ok
+      {:ok, :noop} -> :ok
+      {:error, reason} -> reason
+    end
+  end
+
   def total_ships(fleet) do
     Enum.reduce(fleet.ships || [], 0, fn ship, acc -> acc + ship.quantity end)
   end
@@ -609,6 +1086,166 @@ defmodule NexusDownfall.Fleets do
     end)
 
     :ok
+  end
+
+  defp consume_colonizer_from_fleet!(fleet_id) do
+    ship =
+      Repo.one(
+        from fs in FleetShip,
+          where: fs.fleet_id == ^fleet_id and fs.ship_type == "colonizer",
+          lock: "FOR UPDATE"
+      )
+
+    cond do
+      is_nil(ship) -> Repo.rollback(:colonizer_missing)
+      ship.quantity < 1 -> Repo.rollback(:colonizer_missing)
+      true ->
+        ship
+        |> FleetShip.changeset(%{quantity: ship.quantity - 1})
+        |> Repo.update!()
+    end
+  end
+
+  defp schedule_mission_action!(mission, action, at_datetime) do
+    case FleetMissionWorker.new(
+           %{"mission_id" => mission.id, "action" => action},
+           scheduled_at: at_datetime
+         )
+         |> Oban.insert() do
+      {:ok, job} ->
+        mission
+        |> FleetMission.changeset(%{current_oban_job_id: job.id})
+        |> Repo.update!()
+
+      {:error, _changeset} ->
+        Repo.rollback(:mission_scheduling_failed)
+    end
+  end
+
+  defp update_fleet_status!(fleet_id, status) do
+    fleet = Repo.one!(from f in Fleet, where: f.id == ^fleet_id, lock: "FOR UPDATE")
+
+    fleet
+    |> Fleet.changeset(%{status: status})
+    |> Repo.update!()
+  end
+
+  defp fleet_for_user_for_update(fleet_id, user_id) do
+    Repo.one(
+      from f in Fleet,
+        join: uu in assoc(f, :universe_user),
+        where: f.id == ^fleet_id and uu.user_id == ^user_id,
+        lock: "FOR UPDATE"
+    )
+  end
+
+  defp fleet_for_user(fleet_id, user_id) do
+    Repo.one(
+      from f in Fleet,
+        join: uu in assoc(f, :universe_user),
+        where: f.id == ^fleet_id and uu.user_id == ^user_id
+    )
+  end
+
+  defp resolve_route_ids!(origin_system_id, target_system_id, universe_id) do
+    topology = universe_topology(universe_id)
+
+    case Pathfinder.shortest_path(topology.systems, topology.hyperlinks, origin_system_id, target_system_id) do
+      {:ok, route} -> route
+      {:error, :no_route} -> Repo.rollback(:no_route)
+      {:error, :unknown_system} -> Repo.rollback(:unknown_system)
+    end
+  end
+
+  defp universe_topology(universe_id) do
+    key = {__MODULE__, :topology, universe_id}
+
+    case :persistent_term.get(key, :undefined) do
+      :undefined ->
+        topology = load_universe_topology(universe_id)
+        :persistent_term.put(key, topology)
+        topology
+
+      topology ->
+        topology
+    end
+  end
+
+  defp load_universe_topology(universe_id) do
+    systems =
+      Repo.all(
+        from s in SolarSystem,
+          join: g in assoc(s, :galaxy),
+          where: g.universe_id == ^universe_id,
+          select: %{id: s.id, x: s.x, y: s.y}
+      )
+
+    hyperlinks =
+      Repo.all(
+        from h in Hyperlink,
+          join: sa in SolarSystem,
+          on: sa.id == h.system_a_id,
+          join: ga in assoc(sa, :galaxy),
+          where: ga.universe_id == ^universe_id,
+          select: %{system_a_id: h.system_a_id, system_b_id: h.system_b_id}
+      )
+
+    %{systems: systems, hyperlinks: hyperlinks}
+  end
+
+  defp travel_seconds(route_system_ids, origin_orbit_position, target_orbit_position) do
+    hops = max(length(route_system_ids) - 1, 0)
+    orbit_distance = abs(target_orbit_position - origin_orbit_position)
+    travel = GameplaySettings.travel_settings()
+
+    launch = Map.get(travel, "launch_seconds", 0)
+    landing = Map.get(travel, "landing_seconds", 0)
+    per_hop = Map.get(travel, "seconds_per_hyperlink_hop", 0)
+    per_orbit = Map.get(travel, "seconds_per_orbit_step", 0)
+
+    launch + landing + hops * per_hop + orbit_distance * per_orbit
+  end
+
+  defp fleet_ship_counts(ships) do
+    Enum.reduce(ships, %{}, fn ship, acc ->
+      Map.put(acc, ship.ship_type, ship.quantity)
+    end)
+  end
+
+  defp consume_one_colonizer_count(ship_counts) do
+    Map.update(ship_counts, "colonizer", 0, fn quantity -> max(quantity - 1, 0) end)
+  end
+
+  defp total_fuel_per_second(ship_counts) do
+    Enum.reduce(ship_counts, 0.0, fn {ship_type, quantity}, acc ->
+      case ship_definition(ship_type) do
+        nil -> acc
+        ship -> acc + quantity * ship.fuel_per_s
+      end
+    end)
+  end
+
+  defp target_planet_colonizing?(target_planet_id, exclude_mission_id \\ nil) do
+    query =
+      from m in FleetMission,
+        where: m.target_planet_id == ^target_planet_id and m.phase == "colonizing",
+        lock: "FOR UPDATE"
+
+    query =
+      if is_nil(exclude_mission_id) do
+        query
+      else
+        from m in query, where: m.id != ^exclude_mission_id
+      end
+
+    Repo.exists?(query)
+  end
+
+  defp default_colony_name(planet, mission) do
+    case String.trim(planet.name || "") do
+      "" -> "Colony #{mission.universe_user_id}-#{planet.id}"
+      existing -> existing
+    end
   end
 
   defp start_next_queue_item!(planet_id) do

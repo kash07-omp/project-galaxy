@@ -14,6 +14,7 @@ defmodule NexusDownfall.Planets do
   import Ecto.Query
 
   alias NexusDownfall.Planets.{Building, Planet, ProductionEngine}
+  alias NexusDownfall.GameplaySettings
   alias NexusDownfall.Repo
   alias NexusDownfall.Universe.{Galaxy, SolarSystem}
   alias NexusDownfall.Workers.BuildCompleteWorker
@@ -33,7 +34,7 @@ defmodule NexusDownfall.Planets do
 
     with {:ok, planet} <- %Planet{} |> Planet.initial_changeset(attrs) |> Repo.insert() do
       {:ok, _} = ensure_building_slots(planet.id)
-      set_starter_buildings(planet.id)
+      :ok = apply_starter_setup(planet.id)
 
       {:ok, planet}
     end
@@ -74,7 +75,7 @@ defmodule NexusDownfall.Planets do
         |> Repo.update!()
 
       {:ok, _} = ensure_building_slots(updated_planet.id)
-      set_starter_buildings(updated_planet.id)
+      :ok = apply_starter_setup(updated_planet.id)
 
       updated_planet
     end)
@@ -353,13 +354,34 @@ defmodule NexusDownfall.Planets do
     saved_building
   end
 
-  defp set_starter_buildings(planet_id) do
+  @doc "Applies configurable starter resources and structures to a planet."
+  def apply_starter_setup(planet_id) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    resources = GameplaySettings.planet_starter_resources()
+
     Repo.update_all(
-      from(b in Building,
-        where: b.planet_id == ^planet_id and b.type in ^["command_center", "power_plant"]
-      ),
-      set: [level: 1]
+      from(p in Planet, where: p.id == ^planet_id),
+      set: [
+        raw_materials: Map.get(resources, :raw_materials, 500),
+        microchips: Map.get(resources, :microchips, 500),
+        hydrogen: Map.get(resources, :hydrogen, 500),
+        food: Map.get(resources, :food, 500),
+        credits: Map.get(resources, :credits, 1_000),
+        population: Map.get(resources, :population, 100),
+        last_tick_at: now
+      ]
     )
+
+    GameplaySettings.planet_starter_structures()
+    |> Enum.each(fn %{type: type, level: level} ->
+      Repo.update_all(
+        from(b in Building, where: b.planet_id == ^planet_id and b.type == ^type),
+        set: [level: level]
+      )
+    end)
+
+    :ok
   end
 
   defp list_buildings_for_update(planet_id) do

@@ -17,6 +17,7 @@ alias NexusDownfall.Cards
 alias NexusDownfall.Cards.Card
 alias NexusDownfall.Fleets
 alias NexusDownfall.Fleets.Fleet
+alias NexusDownfall.Fleets.FleetShip
 
 # ---------------------------------------------------------------------------
 # Universe: Alpha
@@ -232,6 +233,31 @@ unless System.get_env("MIX_ENV") == "prod" do
   end
 end
 
+# ---------------------------------------------------------------------------
+# All fleets: ensure at least one colonizer for QA/testing convenience
+# ---------------------------------------------------------------------------
+unless System.get_env("MIX_ENV") == "prod" do
+  now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+  Repo.query!("""
+  INSERT INTO fleet_ships (fleet_id, ship_type, quantity, inserted_at, updated_at)
+  SELECT f.id, 'colonizer', 1, $1, $1
+  FROM fleets f
+  LEFT JOIN fleet_ships fs ON fs.fleet_id = f.id AND fs.ship_type = 'colonizer'
+  WHERE fs.id IS NULL
+  """, [now])
+
+  Repo.query!("""
+  UPDATE fleet_ships
+  SET quantity = 1,
+      updated_at = $1
+  WHERE ship_type = 'colonizer'
+    AND quantity < 1
+  """, [now])
+
+  IO.puts("[seeds] Ensured colonizer >= 1 for all fleets")
+end
+
 IO.puts("[seeds] Done.")
 
 # ---------------------------------------------------------------------------
@@ -310,6 +336,49 @@ unless System.get_env("MIX_ENV") == "prod" do
     if fleet do
       {:ok, _} = Fleets.assign_admiral_to_fleet(fleet.id, dev_user.id, queen_card.id)
       IO.puts("[seeds] Assigned Queen to fleet '#{fleet.name}'")
+    end
+
+    qa_two_fleet =
+      case Repo.get_by(Fleet, universe_user_id: universe_user.id, name: "QA 2") do
+        nil ->
+          first_planet =
+            Repo.one(from p in Planet, where: p.universe_user_id == ^universe_user.id, limit: 1)
+
+          if first_planet do
+            {:ok, created_fleet} =
+              Fleets.create_fleet_for_user(dev_user.id, %{
+                "name" => "QA 2",
+                "planet_id" => first_planet.id,
+                "admiral_name" => ""
+              })
+
+            IO.puts("[seeds] Created QA fleet '#{created_fleet.name}'")
+            created_fleet
+          end
+
+        fleet ->
+          fleet
+      end
+
+    if qa_two_fleet do
+      case Repo.get_by(FleetShip, fleet_id: qa_two_fleet.id, ship_type: "colonizer") do
+        nil ->
+          %FleetShip{}
+          |> FleetShip.changeset(%{fleet_id: qa_two_fleet.id, ship_type: "colonizer", quantity: 1})
+          |> Repo.insert!()
+
+          IO.puts("[seeds] Added colonizer to fleet '#{qa_two_fleet.name}'")
+
+        ship when ship.quantity < 1 ->
+          ship
+          |> FleetShip.changeset(%{quantity: 1})
+          |> Repo.update!()
+
+          IO.puts("[seeds] Restored colonizer for fleet '#{qa_two_fleet.name}'")
+
+        _ship ->
+          :ok
+      end
     end
   else
     _ -> IO.puts("[seeds] Skipped Queen assignment (no dev user or fleet yet)")

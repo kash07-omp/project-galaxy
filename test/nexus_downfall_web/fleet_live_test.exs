@@ -10,6 +10,7 @@ defmodule NexusDownfallWeb.FleetLiveTest do
   alias NexusDownfall.Fleets
   alias NexusDownfall.Fleets.Fleet
   alias NexusDownfall.Planets
+  alias NexusDownfall.Planets.Planet
   alias NexusDownfall.Repo
 
   defp create_universe do
@@ -83,6 +84,25 @@ defmodule NexusDownfallWeb.FleetLiveTest do
         solar_system_id: system.id,
         universe_user_id: universe_user.id
       })
+
+    planet
+  end
+
+  defp create_free_planet(system, orbit_position) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    {:ok, planet} =
+      %Planet{}
+      |> Planet.initial_changeset(%{
+        name: "Unclaimed #{System.unique_integer([:positive])}",
+        orbit_position: orbit_position,
+        region: 1,
+        slot_type: "planet",
+        universe_id: system.galaxy.universe_id,
+        solar_system_id: system.id,
+        last_tick_at: now
+      })
+      |> Repo.insert()
 
     planet
   end
@@ -247,5 +267,92 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     assert rendered =~ "Unassign admiral"
     assert rendered =~ "Already assigned to another fleet."
     assert rendered =~ "disabled"
+  end
+
+  test "send mission modal disables colonization when the fleet has no colonizer", %{conn: conn, user: user, planet: planet} do
+    system = Repo.preload(planet, :solar_system).solar_system |> Repo.preload(:galaxy)
+    _target = create_free_planet(system, 6)
+
+    {:ok, fleet} =
+      Fleets.create_fleet_for_user(user.id, %{
+        "name" => "Mission Fleet #{System.unique_integer([:positive])}",
+        "planet_id" => planet.id
+      })
+
+    {:ok, live_view, _html} = live(conn, ~p"/fleet")
+
+    live_view
+    |> element("button[phx-click='open_send_mission_modal'][phx-value-fleet_id='#{fleet.id}']")
+    |> render_click()
+
+    rendered_open = render(live_view)
+    assert rendered_open =~ "Send mission"
+    assert rendered_open =~ "Colonization (requires Colonizer)"
+    assert rendered_open =~ "Transport"
+    assert rendered_open =~ "This mission type is visible as a placeholder for now."
+  end
+
+  test "send mission modal dispatches colonization through galaxy, system and planet selectors", %{conn: conn, user: user, planet: planet} do
+    system = Repo.preload(planet, :solar_system).solar_system |> Repo.preload(:galaxy)
+    target = create_free_planet(system, 6)
+
+    {:ok, fleet} =
+      Fleets.create_fleet_for_user(user.id, %{
+        "name" => "Colonizer Fleet #{System.unique_integer([:positive])}",
+        "planet_id" => planet.id
+      })
+
+    Repo.update_all(
+      from(fs in NexusDownfall.Fleets.FleetShip,
+        where: fs.fleet_id == ^fleet.id and fs.ship_type == "colonizer"
+      ),
+      set: [quantity: 1]
+    )
+
+    Repo.update_all(
+      from(p in NexusDownfall.Planets.Planet, where: p.id == ^planet.id),
+      set: [hydrogen: 5_000_000]
+    )
+
+    {:ok, live_view, _html} = live(conn, ~p"/fleet")
+
+    live_view
+    |> element("button[phx-click='open_send_mission_modal'][phx-value-fleet_id='#{fleet.id}']")
+    |> render_click()
+
+    rendered_open = render(live_view)
+    assert rendered_open =~ "Send mission"
+    assert rendered_open =~ "Select galaxy"
+    refute rendered_open =~ "Colonization (requires Colonizer)"
+
+    live_view
+    |> form("form[phx-submit='send_mission']", %{
+      "fleet_id" => to_string(fleet.id),
+      "mission_type" => "colonization",
+      "galaxy_id" => to_string(system.galaxy.id)
+    })
+    |> render_change()
+
+    live_view
+    |> form("form[phx-submit='send_mission']", %{
+      "fleet_id" => to_string(fleet.id),
+      "mission_type" => "colonization",
+      "galaxy_id" => to_string(system.galaxy.id),
+      "system_id" => to_string(system.id)
+    })
+    |> render_change()
+
+    live_view
+    |> form("form[phx-submit='send_mission']", %{
+      "fleet_id" => to_string(fleet.id),
+      "mission_type" => "colonization",
+      "galaxy_id" => to_string(system.galaxy.id),
+      "system_id" => to_string(system.id),
+      "target_planet_id" => to_string(target.id)
+    })
+    |> render_submit()
+
+    rendered_success = render(live_view)
+    assert rendered_success =~ "Colonization mission dispatched."
   end
 end

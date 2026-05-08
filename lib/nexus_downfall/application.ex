@@ -5,6 +5,8 @@ defmodule NexusDownfall.Application do
 
   @impl true
   def start(_type, _args) do
+    NexusDownfall.GameplaySettings.load()
+
     children = [
       NexusDownfallWeb.Telemetry,
       NexusDownfall.Repo,

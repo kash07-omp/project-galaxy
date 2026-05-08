@@ -212,7 +212,21 @@ defmodule NexusDownfallWeb.FleetLive do
                             </div>
 
                             <div class="flex items-center justify-end">
-                              <button type="button" class="rounded-lg border border-emerald-500/60 bg-emerald-900/35 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-200 transition hover:bg-emerald-800/45">
+                              <button
+                                type="button"
+                                phx-click="open_send_mission_modal"
+                                phx-value-fleet_id={fleet.id}
+                                disabled={fleet.status != "idle"}
+                                class={[
+                                  "rounded-lg border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition",
+                                  if(fleet.status == "idle",
+                                    do:
+                                      "border-emerald-500/60 bg-emerald-900/35 text-emerald-200 hover:bg-emerald-800/45",
+                                    else:
+                                      "cursor-not-allowed border-gray-700 bg-gray-900/70 text-gray-500"
+                                  )
+                                ]}
+                              >
                                 <%= gettext("Send mission") %>
                               </button>
                             </div>
@@ -364,6 +378,85 @@ defmodule NexusDownfallWeb.FleetLive do
           </div>
         </div>
       </.modal>
+
+      <.modal :if={@show_send_mission_modal} id="send-mission-modal" show on_cancel={JS.push("close_send_mission_modal")}>
+        <div class="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#0c1422]">
+          <div class="relative h-32 overflow-hidden">
+            <img src="/images/planet-images/shipyard.jpg" class="absolute inset-0 h-full w-full object-cover" draggable="false" />
+            <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-black/90" />
+            <div class="absolute bottom-3 left-4">
+              <h2 class="text-xl font-bold text-white"><%= gettext("Send mission") %></h2>
+              <p class="mt-1 text-xs text-gray-300"><%= gettext("Choose the mission type first, then narrow the target step by step.") %></p>
+            </div>
+          </div>
+
+          <div class="space-y-4 p-5">
+            <%= if @mission_error do %>
+              <div class="rounded-xl border border-red-700 bg-red-950/40 px-3 py-2 text-sm text-red-300"><%= @mission_error %></div>
+            <% end %>
+
+            <form phx-submit="send_mission" phx-change="mission_form_changed" class="space-y-4">
+              <input type="hidden" name="fleet_id" value={@mission_form.fleet_id} />
+
+              <div>
+                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500"><%= gettext("Mission") %></label>
+                <select name="mission_type" class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none">
+                  <%= for option <- mission_options(@selected_mission_fleet) do %>
+                    <option value={option.value} selected={option.value == @mission_form.mission_type} disabled={!option.enabled?}><%= option.label %></option>
+                  <% end %>
+                </select>
+              </div>
+
+              <%= if @mission_form.mission_type == "colonization" do %>
+                <div class="grid gap-4 md:grid-cols-3">
+                  <div>
+                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500"><%= gettext("Galaxy") %></label>
+                    <select name="galaxy_id" class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none">
+                      <option value=""><%= gettext("Select galaxy") %></option>
+                      <%= for galaxy <- @mission_galaxies do %>
+                        <option value={galaxy.id} selected={to_string(galaxy.id) == @mission_form.galaxy_id}><%= mission_galaxy_label(galaxy) %></option>
+                      <% end %>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500"><%= gettext("System") %></label>
+                    <select name="system_id" disabled={@mission_form.galaxy_id == ""} class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none disabled:cursor-not-allowed disabled:text-gray-500">
+                      <option value=""><%= gettext("Select system") %></option>
+                      <%= for system <- @mission_systems do %>
+                        <option value={system.id} selected={to_string(system.id) == @mission_form.system_id}><%= mission_system_label(system) %></option>
+                      <% end %>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500"><%= gettext("Planet") %></label>
+                    <select name="target_planet_id" disabled={@mission_form.system_id == ""} class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none disabled:cursor-not-allowed disabled:text-gray-500">
+                      <option value=""><%= gettext("Select planet") %></option>
+                      <%= for target <- @mission_targets do %>
+                        <option value={target.id} selected={to_string(target.id) == @mission_form.target_planet_id}><%= mission_target_label(target) %></option>
+                      <% end %>
+                    </select>
+                  </div>
+                </div>
+
+                <p class="text-xs text-gray-400">
+                  <%= gettext("If another commander arrives first, your colonizer will automatically return.") %>
+                </p>
+              <% else %>
+                <div class="rounded-xl border border-amber-700/60 bg-amber-950/30 px-3 py-3 text-sm text-amber-200">
+                  <%= gettext("This mission type is visible as a placeholder for now. Only Colonization is currently playable.") %>
+                </div>
+              <% end %>
+
+              <div class="flex flex-col-reverse gap-3 border-t border-gray-800 pt-4 sm:flex-row sm:justify-end">
+                <button type="button" phx-click="close_send_mission_modal" class="rounded-lg border border-gray-700 bg-gray-950 px-4 py-2.5 text-sm font-medium text-gray-200 transition hover:border-gray-500"><%= gettext("Cancel") %></button>
+                <button type="submit" disabled={!mission_submit_enabled?(@mission_form)} class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-gray-700 disabled:text-gray-400"><%= gettext("Dispatch mission") %></button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </.modal>
     </div>
     """
   end
@@ -428,6 +521,130 @@ defmodule NexusDownfallWeb.FleetLive do
      socket
      |> assign(:show_create_modal, false)
      |> assign(:fleet_error, nil)}
+  end
+
+  def handle_event("open_send_mission_modal", %{"fleet_id" => fleet_id}, socket) do
+    user_id = socket.assigns.current_user.id
+    fleet_id = String.to_integer(fleet_id)
+    fleet = Enum.find(socket.assigns.fleets, &(&1.id == fleet_id))
+
+    if fleet do
+      can_colonize? = Fleets.ship_quantity(fleet, "colonizer") > 0
+      default_mission = if can_colonize?, do: "colonization", else: "transport"
+
+      mission_form = %{
+        fleet_id: to_string(fleet_id),
+        mission_type: default_mission,
+        galaxy_id: "",
+        system_id: "",
+        target_planet_id: ""
+      }
+
+      {galaxies, systems, planets} = load_mission_target_options(fleet_id, user_id, mission_form)
+
+      {:noreply,
+       socket
+       |> assign(:show_send_mission_modal, true)
+       |> assign(:selected_mission_fleet, fleet)
+       |> assign(:mission_error, nil)
+       |> assign(:mission_galaxies, galaxies)
+       |> assign(:mission_systems, systems)
+       |> assign(:mission_targets, planets)
+       |> assign(:mission_form, mission_form)}
+    else
+      {:noreply, put_flash(socket, :error, gettext("Fleet not found."))}
+    end
+  end
+
+  def handle_event("close_send_mission_modal", _, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_send_mission_modal, false)
+     |> assign(:selected_mission_fleet, nil)
+     |> assign(:mission_error, nil)
+     |> assign(:mission_galaxies, [])
+     |> assign(:mission_systems, [])
+     |> assign(:mission_targets, [])
+     |> assign(:mission_form, empty_mission_form())}
+  end
+
+  def handle_event("mission_form_changed", params, socket) do
+    user_id = socket.assigns.current_user.id
+    mission_form = mission_form_from_params(params)
+    fleet_id = parse_optional_int(mission_form.fleet_id)
+
+    if fleet_id do
+      {galaxies, systems, planets} = load_mission_target_options(fleet_id, user_id, mission_form)
+
+      {:noreply,
+       socket
+       |> assign(:mission_form, mission_form)
+       |> assign(:mission_galaxies, galaxies)
+       |> assign(:mission_systems, systems)
+       |> assign(:mission_targets, planets)
+       |> assign(:mission_error, nil)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("send_mission", params, socket) do
+    user_id = socket.assigns.current_user.id
+
+    mission_form = mission_form_from_params(params)
+    fleet_id = parse_optional_int(mission_form.fleet_id)
+    target_planet_id = parse_optional_int(mission_form.target_planet_id)
+
+    cond do
+      mission_form.mission_type != "colonization" ->
+        {:noreply,
+         socket
+         |> assign(:show_send_mission_modal, true)
+         |> assign(:mission_form, mission_form)
+         |> assign(:mission_error, gettext("That mission type is not implemented yet."))}
+
+      is_nil(fleet_id) or is_nil(target_planet_id) ->
+        {:noreply,
+         socket
+         |> assign(:show_send_mission_modal, true)
+         |> assign(:mission_form, mission_form)
+         |> assign(:mission_error, gettext("Choose galaxy, system and planet before dispatching."))}
+
+      true ->
+        case Fleets.dispatch_colonization_mission_for_user(fleet_id, user_id, target_planet_id) do
+          {:ok, _mission} ->
+            {:noreply,
+             socket
+             |> assign_fleet_page()
+             |> assign(:show_send_mission_modal, false)
+             |> assign(:selected_mission_fleet, nil)
+             |> assign(:mission_error, nil)
+             |> assign(:mission_galaxies, [])
+             |> assign(:mission_systems, [])
+             |> assign(:mission_targets, [])
+             |> assign(:mission_form, empty_mission_form())
+             |> put_flash(:success, gettext("Colonization mission dispatched."))}
+
+          {:error, reason} ->
+            {galaxies, systems, planets} = load_mission_target_options(fleet_id, user_id, mission_form)
+
+            {:noreply,
+             socket
+             |> assign(:show_send_mission_modal, true)
+             |> assign(:mission_form, mission_form)
+             |> assign(:mission_galaxies, galaxies)
+             |> assign(:mission_systems, systems)
+             |> assign(:mission_targets, planets)
+             |> assign(:mission_error, mission_error_message(reason))}
+        end
+    end
+  rescue
+    ArgumentError ->
+      {:noreply,
+       socket
+       |> assign(:show_send_mission_modal, true)
+       |> assign(:mission_form, mission_form_from_params(params))
+       |> assign(:mission_error, gettext("Invalid mission data."))}
   end
 
   def handle_event("toggle_user_menu", _, socket), do: {:noreply, update(socket, :show_user_menu, &(!&1))}
@@ -503,7 +720,14 @@ defmodule NexusDownfallWeb.FleetLive do
     |> assign_new(:fleet_form, fn -> %{name: "", planet_id: "", admiral_card_id: ""} end)
     |> assign_new(:fleet_error, fn -> nil end)
     |> assign_new(:show_create_modal, fn -> false end)
-      |> assign_new(:assign_admiral_fleet_id, fn -> nil end)
+    |> assign_new(:show_send_mission_modal, fn -> false end)
+    |> assign_new(:selected_mission_fleet, fn -> nil end)
+    |> assign_new(:mission_error, fn -> nil end)
+    |> assign_new(:mission_galaxies, fn -> [] end)
+    |> assign_new(:mission_systems, fn -> [] end)
+    |> assign_new(:mission_targets, fn -> [] end)
+    |> assign_new(:mission_form, fn -> empty_mission_form() end)
+    |> assign_new(:assign_admiral_fleet_id, fn -> nil end)
     |> assign(:show_user_menu, socket.assigns[:show_user_menu] || false)
   end
 
@@ -523,9 +747,89 @@ defmodule NexusDownfallWeb.FleetLive do
     }
   end
 
+  defp mission_form_from_params(params) do
+    %{
+      fleet_id: Map.get(params, "fleet_id", ""),
+      mission_type: Map.get(params, "mission_type", ""),
+      galaxy_id: Map.get(params, "galaxy_id", ""),
+      system_id: Map.get(params, "system_id", ""),
+      target_planet_id: Map.get(params, "target_planet_id", "")
+    }
+  end
+
+  defp empty_mission_form do
+    %{fleet_id: "", mission_type: "", galaxy_id: "", system_id: "", target_planet_id: ""}
+  end
+
+  defp mission_options(nil), do: mission_options(%{ships: []})
+
+  defp mission_options(fleet) do
+    can_colonize? = Fleets.ship_quantity(fleet, "colonizer") > 0
+
+    [
+      %{value: "colonization", label: mission_option_label(gettext("Colonization"), can_colonize?, gettext("requires Colonizer")), enabled?: can_colonize?},
+      %{value: "transport", label: gettext("Transport"), enabled?: true},
+      %{value: "attack", label: gettext("Attack"), enabled?: true},
+      %{value: "trade_blockade", label: gettext("Trade Blockade"), enabled?: true},
+      %{value: "planetary_defense", label: gettext("Planetary Defense"), enabled?: true},
+      %{value: "orbital_bombardment", label: gettext("Orbital Bombardment"), enabled?: true}
+    ]
+  end
+
+  defp mission_option_label(label, true, _suffix), do: label
+  defp mission_option_label(label, false, suffix), do: "#{label} (#{suffix})"
+
+  defp mission_galaxy_label(galaxy), do: "#{gettext("Galaxy")} #{galaxy.number} · #{galaxy.free_planets} #{gettext("targets")}" 
+  defp mission_system_label(system), do: "#{gettext("System")} #{system.number} · #{system.free_planets} #{gettext("targets")}" 
+
   defp planet_option_label(planet) do
     "#{planet.name} - #{gettext("System")} #{planet.solar_system.number}"
   end
+
+  defp mission_target_label(target) do
+    name =
+      case String.trim(target.name || "") do
+        "" -> gettext("Unnamed Planet")
+        value -> value
+      end
+
+    "#{name} - #{gettext("System")} #{target.solar_system_number} · #{gettext("Orbit")} #{target.orbit_position} · #{gettext("Region")} #{target.region}"
+  end
+
+  defp mission_submit_enabled?(%{mission_type: "colonization", target_planet_id: target_planet_id}), do: target_planet_id != ""
+  defp mission_submit_enabled?(_form), do: false
+
+  defp load_mission_target_options(fleet_id, user_id, %{mission_type: "colonization", galaxy_id: galaxy_id, system_id: system_id}) do
+    galaxies =
+      case Fleets.list_colonizable_galaxies_for_fleet(fleet_id, user_id) do
+        {:ok, values} -> values
+        _ -> []
+      end
+
+    systems =
+      case parse_optional_int(galaxy_id) do
+        nil -> []
+        value ->
+          case Fleets.list_colonizable_systems_for_fleet(fleet_id, user_id, value) do
+            {:ok, values} -> values
+            _ -> []
+          end
+      end
+
+    planets =
+      case parse_optional_int(system_id) do
+        nil -> []
+        value ->
+          case Fleets.list_colonizable_planets_for_fleet(fleet_id, user_id, value) do
+            {:ok, values} -> values
+            _ -> []
+          end
+      end
+
+    {galaxies, systems, planets}
+  end
+
+  defp load_mission_target_options(_fleet_id, _user_id, _mission_form), do: {[], [], []}
 
   defp fleet_metrics(fleets, planets) do
     %{
@@ -538,17 +842,47 @@ defmodule NexusDownfallWeb.FleetLive do
 
   defp fleet_status_label(nil), do: gettext("Idle")
   defp fleet_status_label("idle"), do: gettext("Idle")
+  defp fleet_status_label("outbound"), do: gettext("Outbound")
+  defp fleet_status_label("colonizing"), do: gettext("Colonizing")
+  defp fleet_status_label("returning"), do: gettext("Returning")
   defp fleet_status_label(status), do: translate_dynamic(status)
 
   defp fleet_status_badge_class(status) do
     base = "inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
 
-    if status in [nil, "idle"] do
-      base <> " border-emerald-700 bg-emerald-950/50 text-emerald-200"
-    else
-      base <> " border-gray-700 bg-gray-900 text-gray-300"
+    cond do
+      status in [nil, "idle"] ->
+        base <> " border-emerald-700 bg-emerald-950/50 text-emerald-200"
+
+      status == "outbound" ->
+        base <> " border-cyan-700 bg-cyan-950/50 text-cyan-200"
+
+      status == "colonizing" ->
+        base <> " border-amber-700 bg-amber-950/50 text-amber-200"
+
+      status == "returning" ->
+        base <> " border-indigo-700 bg-indigo-950/50 text-indigo-200"
+
+      true ->
+        base <> " border-gray-700 bg-gray-900 text-gray-300"
     end
   end
+
+  defp mission_error_message(:fleet_not_found), do: gettext("Fleet not found.")
+  defp mission_error_message(:fleet_busy), do: gettext("Fleet is already on a mission.")
+  defp mission_error_message(:target_not_found), do: gettext("Target planet not found.")
+  defp mission_error_message(:target_unavailable), do: gettext("Target planet is already occupied.")
+  defp mission_error_message(:target_colonizing), do: gettext("Target planet is currently being colonized.")
+  defp mission_error_message(:colonizer_required), do: gettext("Fleet needs at least one Colonizer ship.")
+  defp mission_error_message(:insufficient_hydrogen), do: gettext("Not enough hydrogen for the mission.")
+  defp mission_error_message(:no_route), do: gettext("No route found between origin and target.")
+  defp mission_error_message(:invalid_target), do: gettext("Invalid target planet.")
+  defp mission_error_message(_), do: gettext("Could not dispatch mission.")
+
+  defp parse_optional_int(""), do: nil
+  defp parse_optional_int(nil), do: nil
+  defp parse_optional_int(value) when is_integer(value), do: value
+  defp parse_optional_int(value) when is_binary(value), do: String.to_integer(value)
 
   defp fleet_power(fleet, ship_catalog) do
     ship_catalog

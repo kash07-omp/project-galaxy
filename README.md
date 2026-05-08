@@ -130,9 +130,23 @@ Para hacer este viaje la flota consumirá el recurso Hidrógeno. El cálculo de 
 
 ### Misiones disponibles
 
+- **Misión de colonización**: una flota con al menos una nave Colonizer puede viajar a un planeta libre. El primero que llega inicia la colonización; durante ese tiempo el planeta deja de aceptar nuevas colonizaciones. Si la colonia se completa, se consume una nave colonizadora, el planeta pasa al jugador con estructuras y recursos iniciales configurables y las naves restantes regresan a la base. Si otro jugador llegó antes, la flota retorna automáticamente.
 - **Misión de transporte**: llevar recursos con límite por bodega y disponibilidad real (incluyendo coste de hidrógeno del viaje).
 - **Misión de ataque**: combate contra flotas/defensas del objetivo, con resultado de victoria, empate o derrota y notificación de reporte.
 - Futuro: bombardeo orbital y bloqueo planetario.
+
+### Configuración parametrizable
+
+Los valores de gameplay de alto impacto para el MVP se cargan desde `priv/settings/gameplay.json` y se cachean en memoria al arrancar la aplicación para reducir overhead en runtime.
+
+Actualmente incluye:
+
+- Tiempo base y mínimo de colonización.
+- Recursos iniciales de un planeta recién fundado.
+- Estructuras iniciales de un planeta recién fundado.
+- Constantes base de tiempo de viaje de flotas.
+
+Esto permite ajustar balance sin tocar la lógica de dominio ni recompilar fórmulas de misión.
 
 ### Ganancia de recursos
 

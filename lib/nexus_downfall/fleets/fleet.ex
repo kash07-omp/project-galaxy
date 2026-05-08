@@ -4,6 +4,8 @@ defmodule NexusDownfall.Fleets.Fleet do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @statuses ["idle", "outbound", "colonizing", "returning"]
+
   schema "fleets" do
     field :name, :string
     field :admiral_name, :string
@@ -15,6 +17,7 @@ defmodule NexusDownfall.Fleets.Fleet do
     belongs_to :admiral_card, NexusDownfall.Cards.Card
     has_many :ships, NexusDownfall.Fleets.FleetShip
     has_many :shipyard_queue_items, NexusDownfall.Fleets.ShipyardQueueItem
+    has_many :missions, NexusDownfall.Fleets.FleetMission
 
     timestamps(type: :utc_datetime)
   end
@@ -25,11 +28,13 @@ defmodule NexusDownfall.Fleets.Fleet do
     |> validate_required([:name, :status, :universe_id, :universe_user_id, :home_planet_id])
     |> validate_length(:name, min: 2, max: 40)
     |> validate_length(:admiral_name, max: 60)
-    |> validate_inclusion(:status, ["idle"])
+    |> validate_inclusion(:status, @statuses)
     |> unique_constraint([:universe_user_id, :name])
     |> unique_constraint(:admiral_card_id,
       name: :fleets_universe_user_id_admiral_card_id_unique_idx,
       message: "card_already_assigned"
     )
   end
+
+  def statuses, do: @statuses
 end

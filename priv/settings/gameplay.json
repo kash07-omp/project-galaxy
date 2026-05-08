@@ -1,0 +1,32 @@
+{
+  "colonization": {
+    "base_seconds": 600,
+    "min_seconds": 60
+  },
+  "planet": {
+    "starter_resources": {
+      "raw_materials": 500,
+      "microchips": 500,
+      "hydrogen": 500,
+      "food": 500,
+      "credits": 1000,
+      "population": 100
+    },
+    "starter_structures": [
+      {
+        "type": "command_center",
+        "level": 1
+      },
+      {
+        "type": "power_plant",
+        "level": 1
+      }
+    ]
+  },
+  "fleet_travel": {
+    "launch_seconds": 20,
+    "landing_seconds": 20,
+    "seconds_per_hyperlink_hop": 40,
+    "seconds_per_orbit_step": 6
+  }
+}

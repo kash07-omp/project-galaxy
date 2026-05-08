@@ -128,12 +128,12 @@ defmodule NexusDownfallWeb.PlanetLive do
             </span>
           <% end %>
         </div>
-        
+
         <div class="flex items-center gap-1 text-purple-300 shrink-0">
           <span>👥</span> <span class="font-semibold">{@display.population |> round()}</span>
           <span class="text-gray-500">({format_rate(@rates.population * 1.0)}/h)</span>
         </div>
-        
+
         <div class="ml-auto flex items-center gap-2 shrink-0">
           <span class="text-cyan-400 font-bold">{@planet.name}</span>
           <%= if @any_constructing do %>
@@ -184,7 +184,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                 </div>
               <% end %>
             </div>
-            
+
             <span class={[
               "mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold whitespace-nowrap shadow-lg",
               if(is_selected,
@@ -258,7 +258,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                 />
                 <div>
                   <h2 class="text-white font-bold text-lg leading-tight drop-shadow">{sel_label}</h2>
-                  
+
                   <div class="flex items-center gap-2 mt-0.5">
                     <span class="text-cyan-400 text-sm font-semibold">
                       {gettext("Level")} {sel_level}
@@ -271,7 +271,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                   </div>
                 </div>
               </div>
-              
+
               <%= if sel_constructing do %>
                 <div class="absolute bottom-0 left-0 right-0 px-4 pb-2 z-10">
                   <div class="flex items-center gap-2">
@@ -281,7 +281,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                         style={"width: #{sel_pct}%"}
                       />
                     </div>
-                    
+
                     <span class="text-yellow-300 text-xs font-mono tabular-nums shrink-0">
                       {format_duration(sel_rem)}
                     </span>
@@ -319,35 +319,35 @@ defmodule NexusDownfallWeb.PlanetLive do
                     <h4 class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
                       {prod_label}
                     </h4>
-                    
+
                     <div class="grid grid-cols-4 gap-2 text-center">
                       <div class="bg-gray-900/60 rounded-lg p-2">
                         <div class="text-[10px] text-gray-500 mb-1">{gettext("Per minute")}</div>
-                        
+
                         <div class="text-sm font-bold text-emerald-400">
                           {prod_icon} {Float.round(prod_rate / 60.0, 2)}
                         </div>
                       </div>
-                      
+
                       <div class="bg-gray-900/60 rounded-lg p-2">
                         <div class="text-[10px] text-gray-500 mb-1">{gettext("Per hour")}</div>
-                        
+
                         <div class="text-sm font-bold text-emerald-400">
                           {prod_icon} {Float.round(prod_rate * 1.0, 1)}
                         </div>
                       </div>
-                      
+
                       <div class="bg-gray-900/60 rounded-lg p-2">
                         <div class="text-[10px] text-gray-500 mb-1">{gettext("Per day")}</div>
-                        
+
                         <div class="text-sm font-bold text-emerald-400">
                           {prod_icon} {Float.round(prod_rate * 24.0, 1)}
                         </div>
                       </div>
-                      
+
                       <div class="bg-gray-900/60 rounded-lg p-2">
                         <div class="text-[10px] text-gray-500 mb-1">{gettext("Per week")}</div>
-                        
+
                         <div class="text-sm font-bold text-emerald-400">
                           {prod_icon} {Float.round(prod_rate * 168.0, 0)}
                         </div>
@@ -361,25 +361,25 @@ defmodule NexusDownfallWeb.PlanetLive do
                     <h4 class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-3">
                       {gettext("Energy Production")}
                     </h4>
-                    
+
                     <div class="grid grid-cols-2 gap-3 mb-3">
                       <div class="bg-gray-900/60 rounded-lg p-2.5 text-center">
                         <div class="text-[10px] text-gray-500 mb-1">
                           {gettext("This building produces")}
                         </div>
-                        
+
                         <div class="text-xl font-bold text-yellow-400">
                           ⚡ {round(sel_energy_prod)}
                         </div>
-                        
+
                         <div class="text-[10px] text-gray-500 mt-0.5">
                           {gettext("energy at current level")}
                         </div>
                       </div>
-                      
+
                       <div class="bg-gray-900/60 rounded-lg p-2.5 text-center">
                         <div class="text-[10px] text-gray-500 mb-1">{gettext("Planet Balance")}</div>
-                        
+
                         <div class={[
                           "text-xl font-bold",
                           if(@rates.energy_balance >= 0, do: "text-emerald-400", else: "text-red-400")
@@ -388,20 +388,20 @@ defmodule NexusDownfallWeb.PlanetLive do
                             @rates.energy_balance
                           )}
                         </div>
-                        
+
                         <div class="text-[10px] text-gray-500 mt-0.5">
                           {round(@rates.efficiency * 100)}% {gettext("efficiency")}
                         </div>
                       </div>
                     </div>
-                    
+
                     <div class="bg-gray-900/60 rounded-lg px-3 py-2 flex items-center justify-between text-xs">
                       <div>
                         <span class="text-emerald-400 font-semibold">
                           +{round(@rates.energy_produce)}
                         </span> <span class="text-gray-500 ml-1">{gettext("produced")}</span>
                       </div>
-                      
+
                       <div>
                         <span class="text-red-400 font-semibold">
                           -{round(@rates.energy_consume)}
@@ -417,24 +417,24 @@ defmodule NexusDownfallWeb.PlanetLive do
                       do: gettext("Initial Construction"),
                       else: "#{gettext("Upgrade → Level")} #{sel_next}"}
                   </h4>
-                  
+
                   <%= if sel_constructing do %>
                     <div class="flex items-center justify-between bg-yellow-950/40 rounded-xl px-4 py-3 border border-yellow-800/50">
                       <div>
                         <p class="text-yellow-300 text-sm font-semibold">
                           ⏳ {gettext("Construction in progress")}
                         </p>
-                        
+
                         <p class="text-yellow-600 text-xs mt-0.5">
                           {gettext("Upgrading to level")} {sel_next}
                         </p>
                       </div>
-                      
+
                       <div class="text-right">
                         <p class="text-yellow-200 text-2xl font-mono font-bold tabular-nums">
                           {format_duration(sel_rem)}
                         </p>
-                        
+
                         <p class="text-yellow-700 text-[10px]">{gettext("remaining")}</p>
                       </div>
                     </div>
@@ -453,7 +453,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                         </span>
                       <% end %>
                     </div>
-                    
+
                     <%= if @any_constructing do %>
                       <p class="text-yellow-500 text-xs">
                         ⚠ {gettext("A construction is already in progress on this planet.")}
@@ -476,7 +476,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                           else: "#{gettext("Upgrade → Level")} #{sel_next}"}
                       </button>
                     <% end %>
-                    
+
                     <%= if @error do %>
                       <p class="text-red-400 text-xs mt-2">{@error}</p>
                     <% end %>
@@ -496,7 +496,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                           {gettext("Build Queue")}
                         </h3>
                       </div>
-                      
+
                       <div class="flex-1 overflow-y-auto flex flex-col gap-2 px-2 py-2">
                         <%= if @shipyard_queue_items == [] do %>
                           <div class="flex flex-col items-center justify-center h-full text-center gap-2 py-8">
@@ -525,20 +525,20 @@ defmodule NexusDownfallWeb.PlanetLive do
                                 ]}>
                                   {idx + 1}
                                 </div>
-                                
+
                                 <div class="min-w-0 flex-1">
                                   <p class="text-[12px] font-semibold text-white leading-tight truncate">
                                     {ship_name(item.ship_type)}
                                   </p>
-                                  
+
                                   <p class="text-[11px] text-gray-400">×{item.quantity}</p>
-                                  
+
                                   <p class="text-[10px] text-gray-500 truncate">
                                     → {item.fleet.name}
                                   </p>
                                 </div>
                               </div>
-                              
+
                               <%= if is_building do %>
                                 <div class="mt-2">
                                   <div class="flex items-center justify-between text-[10px] mb-1">
@@ -546,7 +546,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                                       {format_duration(rem_s)}
                                     </span> <span class="text-gray-500">{pct}%</span>
                                   </div>
-                                  
+
                                   <div class="h-1.5 rounded-full bg-gray-700 overflow-hidden">
                                     <div
                                       class="h-full bg-emerald-500 rounded-full transition-all duration-1000"
@@ -571,7 +571,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                           <p class="text-amber-400 text-xs font-medium">
                             ⚠ {gettext("No fleets at this planet. Create a fleet here first.")}
                           </p>
-                          
+
                           <.link
                             navigate={~p"/fleet"}
                             class="mt-2 inline-flex rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-cyan-600 transition"
@@ -580,19 +580,19 @@ defmodule NexusDownfallWeb.PlanetLive do
                           </.link>
                         </div>
                       <% end %>
-                      
+
                       <%= if @shipyard_error do %>
                         <div class="mx-3 mt-2 mb-1 rounded-lg border border-red-700 bg-red-950/40 px-3 py-2 text-xs text-red-300 shrink-0">
                           {@shipyard_error}
                         </div>
                       <% end %>
-                      
+
                       <%= if @shipyard_notice do %>
                         <div class="mx-3 mt-2 mb-1 rounded-lg border border-emerald-700 bg-emerald-950/40 px-3 py-2 text-xs text-emerald-300 shrink-0">
                           {@shipyard_notice}
                         </div>
                       <% end %>
-                      
+
                       <div class="flex flex-col divide-y divide-gray-800/60">
                         <%= for ship <- @ship_catalog do %>
                           <% qty_in_order = Map.get(@build_order, ship.type, 0) %> <% tier_icon =
@@ -632,7 +632,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                                   ⏱ {format_duration(ship.build_time_seconds)}
                                 </span>
                               </div>
-                              
+
                               <div class="flex items-center gap-3 mt-0.5 flex-wrap">
                                 <span class="text-[10px] text-amber-400">
                                   ⛏ {format_resource(ship.cost.raw_materials * 1.0)}
@@ -682,16 +682,16 @@ defmodule NexusDownfallWeb.PlanetLive do
                         <h3 class="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">
                           {gettext("Build Summary")}
                         </h3>
-                        
+
                         <p class="text-[10px] text-gray-600 mb-1">{gettext("Target Fleet:")}</p>
-                        
+
                         <form phx-change="set_target_fleet">
                           <select
                             name="fleet_id"
                             class="w-full rounded-lg border border-gray-700 bg-gray-900 px-2 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none"
                           >
                             <option value="">{gettext("— select fleet —")}</option>
-                            
+
                             <%= for fleet <- @spaceport_fleets do %>
                               <option
                                 value={fleet.id}
@@ -708,7 +708,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                         <%= if Enum.all?(@build_order, fn {_, q} -> q == 0 end) or map_size(@build_order) == 0 do %>
                           <div class="flex flex-col items-center justify-center h-full text-center gap-2 py-8">
                             <p class="text-xs text-gray-600">{gettext("No ships staged yet.")}</p>
-                            
+
                             <p class="text-[10px] text-gray-700">
                               {gettext("Add ships from the list.")}
                             </p>
@@ -791,35 +791,35 @@ defmodule NexusDownfallWeb.PlanetLive do
                       <div class="border-t border-gray-800 p-3 shrink-0 flex flex-col gap-2">
                         <div class="grid grid-cols-2 gap-y-1 text-[10px]">
                           <div class="text-gray-500">{gettext("Total Items:")}</div>
-                          
+
                           <div class="text-white font-semibold text-right">{total_items}</div>
-                          
+
                           <div class="text-gray-500">{gettext("Total Time:")}</div>
-                          
+
                           <div class="text-white font-semibold text-right">
                             {format_duration(total_time_s)}
                           </div>
                         </div>
-                        
+
                         <%= if total_items > 0 do %>
                           <div class="bg-gray-900/60 rounded-lg px-2 py-1.5 text-[10px] flex flex-col gap-0.5">
                             <div class="flex justify-between">
                               <span class="text-amber-400">⛏ Mat.</span>
                               <span class="text-amber-300">{format_resource(total_rm * 1.0)}</span>
                             </div>
-                            
+
                             <div class="flex justify-between">
                               <span class="text-blue-400">💾 Chips</span>
                               <span class="text-blue-300">{format_resource(total_mc * 1.0)}</span>
                             </div>
-                            
+
                             <div class="flex justify-between">
                               <span class="text-cyan-400">💧 H₂</span>
                               <span class="text-cyan-300">{format_resource(total_h2 * 1.0)}</span>
                             </div>
                           </div>
                         <% end %>
-                        
+
                         <button
                           phx-click="submit_build_order"
                           disabled={not can_build or total_items == 0}

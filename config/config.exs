@@ -54,7 +54,7 @@ config :phoenix, :json_library, Jason
 #   :combat     — combat resolution
 config :nexus_downfall, Oban,
   engine: Oban.Engines.Basic,
-  queues: [default: 10, construction: 10, production: 5, combat: 5],
+  queues: [default: 10, construction: 10, production: 5, combat: 5, missions: 15],
   repo: NexusDownfall.Repo
 
 import_config "#{config_env()}.exs"

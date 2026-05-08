@@ -25,5 +25,8 @@ config :phoenix, :plug_init_mode, :runtime
 # Disable Swoosh API client in tests
 config :swoosh, :api_client, false
 
+# Speed up auth-related tests (bcrypt defaults are intentionally expensive).
+config :bcrypt_elixir, log_rounds: 4
+
 # Redis — separate DB index for test isolation
 config :nexus_downfall, :redis_url, "redis://localhost:6379/1"

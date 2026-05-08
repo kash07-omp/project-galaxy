@@ -81,10 +81,11 @@ Permitir creación de flotas y viajes entre sistemas conectados.
 ### Tareas
 - [x] Modelo de galaxia/sistemas/hipervías y planetas.
 - [x] Pathfinding A* para rutas de flota.
-- [ ] Límite de flotas activas (base + mejor espaciopuerto).
 - [x] Creación de flota desde `/Fleet` y desde detalle de planeta.
+- [x] Misión de colonización (selección de planeta válido, tiempo que tarda en colonizarse, eliminación de la nave tras la colonización, asignación del nuevo planeta al jugador con la estructura del ayuntamiento a nivel 1 y recursos iniciales, consumo de hidrógeno).
 - [ ] Misión de transporte (ida, entrega, retorno, consumo de hidrógeno).
 - [ ] Programación temporal de misiones con Oban.
+- [ ] Límite de flotas activas (base + mejor espaciopuerto).
 
 ### Tests obligatorios
 - [x] Tests de A* (ruta mínima, sin ruta, empates).

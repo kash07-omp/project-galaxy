@@ -137,7 +137,12 @@ defmodule NexusDownfallWeb.CoreComponents do
       phx-remove={hide_modal(@id)}
       class="hidden relative z-50"
     >
-      <div id={"#{@id}-bg"} class="bg-black/70 fixed inset-0 transition-opacity" aria-hidden="true" />
+      <div
+        id={"#{@id}-bg"}
+        class="bg-black/70 fixed inset-0 transition-opacity"
+        aria-hidden="true"
+        phx-click={JS.exec("data-cancel", to: "##{@id}")}
+      />
       <div
         class="fixed inset-0 overflow-y-auto"
         aria-labelledby={"#{@id}-title"}
