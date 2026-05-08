@@ -49,21 +49,27 @@ defmodule NexusDownfallWeb.PlanetLive do
      |> assign(:planet, planet)
      |> assign(:buildings, buildings)
      |> assign(:rates, rates)
-    |> assign(:display, display)
-    |> assign(:now, now)
-    |> assign(:spaceport_fleets, shipyard.fleets)
-    |> assign(:shipyard_queue_items, shipyard.queue_items)
-    |> assign(:ship_catalog, shipyard.ship_catalog)
+     |> assign(:display, display)
+     |> assign(:now, now)
+     |> assign(:spaceport_fleets, shipyard.fleets)
+     |> assign(:shipyard_queue_items, shipyard.queue_items)
+     |> assign(:ship_catalog, shipyard.ship_catalog)
      |> assign(:selected, nil)
      |> assign(:selected_tab, "info")
      |> assign(:show_user_menu, false)
      |> assign(:galaxy_id, galaxy_id)
-    |> assign(:dev_tools_enabled, Mix.env() != :prod)
-    |> assign(:error, nil)
-    |> assign(:shipyard_error, nil)
-    |> assign(:shipyard_notice, nil)
-    |> assign(:build_order, %{})
-    |> assign(:selected_fleet_id, case shipyard.fleets do [f | _] -> to_string(f.id); [] -> nil end)}
+     |> assign(:dev_tools_enabled, Mix.env() != :prod)
+     |> assign(:error, nil)
+     |> assign(:shipyard_error, nil)
+     |> assign(:shipyard_notice, nil)
+     |> assign(:build_order, %{})
+     |> assign(
+       :selected_fleet_id,
+       case shipyard.fleets do
+         [f | _] -> to_string(f.id)
+         [] -> nil
+       end
+     )}
   end
 
   # ---------------------------------------------------------------------------
@@ -122,12 +128,12 @@ defmodule NexusDownfallWeb.PlanetLive do
             </span>
           <% end %>
         </div>
-
+        
         <div class="flex items-center gap-1 text-purple-300 shrink-0">
           <span>👥</span> <span class="font-semibold">{@display.population |> round()}</span>
           <span class="text-gray-500">({format_rate(@rates.population * 1.0)}/h)</span>
         </div>
-
+        
         <div class="ml-auto flex items-center gap-2 shrink-0">
           <span class="text-cyan-400 font-bold">{@planet.name}</span>
           <%= if @any_constructing do %>
@@ -178,7 +184,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                 </div>
               <% end %>
             </div>
-
+            
             <span class={[
               "mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold whitespace-nowrap shadow-lg",
               if(is_selected,
@@ -224,7 +230,10 @@ defmodule NexusDownfallWeb.PlanetLive do
           <div
             class={[
               "relative z-10 w-full bg-gray-900 rounded-2xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col",
-              if(@selected == "spaceport" and @selected_tab == "specific", do: "max-w-5xl", else: "max-w-2xl")
+              if(@selected == "spaceport" and @selected_tab == "specific",
+                do: "max-w-5xl",
+                else: "max-w-2xl"
+              )
             ]}
             style="max-height: 88vh"
           >
@@ -249,7 +258,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                 />
                 <div>
                   <h2 class="text-white font-bold text-lg leading-tight drop-shadow">{sel_label}</h2>
-
+                  
                   <div class="flex items-center gap-2 mt-0.5">
                     <span class="text-cyan-400 text-sm font-semibold">
                       {gettext("Level")} {sel_level}
@@ -262,7 +271,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                   </div>
                 </div>
               </div>
-
+              
               <%= if sel_constructing do %>
                 <div class="absolute bottom-0 left-0 right-0 px-4 pb-2 z-10">
                   <div class="flex items-center gap-2">
@@ -272,7 +281,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                         style={"width: #{sel_pct}%"}
                       />
                     </div>
-
+                    
                     <span class="text-yellow-300 text-xs font-mono tabular-nums shrink-0">
                       {format_duration(sel_rem)}
                     </span>
@@ -291,7 +300,13 @@ defmodule NexusDownfallWeb.PlanetLive do
               />
             </div>
             <!-- Tab Content -->
-            <div class={["overflow-y-auto flex-1", if(@selected == "spaceport" and @selected_tab == "specific", do: "overflow-hidden flex flex-col", else: "p-5")]}>
+            <div class={[
+              "overflow-y-auto flex-1",
+              if(@selected == "spaceport" and @selected_tab == "specific",
+                do: "overflow-hidden flex flex-col",
+                else: "p-5"
+              )
+            ]}>
               <!-- ── TAB: Información ── -->
               <%= if @selected_tab == "info" do %>
                 <p class="text-gray-400 text-sm leading-relaxed mb-4">
@@ -304,35 +319,35 @@ defmodule NexusDownfallWeb.PlanetLive do
                     <h4 class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
                       {prod_label}
                     </h4>
-
+                    
                     <div class="grid grid-cols-4 gap-2 text-center">
                       <div class="bg-gray-900/60 rounded-lg p-2">
                         <div class="text-[10px] text-gray-500 mb-1">{gettext("Per minute")}</div>
-
+                        
                         <div class="text-sm font-bold text-emerald-400">
                           {prod_icon} {Float.round(prod_rate / 60.0, 2)}
                         </div>
                       </div>
-
+                      
                       <div class="bg-gray-900/60 rounded-lg p-2">
                         <div class="text-[10px] text-gray-500 mb-1">{gettext("Per hour")}</div>
-
+                        
                         <div class="text-sm font-bold text-emerald-400">
                           {prod_icon} {Float.round(prod_rate * 1.0, 1)}
                         </div>
                       </div>
-
+                      
                       <div class="bg-gray-900/60 rounded-lg p-2">
                         <div class="text-[10px] text-gray-500 mb-1">{gettext("Per day")}</div>
-
+                        
                         <div class="text-sm font-bold text-emerald-400">
                           {prod_icon} {Float.round(prod_rate * 24.0, 1)}
                         </div>
                       </div>
-
+                      
                       <div class="bg-gray-900/60 rounded-lg p-2">
                         <div class="text-[10px] text-gray-500 mb-1">{gettext("Per week")}</div>
-
+                        
                         <div class="text-sm font-bold text-emerald-400">
                           {prod_icon} {Float.round(prod_rate * 168.0, 0)}
                         </div>
@@ -346,25 +361,25 @@ defmodule NexusDownfallWeb.PlanetLive do
                     <h4 class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-3">
                       {gettext("Energy Production")}
                     </h4>
-
+                    
                     <div class="grid grid-cols-2 gap-3 mb-3">
                       <div class="bg-gray-900/60 rounded-lg p-2.5 text-center">
                         <div class="text-[10px] text-gray-500 mb-1">
                           {gettext("This building produces")}
                         </div>
-
+                        
                         <div class="text-xl font-bold text-yellow-400">
                           ⚡ {round(sel_energy_prod)}
                         </div>
-
+                        
                         <div class="text-[10px] text-gray-500 mt-0.5">
                           {gettext("energy at current level")}
                         </div>
                       </div>
-
+                      
                       <div class="bg-gray-900/60 rounded-lg p-2.5 text-center">
                         <div class="text-[10px] text-gray-500 mb-1">{gettext("Planet Balance")}</div>
-
+                        
                         <div class={[
                           "text-xl font-bold",
                           if(@rates.energy_balance >= 0, do: "text-emerald-400", else: "text-red-400")
@@ -373,26 +388,24 @@ defmodule NexusDownfallWeb.PlanetLive do
                             @rates.energy_balance
                           )}
                         </div>
-
+                        
                         <div class="text-[10px] text-gray-500 mt-0.5">
                           {round(@rates.efficiency * 100)}% {gettext("efficiency")}
                         </div>
                       </div>
                     </div>
-
+                    
                     <div class="bg-gray-900/60 rounded-lg px-3 py-2 flex items-center justify-between text-xs">
                       <div>
                         <span class="text-emerald-400 font-semibold">
                           +{round(@rates.energy_produce)}
-                        </span>
-                        <span class="text-gray-500 ml-1">{gettext("produced")}</span>
+                        </span> <span class="text-gray-500 ml-1">{gettext("produced")}</span>
                       </div>
-
+                      
                       <div>
                         <span class="text-red-400 font-semibold">
                           -{round(@rates.energy_consume)}
-                        </span>
-                        <span class="text-gray-500 ml-1">{gettext("consumed")}</span>
+                        </span> <span class="text-gray-500 ml-1">{gettext("consumed")}</span>
                       </div>
                     </div>
                   </div>
@@ -404,24 +417,24 @@ defmodule NexusDownfallWeb.PlanetLive do
                       do: gettext("Initial Construction"),
                       else: "#{gettext("Upgrade → Level")} #{sel_next}"}
                   </h4>
-
+                  
                   <%= if sel_constructing do %>
                     <div class="flex items-center justify-between bg-yellow-950/40 rounded-xl px-4 py-3 border border-yellow-800/50">
                       <div>
                         <p class="text-yellow-300 text-sm font-semibold">
                           ⏳ {gettext("Construction in progress")}
                         </p>
-
+                        
                         <p class="text-yellow-600 text-xs mt-0.5">
                           {gettext("Upgrading to level")} {sel_next}
                         </p>
                       </div>
-
+                      
                       <div class="text-right">
                         <p class="text-yellow-200 text-2xl font-mono font-bold tabular-nums">
                           {format_duration(sel_rem)}
                         </p>
-
+                        
                         <p class="text-yellow-700 text-[10px]">{gettext("remaining")}</p>
                       </div>
                     </div>
@@ -440,7 +453,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                         </span>
                       <% end %>
                     </div>
-
+                    
                     <%= if @any_constructing do %>
                       <p class="text-yellow-500 text-xs">
                         ⚠ {gettext("A construction is already in progress on this planet.")}
@@ -463,7 +476,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                           else: "#{gettext("Upgrade → Level")} #{sel_next}"}
                       </button>
                     <% end %>
-
+                    
                     <%= if @error do %>
                       <p class="text-red-400 text-xs mt-2">{@error}</p>
                     <% end %>
@@ -473,10 +486,8 @@ defmodule NexusDownfallWeb.PlanetLive do
               <!-- ── TAB: Específico ── -->
               <%= if @selected_tab == "specific" do %>
                 <%= if @selected == "spaceport" do %>
-                  <%
-                    no_fleet = @spaceport_fleets == []
-                    can_build = not no_fleet and @selected_fleet_id not in [nil, ""]
-                  %>
+                  <% no_fleet = @spaceport_fleets == []
+                  can_build = not no_fleet and @selected_fleet_id not in [nil, ""] %>
                   <div class="flex flex-1 overflow-hidden">
                     <!-- ══ LEFT: Build Queue ══ -->
                     <div class="w-52 shrink-0 flex flex-col border-r border-gray-800 overflow-hidden bg-gray-950/30">
@@ -485,6 +496,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                           {gettext("Build Queue")}
                         </h3>
                       </div>
+                      
                       <div class="flex-1 overflow-y-auto flex flex-col gap-2 px-2 py-2">
                         <%= if @shipyard_queue_items == [] do %>
                           <div class="flex flex-col items-center justify-center h-full text-center gap-2 py-8">
@@ -493,10 +505,12 @@ defmodule NexusDownfallWeb.PlanetLive do
                           </div>
                         <% else %>
                           <%= for {item, idx} <- Enum.with_index(@shipyard_queue_items) do %>
-                            <% is_building = item.status == "building" and item.finish_at != nil %>
-                            <% rem_s = if is_building, do: max(0, DateTime.diff(item.finish_at, @now, :second)), else: 0 %>
-                            <% total_s = if is_building, do: max(1, item.build_seconds), else: 1 %>
-                            <% pct = if is_building, do: trunc((1 - rem_s / total_s) * 100), else: 0 %>
+                            <% is_building = item.status == "building" and item.finish_at != nil %> <% rem_s =
+                              if is_building,
+                                do: max(0, DateTime.diff(item.finish_at, @now, :second)),
+                                else: 0 %> <% total_s =
+                              if is_building, do: max(1, item.build_seconds), else: 1 %> <% pct =
+                              if is_building, do: trunc((1 - rem_s / total_s) * 100), else: 0 %>
                             <div class={[
                               "relative rounded-xl p-2.5 border overflow-hidden",
                               if(is_building,
@@ -511,20 +525,28 @@ defmodule NexusDownfallWeb.PlanetLive do
                                 ]}>
                                   {idx + 1}
                                 </div>
+                                
                                 <div class="min-w-0 flex-1">
                                   <p class="text-[12px] font-semibold text-white leading-tight truncate">
                                     {ship_name(item.ship_type)}
                                   </p>
+                                  
                                   <p class="text-[11px] text-gray-400">×{item.quantity}</p>
-                                  <p class="text-[10px] text-gray-500 truncate">→ {item.fleet.name}</p>
+                                  
+                                  <p class="text-[10px] text-gray-500 truncate">
+                                    → {item.fleet.name}
+                                  </p>
                                 </div>
                               </div>
+                              
                               <%= if is_building do %>
                                 <div class="mt-2">
                                   <div class="flex items-center justify-between text-[10px] mb-1">
-                                    <span class="text-emerald-400 font-mono font-semibold">{format_duration(rem_s)}</span>
-                                    <span class="text-gray-500">{pct}%</span>
+                                    <span class="text-emerald-400 font-mono font-semibold">
+                                      {format_duration(rem_s)}
+                                    </span> <span class="text-gray-500">{pct}%</span>
                                   </div>
+                                  
                                   <div class="h-1.5 rounded-full bg-gray-700 overflow-hidden">
                                     <div
                                       class="h-full bg-emerald-500 rounded-full transition-all duration-1000"
@@ -542,7 +564,6 @@ defmodule NexusDownfallWeb.PlanetLive do
                         <% end %>
                       </div>
                     </div>
-
                     <!-- ══ CENTER: Ship Catalog ══ -->
                     <div class="flex-1 overflow-y-auto flex flex-col">
                       <%= if no_fleet do %>
@@ -550,6 +571,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                           <p class="text-amber-400 text-xs font-medium">
                             ⚠ {gettext("No fleets at this planet. Create a fleet here first.")}
                           </p>
+                          
                           <.link
                             navigate={~p"/fleet"}
                             class="mt-2 inline-flex rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-cyan-600 transition"
@@ -558,24 +580,34 @@ defmodule NexusDownfallWeb.PlanetLive do
                           </.link>
                         </div>
                       <% end %>
-
+                      
                       <%= if @shipyard_error do %>
                         <div class="mx-3 mt-2 mb-1 rounded-lg border border-red-700 bg-red-950/40 px-3 py-2 text-xs text-red-300 shrink-0">
                           {@shipyard_error}
                         </div>
                       <% end %>
-
+                      
                       <%= if @shipyard_notice do %>
                         <div class="mx-3 mt-2 mb-1 rounded-lg border border-emerald-700 bg-emerald-950/40 px-3 py-2 text-xs text-emerald-300 shrink-0">
                           {@shipyard_notice}
                         </div>
                       <% end %>
-
+                      
                       <div class="flex flex-col divide-y divide-gray-800/60">
                         <%= for ship <- @ship_catalog do %>
-                          <% qty_in_order = Map.get(@build_order, ship.type, 0) %>
-                          <% tier_icon = case ship.tier do 1 -> "🚀"; 2 -> "⚔️"; 3 -> "🛸"; _ -> "💀" end %>
-                          <% tier_color = case ship.tier do 1 -> "text-cyan-400"; 2 -> "text-amber-400"; 3 -> "text-red-400"; _ -> "text-purple-400" end %>
+                          <% qty_in_order = Map.get(@build_order, ship.type, 0) %> <% tier_icon =
+                            case ship.tier do
+                              1 -> "🚀"
+                              2 -> "⚔️"
+                              3 -> "🛸"
+                              _ -> "💀"
+                            end %> <% tier_color =
+                            case ship.tier do
+                              1 -> "text-cyan-400"
+                              2 -> "text-amber-400"
+                              3 -> "text-red-400"
+                              _ -> "text-purple-400"
+                            end %>
                           <form
                             phx-submit="add_to_build_order"
                             class="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-800/30 transition"
@@ -593,16 +625,27 @@ defmodule NexusDownfallWeb.PlanetLive do
                             <!-- Ship info -->
                             <div class="flex-1 min-w-0">
                               <div class="flex items-baseline gap-2 flex-wrap">
-                                <span class="text-[12px] font-semibold text-white">{translate_dynamic(ship.name)}</span>
+                                <span class="text-[12px] font-semibold text-white">
+                                  {translate_dynamic(ship.name)}
+                                </span>
                                 <span class="text-[10px] text-gray-500 shrink-0">
                                   ⏱ {format_duration(ship.build_time_seconds)}
                                 </span>
                               </div>
+                              
                               <div class="flex items-center gap-3 mt-0.5 flex-wrap">
-                                <span class="text-[10px] text-amber-400">⛏ {format_resource(ship.cost.raw_materials * 1.0)}</span>
-                                <span class="text-[10px] text-blue-400">💾 {format_resource(ship.cost.microchips * 1.0)}</span>
-                                <span class="text-[10px] text-cyan-400">💧 {format_resource(ship.cost.hydrogen * 1.0)}</span>
-                                <span class="text-[10px] text-gray-500">⚔ {ship.attack} · 🛡 {ship.hull}</span>
+                                <span class="text-[10px] text-amber-400">
+                                  ⛏ {format_resource(ship.cost.raw_materials * 1.0)}
+                                </span>
+                                <span class="text-[10px] text-blue-400">
+                                  💾 {format_resource(ship.cost.microchips * 1.0)}
+                                </span>
+                                <span class="text-[10px] text-cyan-400">
+                                  💧 {format_resource(ship.cost.hydrogen * 1.0)}
+                                </span>
+                                <span class="text-[10px] text-gray-500">
+                                  ⚔ {ship.attack} · 🛡 {ship.hull}
+                                </span>
                               </div>
                             </div>
                             <!-- Qty + Add -->
@@ -633,20 +676,22 @@ defmodule NexusDownfallWeb.PlanetLive do
                         <% end %>
                       </div>
                     </div>
-
                     <!-- ══ RIGHT: Build Summary ══ -->
                     <div class="w-60 shrink-0 flex flex-col border-l border-gray-800 overflow-hidden bg-gray-950/30">
                       <div class="px-3 pt-3 pb-2 border-b border-gray-800 shrink-0">
                         <h3 class="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">
                           {gettext("Build Summary")}
                         </h3>
+                        
                         <p class="text-[10px] text-gray-600 mb-1">{gettext("Target Fleet:")}</p>
+                        
                         <form phx-change="set_target_fleet">
                           <select
                             name="fleet_id"
                             class="w-full rounded-lg border border-gray-700 bg-gray-900 px-2 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none"
                           >
                             <option value="">{gettext("— select fleet —")}</option>
+                            
                             <%= for fleet <- @spaceport_fleets do %>
                               <option
                                 value={fleet.id}
@@ -658,17 +703,22 @@ defmodule NexusDownfallWeb.PlanetLive do
                           </select>
                         </form>
                       </div>
-
                       <!-- Staged orders -->
                       <div class="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5">
                         <%= if Enum.all?(@build_order, fn {_, q} -> q == 0 end) or map_size(@build_order) == 0 do %>
                           <div class="flex flex-col items-center justify-center h-full text-center gap-2 py-8">
                             <p class="text-xs text-gray-600">{gettext("No ships staged yet.")}</p>
-                            <p class="text-[10px] text-gray-700">{gettext("Add ships from the list.")}</p>
+                            
+                            <p class="text-[10px] text-gray-700">
+                              {gettext("Add ships from the list.")}
+                            </p>
                           </div>
                         <% else %>
                           <%= for ship <- @ship_catalog, Map.get(@build_order, ship.type, 0) > 0 do %>
                             <% qty = Map.get(@build_order, ship.type, 0) %>
+                            <% row_raw_materials = ship.cost.raw_materials * qty * 1.0 %>
+                            <% row_microchips = ship.cost.microchips * qty * 1.0 %>
+                            <% row_hydrogen = ship.cost.hydrogen * qty * 1.0 %>
                             <div class="rounded-lg border border-gray-700 bg-gray-800/40 p-2">
                               <div class="flex items-center justify-between gap-1">
                                 <span class="text-[11px] font-semibold text-white leading-tight flex-1 pr-1 truncate">
@@ -683,7 +733,9 @@ defmodule NexusDownfallWeb.PlanetLive do
                                   >
                                     −
                                   </button>
-                                  <span class="w-6 text-center text-[11px] font-mono text-white">{qty}</span>
+                                  <span class="w-6 text-center text-[11px] font-mono text-white">
+                                    {qty}
+                                  </span>
                                   <button
                                     phx-click="adjust_build_order"
                                     phx-value-ship_type={ship.type}
@@ -695,57 +747,79 @@ defmodule NexusDownfallWeb.PlanetLive do
                                 </div>
                               </div>
                               <div class="flex items-center justify-between mt-1 text-[10px]">
-                                <span class="text-gray-500">⏱ {format_duration(ship.build_time_seconds * qty)}</span>
-                                <span class="text-amber-500">⛏ {format_resource(ship.cost.raw_materials * qty * 1.0)}</span>
+                                <span class="text-gray-500">
+                                  ⏱ {format_duration(ship.build_time_seconds * qty)}
+                                </span>
+                              </div>
+                              <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px]">
+                                <span class="text-amber-500">
+                                  ⛏ {format_resource(row_raw_materials)}
+                                </span>
+                                <span class="text-blue-400">💾 {format_resource(row_microchips)}</span>
+                                <span class="text-cyan-400">💧 {format_resource(row_hydrogen)}</span>
                               </div>
                             </div>
                           <% end %>
                         <% end %>
                       </div>
-
                       <!-- Totals + submit -->
-                      <%
-                        total_items = Enum.reduce(@build_order, 0, fn {_, q}, acc -> acc + q end)
-                        total_time_s = Enum.reduce(@build_order, 0, fn {type, qty}, acc ->
+                      <% total_items = Enum.reduce(@build_order, 0, fn {_, q}, acc -> acc + q end)
+
+                      total_time_s =
+                        Enum.reduce(@build_order, 0, fn {type, qty}, acc ->
                           ship = Enum.find(@ship_catalog, &(&1.type == type))
                           if ship, do: acc + ship.build_time_seconds * qty, else: acc
                         end)
-                        total_rm = Enum.reduce(@build_order, 0, fn {type, qty}, acc ->
+
+                      total_rm =
+                        Enum.reduce(@build_order, 0, fn {type, qty}, acc ->
                           ship = Enum.find(@ship_catalog, &(&1.type == type))
                           if ship, do: acc + ship.cost.raw_materials * qty, else: acc
                         end)
-                        total_mc = Enum.reduce(@build_order, 0, fn {type, qty}, acc ->
+
+                      total_mc =
+                        Enum.reduce(@build_order, 0, fn {type, qty}, acc ->
                           ship = Enum.find(@ship_catalog, &(&1.type == type))
                           if ship, do: acc + ship.cost.microchips * qty, else: acc
                         end)
-                        total_h2 = Enum.reduce(@build_order, 0, fn {type, qty}, acc ->
+
+                      total_h2 =
+                        Enum.reduce(@build_order, 0, fn {type, qty}, acc ->
                           ship = Enum.find(@ship_catalog, &(&1.type == type))
                           if ship, do: acc + ship.cost.hydrogen * qty, else: acc
-                        end)
-                      %>
+                        end) %>
                       <div class="border-t border-gray-800 p-3 shrink-0 flex flex-col gap-2">
                         <div class="grid grid-cols-2 gap-y-1 text-[10px]">
                           <div class="text-gray-500">{gettext("Total Items:")}</div>
+                          
                           <div class="text-white font-semibold text-right">{total_items}</div>
+                          
                           <div class="text-gray-500">{gettext("Total Time:")}</div>
-                          <div class="text-white font-semibold text-right">{format_duration(total_time_s)}</div>
+                          
+                          <div class="text-white font-semibold text-right">
+                            {format_duration(total_time_s)}
+                          </div>
                         </div>
+                        
                         <%= if total_items > 0 do %>
                           <div class="bg-gray-900/60 rounded-lg px-2 py-1.5 text-[10px] flex flex-col gap-0.5">
                             <div class="flex justify-between">
                               <span class="text-amber-400">⛏ Mat.</span>
                               <span class="text-amber-300">{format_resource(total_rm * 1.0)}</span>
                             </div>
+                            
                             <div class="flex justify-between">
                               <span class="text-blue-400">💾 Chips</span>
                               <span class="text-blue-300">{format_resource(total_mc * 1.0)}</span>
                             </div>
+                            
                             <div class="flex justify-between">
                               <span class="text-cyan-400">💧 H₂</span>
                               <span class="text-cyan-300">{format_resource(total_h2 * 1.0)}</span>
                             </div>
                           </div>
                         <% end %>
+                        
                         <button
                           phx-click="submit_build_order"
                           disabled={not can_build or total_items == 0}
@@ -843,10 +917,13 @@ defmodule NexusDownfallWeb.PlanetLive do
 
   def handle_event("select_building", %{"type" => type}, socket) do
     selected = if socket.assigns.selected == type, do: nil, else: type
-    first_fleet_id = case socket.assigns.spaceport_fleets do
-      [f | _] -> to_string(f.id)
-      [] -> nil
-    end
+
+    first_fleet_id =
+      case socket.assigns.spaceport_fleets do
+        [f | _] -> to_string(f.id)
+        [] -> nil
+      end
+
     {:noreply,
      assign(socket,
        selected: selected,
@@ -860,7 +937,14 @@ defmodule NexusDownfallWeb.PlanetLive do
   end
 
   def handle_event("close_panel", _params, socket) do
-    {:noreply, assign(socket, selected: nil, error: nil, shipyard_error: nil, shipyard_notice: nil, build_order: %{})}
+    {:noreply,
+     assign(socket,
+       selected: nil,
+       error: nil,
+       shipyard_error: nil,
+       shipyard_notice: nil,
+       build_order: %{}
+     )}
   end
 
   def handle_event("select_tab", %{"tab" => tab}, socket) do
@@ -962,7 +1046,10 @@ defmodule NexusDownfallWeb.PlanetLive do
         {:noreply,
          socket
          |> assign(:shipyard_notice, nil)
-         |> assign(:shipyard_error, gettext("Could not schedule ship construction. Please try again."))}
+         |> assign(
+           :shipyard_error,
+           gettext("Could not schedule ship construction. Please try again.")
+         )}
 
       {:error, _reason} ->
         {:noreply,
@@ -980,24 +1067,41 @@ defmodule NexusDownfallWeb.PlanetLive do
     {:noreply, assign(socket, :selected_fleet_id, fleet_id)}
   end
 
-  def handle_event("add_to_build_order", %{"ship_type" => ship_type, "quantity" => qty_str}, socket) do
-    qty = case Integer.parse(qty_str) do
-      {n, _} when n > 0 -> n
-      _ -> 1
-    end
+  def handle_event(
+        "add_to_build_order",
+        %{"ship_type" => ship_type, "quantity" => qty_str},
+        socket
+      ) do
+    qty =
+      case Integer.parse(qty_str) do
+        {n, _} when n > 0 -> n
+        _ -> 1
+      end
+
     current = Map.get(socket.assigns.build_order, ship_type, 0)
     new_order = Map.put(socket.assigns.build_order, ship_type, current + qty)
     {:noreply, assign(socket, :build_order, new_order)}
   end
 
-  def handle_event("adjust_build_order", %{"ship_type" => ship_type, "delta" => delta_str}, socket) do
-    delta = case Integer.parse(delta_str) do {n, _} -> n; :error -> 0 end
+  def handle_event(
+        "adjust_build_order",
+        %{"ship_type" => ship_type, "delta" => delta_str},
+        socket
+      ) do
+    delta =
+      case Integer.parse(delta_str) do
+        {n, _} -> n
+        :error -> 0
+      end
+
     current = Map.get(socket.assigns.build_order, ship_type, 0)
     new_qty = max(0, current + delta)
+
     new_order =
       if new_qty == 0,
         do: Map.delete(socket.assigns.build_order, ship_type),
         else: Map.put(socket.assigns.build_order, ship_type, new_qty)
+
     {:noreply, assign(socket, :build_order, new_order)}
   end
 
@@ -1012,10 +1116,18 @@ defmodule NexusDownfallWeb.PlanetLive do
 
     cond do
       is_nil(fleet_id) or fleet_id == "" ->
-        {:noreply, assign(socket, shipyard_error: gettext("Select a target fleet first."), shipyard_notice: nil)}
+        {:noreply,
+         assign(socket,
+           shipyard_error: gettext("Select a target fleet first."),
+           shipyard_notice: nil
+         )}
 
       Enum.all?(build_order, fn {_, q} -> q == 0 end) or map_size(build_order) == 0 ->
-        {:noreply, assign(socket, shipyard_error: gettext("Add ships to the order first."), shipyard_notice: nil)}
+        {:noreply,
+         assign(socket,
+           shipyard_error: gettext("Add ships to the order first."),
+           shipyard_notice: nil
+         )}
 
       true ->
         ordered =
@@ -1031,14 +1143,20 @@ defmodule NexusDownfallWeb.PlanetLive do
             case Fleets.enqueue_ship_construction_for_user(
                    planet.id,
                    current_user.id,
-                   %{"fleet_id" => fleet_id, "ship_type" => ship_type, "quantity" => to_string(qty)}
+                   %{
+                     "fleet_id" => fleet_id,
+                     "ship_type" => ship_type,
+                     "quantity" => to_string(qty)
+                   }
                  ) do
               {:ok, _} -> {ok_acc + 1, err_acc}
               {:error, reason} -> {ok_acc, [reason | err_acc]}
             end
           end)
 
-        {new_planet, buildings, rates, display, now} = load_planet_state(planet.id, current_user.id)
+        {new_planet, buildings, rates, display, now} =
+          load_planet_state(planet.id, current_user.id)
+
         shipyard = Fleets.shipyard_panel_for_user_planet(planet.id, current_user.id)
 
         base =
@@ -1054,7 +1172,11 @@ defmodule NexusDownfallWeb.PlanetLive do
           |> assign(:ship_catalog, shipyard.ship_catalog)
 
         if err_list == [] do
-          {:noreply, assign(base, shipyard_notice: gettext("Ships queued successfully!"), shipyard_error: nil)}
+          {:noreply,
+           assign(base,
+             shipyard_notice: gettext("Ships queued successfully!"),
+             shipyard_error: nil
+           )}
         else
           failed_reasons =
             err_list
@@ -1110,8 +1232,10 @@ defmodule NexusDownfallWeb.PlanetLive do
     schedule_ui_tick()
     current_user_id = socket.assigns.current_user.id
     planet_id = socket.assigns.planet.id
+
     {planet, updated_buildings, new_rates, display, now} =
       load_planet_state(planet_id, current_user_id)
+
     shipyard = Fleets.shipyard_panel_for_user_planet(planet_id, current_user_id)
 
     {:noreply,
@@ -1128,13 +1252,26 @@ defmodule NexusDownfallWeb.PlanetLive do
 
   defp shipyard_error_reason_label(reason) do
     case reason do
-      :spaceport_required -> gettext("Spaceport level 1 is required to build ships.")
-      :insufficient_resources -> gettext("Insufficient resources to queue ships.")
-      :fleet_not_found -> gettext("Fleet not found.")
-      :fleet_unavailable -> gettext("Selected fleet is not available from this planet.")
-      :queue_scheduling_failed -> gettext("Could not schedule ship construction. Please try again.")
-      :invalid_queue_request -> gettext("Invalid shipyard request.")
-      other -> to_string(other)
+      :spaceport_required ->
+        gettext("Spaceport level 1 is required to build ships.")
+
+      :insufficient_resources ->
+        gettext("Insufficient resources to queue ships.")
+
+      :fleet_not_found ->
+        gettext("Fleet not found.")
+
+      :fleet_unavailable ->
+        gettext("Selected fleet is not available from this planet.")
+
+      :queue_scheduling_failed ->
+        gettext("Could not schedule ship construction. Please try again.")
+
+      :invalid_queue_request ->
+        gettext("Invalid shipyard request.")
+
+      other ->
+        to_string(other)
     end
   end
 

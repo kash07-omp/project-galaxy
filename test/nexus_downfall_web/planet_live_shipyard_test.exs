@@ -120,7 +120,11 @@ defmodule NexusDownfallWeb.PlanetLiveShipyardTest do
     {:ok, conn: conn, user: user, universe_user: universe_user, planet: planet, fleet: fleet}
   end
 
-  test "submit_build_order queues ships and shows success", %{conn: conn, planet: planet, fleet: fleet} do
+  test "submit_build_order queues ships and shows success", %{
+    conn: conn,
+    planet: planet,
+    fleet: fleet
+  } do
     {:ok, lv, _html} = live(conn, ~p"/planets/#{planet.id}")
 
     render_click(lv, "select_building", %{"type" => "spaceport"})
@@ -138,7 +142,8 @@ defmodule NexusDownfallWeb.PlanetLiveShipyardTest do
       Repo.one!(
         from q in ShipyardQueueItem,
           where:
-            q.planet_id == ^planet.id and q.fleet_id == ^fleet.id and q.ship_type == "light_fighter",
+            q.planet_id == ^planet.id and q.fleet_id == ^fleet.id and
+              q.ship_type == "light_fighter",
           order_by: [desc: q.inserted_at],
           limit: 1
       )
@@ -170,5 +175,28 @@ defmodule NexusDownfallWeb.PlanetLiveShipyardTest do
     assert updated.hydrogen >= 50_000_000
     assert updated.food >= 50_000_000
     assert updated.credits >= 50_000_000
+  end
+
+  test "build summary shows per-row raw materials, chips and hydrogen costs", %{
+    conn: conn,
+    planet: planet,
+    fleet: fleet
+  } do
+    {:ok, lv, _html} = live(conn, ~p"/planets/#{planet.id}")
+
+    render_click(lv, "select_building", %{"type" => "spaceport"})
+    render_click(lv, "select_tab", %{"tab" => "specific"})
+    render_change(lv, "set_target_fleet", %{"fleet_id" => to_string(fleet.id)})
+
+    html =
+      render_submit(lv, "add_to_build_order", %{"ship_type" => "light_fighter", "quantity" => "4"})
+
+    [_, build_summary_and_following] = String.split(html, "Build Summary", parts: 2)
+    ship_row_window = String.slice(build_summary_and_following, 0, 2_500)
+
+    assert html =~ "Light Fighter"
+    assert ship_row_window =~ "4800"
+    assert ship_row_window =~ "2400"
+    assert ship_row_window =~ "1800"
   end
 end
