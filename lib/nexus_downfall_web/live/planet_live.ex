@@ -593,7 +593,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                             <!-- Ship info -->
                             <div class="flex-1 min-w-0">
                               <div class="flex items-baseline gap-2 flex-wrap">
-                                <span class="text-[12px] font-semibold text-white">{ship.name}</span>
+                                <span class="text-[12px] font-semibold text-white">{translate_dynamic(ship.name)}</span>
                                 <span class="text-[10px] text-gray-500 shrink-0">
                                   ⏱ {format_duration(ship.build_time_seconds)}
                                 </span>
@@ -672,7 +672,7 @@ defmodule NexusDownfallWeb.PlanetLive do
                             <div class="rounded-lg border border-gray-700 bg-gray-800/40 p-2">
                               <div class="flex items-center justify-between gap-1">
                                 <span class="text-[11px] font-semibold text-white leading-tight flex-1 pr-1 truncate">
-                                  {ship.name}
+                                  {translate_dynamic(ship.name)}
                                 </span>
                                 <div class="flex items-center gap-0.5 shrink-0">
                                   <button

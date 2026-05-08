@@ -104,12 +104,15 @@ defmodule NexusDownfallWeb.FleetLiveTest do
 
     {:ok, live_view, html} = live(conn, ~p"/fleet")
     assert html =~ "Fleet Management"
+    refute html =~ "create-fleet-modal"
 
     live_view
     |> element("button[phx-click='open_create_fleet_modal']", "New Fleet")
     |> render_click()
 
-    assert render(live_view) =~ "Create fleet"
+    rendered_open = render(live_view)
+    assert rendered_open =~ "Create fleet"
+    assert rendered_open =~ "create-fleet-modal"
 
     live_view
     |> form("form[phx-submit='create_fleet']", %{

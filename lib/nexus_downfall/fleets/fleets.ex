@@ -22,7 +22,7 @@ defmodule NexusDownfall.Fleets do
   @ship_catalog %{
     "light_freighter" => %{
       type: "light_freighter", tier: 1,
-      name: "Carguero Ligero",
+      name: "Light Freighter",
       description: "Transporte barato y rápido. Ideal para primeros saqueos y logística temprana.",
       hull: 120, shield: 15, attack: 5, accuracy: 35, agility: 55, speed: 110,
       fuel_per_s: 0.8, cargo: 5000,
@@ -31,7 +31,7 @@ defmodule NexusDownfall.Fleets do
     },
     "heavy_freighter" => %{
       type: "heavy_freighter", tier: 1,
-      name: "Carguero Pesado",
+      name: "Heavy Freighter",
       description: "Mueve grandes cantidades de recursos, pero ralentiza la flota y necesita escolta.",
       hull: 420, shield: 60, attack: 20, accuracy: 30, agility: 25, speed: 70,
       fuel_per_s: 2.4, cargo: 25000,
@@ -40,7 +40,7 @@ defmodule NexusDownfall.Fleets do
     },
     "light_fighter" => %{
       type: "light_fighter", tier: 1,
-      name: "Caza Ligero",
+      name: "Light Fighter",
       description: "Nave rápida y barata. Excelente para cazar cargueros y bombarderos mal protegidos.",
       hull: 90, shield: 20, attack: 35, accuracy: 68, agility: 85, speed: 150,
       fuel_per_s: 1.2, cargo: 60,
@@ -49,7 +49,7 @@ defmodule NexusDownfall.Fleets do
     },
     "corvette" => %{
       type: "corvette", tier: 1,
-      name: "Corbeta",
+      name: "Corvette",
       description: "Primera nave militar estable. Protege cargueros y da consistencia a flotas tempranas.",
       hull: 220, shield: 45, attack: 80, accuracy: 60, agility: 62, speed: 115,
       fuel_per_s: 2.0, cargo: 120,
@@ -58,7 +58,7 @@ defmodule NexusDownfall.Fleets do
     },
     "missile_corvette" => %{
       type: "missile_corvette", tier: 1,
-      name: "Corbeta Misilera",
+      name: "Missile Corvette",
       description: "Nave de daño inicial. Muy buena para romper escudos y defensas ligeras, mala en combates largos.",
       hull: 180, shield: 25, attack: 145, accuracy: 52, agility: 50, speed: 95,
       fuel_per_s: 2.8, cargo: 80,
@@ -67,7 +67,7 @@ defmodule NexusDownfall.Fleets do
     },
     "heavy_fighter" => %{
       type: "heavy_fighter", tier: 2,
-      name: "Caza Pesado",
+      name: "Heavy Fighter",
       description: "Nave rápida para saqueos serios. Tiene carga propia y buena pegada contra objetivos vulnerables.",
       hull: 320, shield: 70, attack: 130, accuracy: 72, agility: 78, speed: 135,
       fuel_per_s: 5.2, cargo: 900,
@@ -76,7 +76,7 @@ defmodule NexusDownfall.Fleets do
     },
     "frigate" => %{
       type: "frigate", tier: 2,
-      name: "Fragata",
+      name: "Frigate",
       description: "Núcleo militar del mid-game. Sirve para ataque, defensa y escolta.",
       hull: 550, shield: 120, attack: 190, accuracy: 64, agility: 45, speed: 85,
       fuel_per_s: 4.5, cargo: 300,
@@ -85,7 +85,7 @@ defmodule NexusDownfall.Fleets do
     },
     "light_destroyer" => %{
       type: "light_destroyer", tier: 2,
-      name: "Destructor Ligero",
+      name: "Light Destroyer",
       description: "Counter directo contra enjambres de cazas, corbetas y raiders.",
       hull: 680, shield: 160, attack: 150, accuracy: 78, agility: 42, speed: 75,
       fuel_per_s: 5.0, cargo: 200,
@@ -94,7 +94,7 @@ defmodule NexusDownfall.Fleets do
     },
     "bomber" => %{
       type: "bomber", tier: 2,
-      name: "Bombardero",
+      name: "Bomber",
       description: "Nave especializada en destruir defensas. Necesita escolta.",
       hull: 900, shield: 160, attack: 520, accuracy: 45, agility: 20, speed: 50,
       fuel_per_s: 10.0, cargo: 500,
@@ -103,7 +103,7 @@ defmodule NexusDownfall.Fleets do
     },
     "blocker" => %{
       type: "blocker", tier: 2,
-      name: "Bloqueador",
+      name: "Blocker",
       description: "Nave diseñada para misiones de bloqueo planetario. No gana por daño, gana por control estratégico.",
       hull: 1500, shield: 450, attack: 120, accuracy: 55, agility: 18, speed: 42,
       fuel_per_s: 12.0, cargo: 3000,
@@ -112,7 +112,7 @@ defmodule NexusDownfall.Fleets do
     },
     "colonizer" => %{
       type: "colonizer", tier: 2,
-      name: "Colonizadora",
+      name: "Colonizer",
       description: "Permite fundar nuevas colonias. Es estratégica, cara y debe protegerse.",
       hull: 1800, shield: 500, attack: 20, accuracy: 25, agility: 8, speed: 35,
       fuel_per_s: 18.0, cargo: 100_000,
@@ -121,7 +121,7 @@ defmodule NexusDownfall.Fleets do
     },
     "cruiser" => %{
       type: "cruiser", tier: 3,
-      name: "Crucero",
+      name: "Cruiser",
       description: "Nave pesada estable. Protege bombarderos, bloqueadores y naves estratégicas.",
       hull: 1200, shield: 300, attack: 380, accuracy: 62, agility: 32, speed: 65,
       fuel_per_s: 8.5, cargo: 1000,
@@ -130,7 +130,7 @@ defmodule NexusDownfall.Fleets do
     },
     "carrier" => %{
       type: "carrier", tier: 3,
-      name: "Portadrones",
+      name: "Drone Carrier",
       description: "Mejora cazas y naves ligeras aliadas. No debe usarse sin escolta.",
       hull: 2500, shield: 700, attack: 220, accuracy: 58, agility: 15, speed: 45,
       fuel_per_s: 16.0, cargo: 2500,
@@ -139,7 +139,7 @@ defmodule NexusDownfall.Fleets do
     },
     "ew_cruiser" => %{
       type: "ew_cruiser", tier: 3,
-      name: "Crucero de Guerra Electrónica",
+      name: "Electronic Warfare Cruiser",
       description: "Nave técnica. Reduce escudos enemigos y mejora ataques contra objetivos resistentes.",
       hull: 800, shield: 1000, attack: 60, accuracy: 80, agility: 28, speed: 60,
       fuel_per_s: 13.0, cargo: 300,
@@ -148,7 +148,7 @@ defmodule NexusDownfall.Fleets do
     },
     "battleship" => %{
       type: "battleship", tier: 3,
-      name: "Acorazado",
+      name: "Battleship",
       description: "Cazador de naves grandes. Excelente contra bloqueadores, cruceros, portadrones y top tier.",
       hull: 4200, shield: 1100, attack: 1250, accuracy: 58, agility: 10, speed: 35,
       fuel_per_s: 22.0, cargo: 3000,
@@ -276,16 +276,22 @@ defmodule NexusDownfall.Fleets do
       planet_id = parse_int!(Map.get(attrs, "planet_id") || Map.get(attrs, :planet_id))
       name = normalize_name(Map.get(attrs, "name") || Map.get(attrs, :name))
       admiral_name = normalize_optional(Map.get(attrs, "admiral_name") || Map.get(attrs, :admiral_name))
+      admiral_card_id = parse_optional_int(Map.get(attrs, "admiral_card_id") || Map.get(attrs, :admiral_card_id))
 
       planet = owned_planet_for_update(planet_id, user_id)
 
       if is_nil(planet), do: Repo.rollback(:not_found)
+
+      if admiral_card_id && !Cards.user_owns_card?(planet.universe_user_id, admiral_card_id) do
+        Repo.rollback(:card_not_owned)
+      end
 
       fleet =
         %Fleet{}
         |> Fleet.changeset(%{
           name: name,
           admiral_name: admiral_name,
+          admiral_card_id: admiral_card_id,
           universe_id: planet.universe_id,
           universe_user_id: planet.universe_user_id,
           home_planet_id: planet.id,
@@ -682,6 +688,10 @@ defmodule NexusDownfall.Fleets do
 
   defp parse_int!(value) when is_integer(value), do: value
   defp parse_int!(value) when is_binary(value), do: String.to_integer(value)
+
+  defp parse_optional_int(nil), do: nil
+  defp parse_optional_int(""), do: nil
+  defp parse_optional_int(value), do: parse_int!(value)
 
   defp normalize_transaction_result({:ok, value}), do: {:ok, value}
   defp normalize_transaction_result({:error, reason}), do: {:error, reason}

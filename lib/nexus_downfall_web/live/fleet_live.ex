@@ -290,7 +290,7 @@ defmodule NexusDownfallWeb.FleetLive do
         </div>
       </main>
 
-      <.modal id="create-fleet-modal" show={@show_create_modal} on_cancel={JS.push("close_create_fleet_modal")}>
+      <.modal :if={@show_create_modal} id="create-fleet-modal" show on_cancel={JS.push("close_create_fleet_modal")}>
         <div class="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-[#0c1422]">
           <div class="relative h-32 overflow-hidden">
             <img src="/images/planet-images/barraks.jpg" class="absolute inset-0 h-full w-full object-cover" draggable="false" />
@@ -322,6 +322,16 @@ defmodule NexusDownfallWeb.FleetLive do
                 </select>
               </div>
 
+              <div>
+                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500"><%= gettext("Assigned admiral") %></label>
+                <select name="admiral_card_id" class="w-full rounded-xl border border-gray-700 bg-[#060d18] px-3 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none">
+                  <option value=""><%= gettext("No admiral") %></option>
+                  <%= for uc <- @user_admiral_cards do %>
+                    <option value={uc.card_id} selected={to_string(uc.card_id) == @fleet_form.admiral_card_id}><%= uc.card.name %></option>
+                  <% end %>
+                </select>
+              </div>
+
               <div class="flex flex-col-reverse gap-3 border-t border-gray-800 pt-4 sm:flex-row sm:justify-end">
                 <button type="button" phx-click="close_create_fleet_modal" class="rounded-lg border border-gray-700 bg-gray-950 px-4 py-2.5 text-sm font-medium text-gray-200 transition hover:border-gray-500"><%= gettext("Cancel") %></button>
                 <button type="submit" class="rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-500"><%= gettext("Create fleet") %></button>
@@ -340,7 +350,7 @@ defmodule NexusDownfallWeb.FleetLive do
         {:noreply,
          socket
          |> assign_fleet_page()
-         |> assign(:fleet_form, %{name: "", planet_id: "", admiral_name: ""})
+         |> assign(:fleet_form, %{name: "", planet_id: "", admiral_card_id: ""})
          |> assign(:show_create_modal, false)
          |> assign(:fleet_notice, gettext("Fleet created successfully."))
          |> assign(:fleet_error, nil)}
@@ -359,6 +369,14 @@ defmodule NexusDownfallWeb.FleetLive do
          |> assign(:fleet_form, fleet_form_from_params(params))
          |> assign(:show_create_modal, true)
          |> assign(:fleet_error, gettext("Home planet not found."))
+         |> assign(:fleet_notice, nil)}
+
+      {:error, :card_not_owned} ->
+        {:noreply,
+         socket
+         |> assign(:fleet_form, fleet_form_from_params(params))
+         |> assign(:show_create_modal, true)
+         |> assign(:fleet_error, gettext("You do not own that card."))
          |> assign(:fleet_notice, nil)}
 
       {:error, _reason} ->
@@ -434,7 +452,7 @@ defmodule NexusDownfallWeb.FleetLive do
     |> assign(:premium_access, premium_access?(socket.assigns.current_user))
     |> assign(:ship_catalog, Fleets.ship_catalog())
     |> assign(:user_admiral_cards, Cards.list_admiral_cards_for_user(user_id))
-    |> assign_new(:fleet_form, fn -> %{name: "", planet_id: "", admiral_name: ""} end)
+    |> assign_new(:fleet_form, fn -> %{name: "", planet_id: "", admiral_card_id: ""} end)
     |> assign_new(:fleet_error, fn -> nil end)
     |> assign_new(:fleet_notice, fn -> nil end)
     |> assign_new(:show_create_modal, fn -> false end)
@@ -446,7 +464,7 @@ defmodule NexusDownfallWeb.FleetLive do
     %{
       name: Map.get(params, "name", ""),
       planet_id: Map.get(params, "planet_id", ""),
-      admiral_name: Map.get(params, "admiral_name", "")
+      admiral_card_id: Map.get(params, "admiral_card_id", "")
     }
   end
 

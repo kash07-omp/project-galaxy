@@ -259,6 +259,61 @@ msgstr "Could not create the fleet."
 msgid "Shipyard"
 msgstr "Shipyard"
 
+## Ship names
+msgid "Light Freighter"
+msgstr "Light Freighter"
+
+msgid "Heavy Freighter"
+msgstr "Heavy Freighter"
+
+msgid "Light Fighter"
+msgstr "Light Fighter"
+
+msgid "Corvette"
+msgstr "Corvette"
+
+msgid "Missile Corvette"
+msgstr "Missile Corvette"
+
+msgid "Heavy Fighter"
+msgstr "Heavy Fighter"
+
+msgid "Frigate"
+msgstr "Frigate"
+
+msgid "Light Destroyer"
+msgstr "Light Destroyer"
+
+msgid "Bomber"
+msgstr "Bomber"
+
+msgid "Blocker"
+msgstr "Blocker"
+
+msgid "Colonizer"
+msgstr "Colonizer"
+
+msgid "Cruiser"
+msgstr "Cruiser"
+
+msgid "Drone Carrier"
+msgstr "Drone Carrier"
+
+msgid "Electronic Warfare Cruiser"
+msgstr "Electronic Warfare Cruiser"
+
+msgid "Battleship"
+msgstr "Battleship"
+
+msgid "Leviathan"
+msgstr "Leviathan"
+
+msgid "Aphelion"
+msgstr "Aphelion"
+
+msgid "Exodus"
+msgstr "Exodus"
+
 msgid "Queue ship construction from this spaceport and assign each batch to a destination fleet."
 msgstr "Queue ship construction from this spaceport and assign each batch to a destination fleet."
 

@@ -258,6 +258,61 @@ msgstr "Idioma actualizado correctamente."
 msgid "Error saving language."
 msgstr "Error al guardar el idioma."
 
+## Ship names
+msgid "Light Freighter"
+msgstr "Carguero Ligero"
+
+msgid "Heavy Freighter"
+msgstr "Carguero Pesado"
+
+msgid "Light Fighter"
+msgstr "Caza Ligero"
+
+msgid "Corvette"
+msgstr "Corbeta"
+
+msgid "Missile Corvette"
+msgstr "Corbeta Misilera"
+
+msgid "Heavy Fighter"
+msgstr "Caza Pesado"
+
+msgid "Frigate"
+msgstr "Fragata"
+
+msgid "Light Destroyer"
+msgstr "Destructor Ligero"
+
+msgid "Bomber"
+msgstr "Bombardero"
+
+msgid "Blocker"
+msgstr "Bloqueador"
+
+msgid "Colonizer"
+msgstr "Colonizadora"
+
+msgid "Cruiser"
+msgstr "Crucero"
+
+msgid "Drone Carrier"
+msgstr "Portadrones"
+
+msgid "Electronic Warfare Cruiser"
+msgstr "Crucero de Guerra Electrónica"
+
+msgid "Battleship"
+msgstr "Acorazado"
+
+msgid "Leviathan"
+msgstr "Leviathan"
+
+msgid "Aphelion"
+msgstr "Aphelion"
+
+msgid "Exodus"
+msgstr "Exodus"
+
 msgid "Invalid language."
 msgstr "Idioma no válido."
 
