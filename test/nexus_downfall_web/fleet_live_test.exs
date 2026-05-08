@@ -513,4 +513,107 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     refute rendered =~ "Region"
     assert rendered =~ "value=\"#{rival_target.id}\""
   end
+
+  test "transport mission completes full journey (dispatch, arrival, return)", %{
+    conn: conn,
+    user: user,
+    universe_user: universe_user,
+    planet: planet
+  } do
+    system = Repo.preload(planet, :solar_system).solar_system |> Repo.preload(:galaxy)
+    target = create_owned_planet(system, universe_user, 9, "End To End Target")
+
+    {:ok, fleet} =
+      Fleets.create_fleet_for_user(user.id, %{
+        "name" => "E2E Transport Fleet #{System.unique_integer([:positive])}",
+        "planet_id" => planet.id
+      })
+
+    Repo.update_all(
+      from(fs in NexusDownfall.Fleets.FleetShip,
+        where: fs.fleet_id == ^fleet.id and fs.ship_type == "light_freighter"
+      ),
+      set: [quantity: 1]
+    )
+
+    Repo.update_all(
+      from(p in NexusDownfall.Planets.Planet, where: p.id == ^planet.id),
+      set: [raw_materials: 20_000, hydrogen: 80_000]
+    )
+
+    target_before = Repo.get!(Planet, target.id)
+
+    {:ok, live_view, _html} = live(conn, ~p"/fleet")
+
+    live_view
+    |> element("button[phx-click='open_send_mission_modal'][phx-value-fleet_id='#{fleet.id}']")
+    |> render_click()
+
+    live_view
+    |> form("form[phx-submit='send_mission']", %{
+      "fleet_id" => to_string(fleet.id),
+      "mission_type" => "transport",
+      "galaxy_id" => to_string(system.galaxy.id)
+    })
+    |> render_change()
+
+    live_view
+    |> form("form[phx-submit='send_mission']", %{
+      "fleet_id" => to_string(fleet.id),
+      "mission_type" => "transport",
+      "galaxy_id" => to_string(system.galaxy.id),
+      "system_id" => to_string(system.id)
+    })
+    |> render_change()
+
+    Oban.Testing.with_testing_mode(:manual, fn ->
+      live_view
+      |> form("form[phx-submit='send_mission']", %{
+        "fleet_id" => to_string(fleet.id),
+        "mission_type" => "transport",
+        "galaxy_id" => to_string(system.galaxy.id),
+        "system_id" => to_string(system.id),
+        "target_planet_id" => to_string(target.id),
+        "raw_materials" => "1200"
+      })
+      |> render_submit()
+    end)
+
+    mission =
+      Repo.one!(
+        from(m in NexusDownfall.Fleets.FleetMission,
+          where: m.fleet_id == ^fleet.id,
+          order_by: [desc: m.inserted_at],
+          limit: 1
+        )
+      )
+
+    case mission.phase do
+      "outbound" ->
+        assert :ok == Fleets.process_mission_transition(mission.id, "arrive")
+
+      "returning" ->
+        :ok
+
+      "completed" ->
+        :ok
+    end
+
+    target_after_delivery = Repo.get!(Planet, target.id)
+    assert target_after_delivery.raw_materials == target_before.raw_materials + 1200
+
+    mission = Repo.get!(NexusDownfall.Fleets.FleetMission, mission.id)
+
+    if mission.phase == "returning" do
+      assert :ok == Fleets.process_mission_transition(mission.id, "return")
+    end
+
+    mission = Repo.get!(NexusDownfall.Fleets.FleetMission, mission.id)
+    assert mission.phase == "completed"
+    assert Repo.get!(Fleet, fleet.id).status == "idle"
+
+    rendered = render(live_view)
+    assert rendered =~ "E2E Transport Fleet"
+    assert rendered =~ "Idle"
+  end
 end

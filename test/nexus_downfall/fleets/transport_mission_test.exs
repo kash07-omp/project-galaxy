@@ -6,6 +6,7 @@ defmodule NexusDownfall.Fleets.TransportMissionTest do
   alias NexusDownfall.Accounts.UniverseUser
   alias NexusDownfall.Fleets
   alias NexusDownfall.Fleets.{Fleet, FleetMission, FleetShip}
+  alias NexusDownfall.Planets.Building
   alias NexusDownfall.Planets
   alias NexusDownfall.Planets.Planet
   alias NexusDownfall.Repo
@@ -99,6 +100,13 @@ defmodule NexusDownfall.Fleets.TransportMissionTest do
     end)
   end
 
+  defp force_spaceport_level(planet_id, level) do
+    Repo.update_all(
+      from(b in Building, where: b.planet_id == ^planet_id and b.type == "spaceport"),
+      set: [level: level]
+    )
+  end
+
   setup do
     universe = create_universe()
     galaxy = create_galaxy(universe)
@@ -165,12 +173,40 @@ defmodule NexusDownfall.Fleets.TransportMissionTest do
       |> trunc()
 
     assert mission.hydrogen_cost == expected_hydrogen_cost
+    assert_enqueued(worker: NexusDownfall.Workers.FleetMissionWorker, args: %{"mission_id" => mission.id, "action" => "arrive"})
 
     after_home = Repo.get!(Planet, home_planet.id)
     assert after_home.raw_materials == home_planet.raw_materials - 1000
     assert after_home.hydrogen == before_hydrogen - expected_hydrogen_cost - 100
 
     assert Repo.get!(Fleet, fleet.id).status == "outbound"
+  end
+
+  test "fuel consumption per second aggregates all ship types in the fleet", %{
+    fleet: fleet,
+    home_planet: home_planet,
+    target_planet: target_planet,
+    user: user
+  } do
+    set_fleet_ships(fleet.id, %{"light_freighter" => 1, "corvette" => 2})
+
+    before_hydrogen = home_planet.hydrogen
+
+    {:ok, mission} =
+      Oban.Testing.with_testing_mode(:manual, fn ->
+        Fleets.dispatch_transport_mission_for_user(fleet.id, user.id, target_planet.id, %{
+          "raw_materials" => "500"
+        })
+      end)
+
+    total_fuel_per_second = 1 * 0.8 + 2 * 2.0
+
+    expected_hydrogen_cost =
+      Float.ceil(total_fuel_per_second * (mission.outbound_travel_seconds + mission.return_travel_seconds))
+      |> trunc()
+
+    assert mission.hydrogen_cost == expected_hydrogen_cost
+    assert Repo.get!(Planet, home_planet.id).hydrogen == before_hydrogen - expected_hydrogen_cost
   end
 
   test "arrival delivers cargo once, schedules return and return completes fleet", %{
@@ -233,6 +269,48 @@ defmodule NexusDownfall.Fleets.TransportMissionTest do
     assert {:error, :insufficient_resources} =
              Fleets.dispatch_transport_mission_for_user(fleet.id, user.id, target_planet.id, %{
                "credits" => "4000"
+             })
+  end
+
+  test "enforces active fleet mission limit based on highest spaceport level", %{
+    user: user,
+    home_planet: home_planet,
+    target_planet: target_planet
+  } do
+    Repo.update_all(
+      from(p in Planet, where: p.id == ^home_planet.id),
+      set: [raw_materials: 100_000, hydrogen: 500_000]
+    )
+
+    force_spaceport_level(home_planet.id, 1)
+
+    # Rule: active limit is base 3 + highest spaceport level.
+    fleets =
+      for index <- 1..5 do
+        {:ok, fleet} =
+          Fleets.create_fleet_for_user(user.id, %{
+            "name" => "Limit Fleet #{index} #{System.unique_integer([:positive])}",
+            "planet_id" => home_planet.id
+          })
+
+        set_fleet_ships(fleet.id, %{"light_freighter" => 1})
+        fleet
+      end
+
+    Enum.each(Enum.take(fleets, 4), fn fleet ->
+      assert {:ok, _mission} =
+               Oban.Testing.with_testing_mode(:manual, fn ->
+                 Fleets.dispatch_transport_mission_for_user(fleet.id, user.id, target_planet.id, %{
+                   "raw_materials" => "1"
+                 })
+               end)
+    end)
+
+    fifth_fleet = Enum.at(fleets, 4)
+
+    assert {:error, :active_fleet_limit_reached} =
+             Fleets.dispatch_transport_mission_for_user(fifth_fleet.id, user.id, target_planet.id, %{
+               "raw_materials" => "1"
              })
   end
 end

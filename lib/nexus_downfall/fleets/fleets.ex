@@ -13,6 +13,7 @@ defmodule NexusDownfall.Fleets do
   import Ecto.Query
 
   alias NexusDownfall.Fleets.{Fleet, FleetMission, FleetShip, Pathfinder, ShipyardQueueItem}
+  alias NexusDownfall.Accounts.UniverseUser
   alias NexusDownfall.GameplaySettings
   alias NexusDownfall.Planets
   alias NexusDownfall.Planets.{Building, Planet, ProductionEngine}
@@ -22,6 +23,7 @@ defmodule NexusDownfall.Fleets do
   alias NexusDownfall.Cards
 
   @active_mission_phases ["outbound", "colonizing", "returning"]
+  @base_active_fleet_limit 3
   @transport_resource_fields [:raw_materials, :microchips, :hydrogen, :food, :credits]
   @transport_cargo_fields %{
     raw_materials: :cargo_raw_materials,
@@ -674,6 +676,7 @@ defmodule NexusDownfall.Fleets do
       if origin_planet.id == target_planet.id, do: Repo.rollback(:invalid_target)
       if not is_nil(target_planet.universe_user_id), do: Repo.rollback(:target_unavailable)
       if target_planet_colonizing?(target_planet.id), do: Repo.rollback(:target_colonizing)
+      :ok = enforce_active_fleet_limit!(fleet.universe_user_id)
 
       ship_counts = fleet_ship_counts(fleet.ships)
 
@@ -784,6 +787,7 @@ defmodule NexusDownfall.Fleets do
       if is_nil(target_planet), do: Repo.rollback(:target_not_found)
       if origin_planet.id == target_planet.id, do: Repo.rollback(:invalid_target)
       if is_nil(target_planet.universe_user_id), do: Repo.rollback(:target_unavailable)
+      :ok = enforce_active_fleet_limit!(fleet.universe_user_id)
 
       cargo = normalize_transport_cargo!(cargo_attrs)
       cargo_total = cargo_total(cargo)
@@ -1629,6 +1633,46 @@ defmodule NexusDownfall.Fleets do
       end
 
     Repo.exists?(query)
+  end
+
+  defp enforce_active_fleet_limit!(universe_user_id) do
+    _locked_universe_user_id =
+      Repo.one!(
+        from uu in UniverseUser,
+          where: uu.id == ^universe_user_id,
+          select: uu.id,
+          lock: "FOR UPDATE"
+      )
+
+    active_missions_count =
+      Repo.one(
+        from m in FleetMission,
+          where: m.universe_user_id == ^universe_user_id and m.phase in ^@active_mission_phases,
+          select: count(m.id)
+      ) || 0
+
+    max_spaceport_level =
+      Repo.one(
+        from b in Building,
+          join: p in Planet,
+          on: p.id == b.planet_id,
+          where: p.universe_user_id == ^universe_user_id and b.type == "spaceport",
+          select: max(b.level)
+      ) || 0
+
+    active_fleet_limit = @base_active_fleet_limit + max_spaceport_level
+
+    if active_missions_count >= active_fleet_limit do
+      :telemetry.execute(
+        [:nexus_downfall, :fleets, :dispatch_rejected_active_limit],
+        %{count: 1, active_missions: active_missions_count, active_fleet_limit: active_fleet_limit},
+        %{universe_user_id: universe_user_id}
+      )
+
+      Repo.rollback(:active_fleet_limit_reached)
+    end
+
+    :ok
   end
 
   defp default_colony_name(planet, mission) do

@@ -84,13 +84,13 @@ Permitir creación de flotas y viajes entre sistemas conectados.
 - [x] Creación de flota desde `/Fleet` y desde detalle de planeta.
 - [x] Misión de colonización (selección de planeta válido, tiempo que tarda en colonizarse, eliminación de la nave tras la colonización, asignación del nuevo planeta al jugador con la estructura del ayuntamiento a nivel 1 y recursos iniciales, consumo de hidrógeno).
 - [x] Misión de transporte (ida, entrega, retorno, consumo de hidrógeno. Fijarse en como está implementada la UX de la misión de colonización respecto a la progress bar.).
-- [ ] Programación temporal de misiones con Oban.
-- [ ] Límite de flotas activas (base + mejor espaciopuerto).
+- [x] Programación temporal de misiones con Oban.
+- [x] Límite de flotas activas (base + mejor espaciopuerto).
 
 ### Tests obligatorios
 - [x] Tests de A* (ruta mínima, sin ruta, empates).
-- [ ] Tests de consumo de combustible por segundo.
-- [ ] Tests E2E de misión de transporte completa.
+- [x] Tests de consumo de combustible por segundo.
+- [x] Tests E2E de misión de transporte completa.
 
 ---
 

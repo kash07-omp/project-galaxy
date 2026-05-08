@@ -1159,6 +1159,7 @@ defmodule NexusDownfallWeb.FleetLive do
 
   defp mission_error_message(:fleet_not_found), do: gettext("Fleet not found.")
   defp mission_error_message(:fleet_busy), do: gettext("Fleet is already on a mission.")
+  defp mission_error_message(:active_fleet_limit_reached), do: gettext("You reached your active fleet mission limit.")
   defp mission_error_message(:target_not_found), do: gettext("Target planet not found.")
   defp mission_error_message(:target_unavailable), do: gettext("Target planet is already occupied.")
   defp mission_error_message(:target_colonizing), do: gettext("Target planet is currently being colonized.")
