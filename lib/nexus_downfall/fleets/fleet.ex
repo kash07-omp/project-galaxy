@@ -27,5 +27,9 @@ defmodule NexusDownfall.Fleets.Fleet do
     |> validate_length(:admiral_name, max: 60)
     |> validate_inclusion(:status, ["idle"])
     |> unique_constraint([:universe_user_id, :name])
+    |> unique_constraint(:admiral_card_id,
+      name: :fleets_universe_user_id_admiral_card_id_unique_idx,
+      message: "card_already_assigned"
+    )
   end
 end

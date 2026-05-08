@@ -11,6 +11,19 @@ let csrfToken = document
 
 let hooks = {
   SolarSystem: SolarSystemHook,
+  AutoDismissFlash: {
+    mounted() {
+      const duration = Number(this.el.dataset.duration || 3500);
+      this.timeoutRef = window.setTimeout(() => {
+        this.el.click();
+      }, duration);
+    },
+    destroyed() {
+      if (this.timeoutRef) {
+        window.clearTimeout(this.timeoutRef);
+      }
+    },
+  },
 };
 
 let liveSocket = new LiveSocket("/live", Socket, {

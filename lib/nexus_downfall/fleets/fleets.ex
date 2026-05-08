@@ -286,9 +286,19 @@ defmodule NexusDownfall.Fleets do
         Repo.rollback(:card_not_owned)
       end
 
-      fleet =
-        %Fleet{}
-        |> Fleet.changeset(%{
+      if admiral_card_id &&
+           Repo.exists?(
+             from f in Fleet,
+               where:
+                 f.universe_user_id == ^planet.universe_user_id and
+                   f.admiral_card_id == ^admiral_card_id,
+               lock: "FOR UPDATE"
+           ) do
+        Repo.rollback(:card_already_assigned)
+      end
+
+      fleet_changeset =
+        Fleet.changeset(%Fleet{}, %{
           name: name,
           admiral_name: admiral_name,
           admiral_card_id: admiral_card_id,
@@ -297,7 +307,19 @@ defmodule NexusDownfall.Fleets do
           home_planet_id: planet.id,
           status: "idle"
         })
-        |> Repo.insert!()
+
+      fleet =
+        case Repo.insert(fleet_changeset) do
+          {:ok, fleet} ->
+            fleet
+
+          {:error, changeset} ->
+            if card_already_assigned_error?(changeset) do
+              Repo.rollback(:card_already_assigned)
+            else
+              Repo.rollback(:invalid_fleet)
+            end
+        end
 
       :ok = ensure_ship_slots(fleet.id)
       Repo.preload(fleet, [:ships, home_planet: [:solar_system]])
@@ -305,7 +327,6 @@ defmodule NexusDownfall.Fleets do
     |> normalize_transaction_result()
   rescue
     ArgumentError -> {:error, :invalid_fleet}
-    Ecto.InvalidChangesetError -> {:error, :invalid_fleet}
   end
 
   @doc """
@@ -330,9 +351,28 @@ defmodule NexusDownfall.Fleets do
         Repo.rollback(:card_not_owned)
       end
 
-      fleet
-      |> Fleet.changeset(%{admiral_card_id: card_id})
-      |> Repo.update!()
+      if Repo.exists?(
+           from f in Fleet,
+             where:
+               f.universe_user_id == ^fleet.universe_user_id and
+                 f.admiral_card_id == ^card_id and
+                 f.id != ^fleet.id,
+             lock: "FOR UPDATE"
+         ) do
+        Repo.rollback(:card_already_assigned)
+      end
+
+      case fleet |> Fleet.changeset(%{admiral_card_id: card_id}) |> Repo.update() do
+        {:ok, updated_fleet} ->
+          updated_fleet
+
+        {:error, changeset} ->
+          if card_already_assigned_error?(changeset) do
+            Repo.rollback(:card_already_assigned)
+          else
+            Repo.rollback(:invalid_fleet)
+          end
+      end
     end)
     |> normalize_transaction_result()
   end
@@ -695,4 +735,11 @@ defmodule NexusDownfall.Fleets do
 
   defp normalize_transaction_result({:ok, value}), do: {:ok, value}
   defp normalize_transaction_result({:error, reason}), do: {:error, reason}
+
+  defp card_already_assigned_error?(changeset) do
+    Enum.any?(changeset.errors, fn
+      {:admiral_card_id, {"card_already_assigned", _opts}} -> true
+      _ -> false
+    end)
+  end
 end

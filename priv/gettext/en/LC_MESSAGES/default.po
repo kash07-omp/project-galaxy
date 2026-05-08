@@ -256,6 +256,30 @@ msgstr "Home planet not found."
 msgid "Could not create the fleet."
 msgstr "Could not create the fleet."
 
+msgid "You do not own that card."
+msgstr "You do not own that card."
+
+msgid "Could not assign admiral."
+msgstr "Could not assign admiral."
+
+msgid "That admiral card is already assigned to another fleet."
+msgstr "That admiral card is already assigned to another fleet."
+
+msgid "Already assigned to another fleet."
+msgstr "Already assigned to another fleet."
+
+msgid "Unassign admiral"
+msgstr "Unassign admiral"
+
+msgid "Admiral assigned successfully."
+msgstr "Admiral assigned successfully."
+
+msgid "Admiral unassigned."
+msgstr "Admiral unassigned."
+
+msgid "Could not unassign admiral."
+msgstr "Could not unassign admiral."
+
 msgid "Shipyard"
 msgstr "Shipyard"
 

@@ -564,6 +564,30 @@ msgstr "No se encontró el planeta base."
 msgid "Could not create the fleet."
 msgstr "No se pudo crear la flota."
 
+msgid "You do not own that card."
+msgstr "No posees esa carta."
+
+msgid "Could not assign admiral."
+msgstr "No se pudo asignar al almirante."
+
+msgid "That admiral card is already assigned to another fleet."
+msgstr "Esa carta de almirante ya está asignada a otra flota."
+
+msgid "Already assigned to another fleet."
+msgstr "Ya está asignada a una flota."
+
+msgid "Unassign admiral"
+msgstr "Desasignar almirante"
+
+msgid "Admiral assigned successfully."
+msgstr "Almirante asignado correctamente."
+
+msgid "Admiral unassigned."
+msgstr "Almirante desasignado."
+
+msgid "Could not unassign admiral."
+msgstr "No se pudo desasignar al almirante."
+
 msgid "Shipyard"
 msgstr "Astillero"
 

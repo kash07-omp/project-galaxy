@@ -5,6 +5,8 @@ defmodule NexusDownfallWeb.FleetLiveTest do
   import Phoenix.LiveViewTest
 
   alias NexusDownfall.Accounts
+  alias NexusDownfall.Cards.Card
+  alias NexusDownfall.Cards.UserCard
   alias NexusDownfall.Fleets
   alias NexusDownfall.Fleets.Fleet
   alias NexusDownfall.Planets
@@ -85,6 +87,25 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     planet
   end
 
+  defp create_admiral_card_for_universe_user(universe_user) do
+    {:ok, card} =
+      %Card{}
+      |> Card.changeset(%{
+        type: "admiral",
+        slug: "test-admiral-#{System.unique_integer([:positive])}",
+        name: "Test Admiral",
+        description: "Test card"
+      })
+      |> Repo.insert()
+
+    {:ok, _user_card} =
+      %UserCard{}
+      |> UserCard.changeset(%{universe_user_id: universe_user.id, card_id: card.id})
+      |> Repo.insert()
+
+    card
+  end
+
   setup %{conn: conn} do
     universe = create_universe()
     galaxy = create_galaxy(universe)
@@ -161,5 +182,70 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     refreshed = render(live_view)
     assert refreshed =~ "Realtime Fleet"
     assert refreshed =~ ">1<"
+  end
+
+  test "same admiral card cannot be assigned to two fleets of the same player", %{
+    user: user,
+    universe_user: universe_user,
+    planet: planet
+  } do
+    card = create_admiral_card_for_universe_user(universe_user)
+
+    {:ok, fleet_a} =
+      Fleets.create_fleet_for_user(user.id, %{
+        "name" => "Fleet A #{System.unique_integer([:positive])}",
+        "planet_id" => planet.id,
+        "admiral_name" => ""
+      })
+
+    {:ok, fleet_b} =
+      Fleets.create_fleet_for_user(user.id, %{
+        "name" => "Fleet B #{System.unique_integer([:positive])}",
+        "planet_id" => planet.id,
+        "admiral_name" => ""
+      })
+
+    assert {:ok, _} = Fleets.assign_admiral_to_fleet(fleet_a.id, user.id, card.id)
+    assert {:error, :card_already_assigned} = Fleets.assign_admiral_to_fleet(fleet_b.id, user.id, card.id)
+
+    assert Repo.get!(Fleet, fleet_a.id).admiral_card_id == card.id
+    assert is_nil(Repo.get!(Fleet, fleet_b.id).admiral_card_id)
+  end
+
+  test "assigned admiral appears disabled with tooltip and unassign option is first", %{
+    conn: conn,
+    user: user,
+    universe_user: universe_user,
+    planet: planet
+  } do
+    card = create_admiral_card_for_universe_user(universe_user)
+
+    {:ok, fleet_a} =
+      Fleets.create_fleet_for_user(user.id, %{
+        "name" => "Fleet Main #{System.unique_integer([:positive])}",
+        "planet_id" => planet.id,
+        "admiral_name" => ""
+      })
+
+    {:ok, fleet_b} =
+      Fleets.create_fleet_for_user(user.id, %{
+        "name" => "Fleet Side #{System.unique_integer([:positive])}",
+        "planet_id" => planet.id,
+        "admiral_name" => ""
+      })
+
+    assert {:ok, _} = Fleets.assign_admiral_to_fleet(fleet_a.id, user.id, card.id)
+
+    {:ok, live_view, _html} = live(conn, ~p"/fleet")
+
+    live_view
+    |> element("button[phx-click='open_assign_admiral'][phx-value-fleet_id='#{fleet_b.id}']")
+    |> render_click()
+
+    rendered = render(live_view)
+
+    assert rendered =~ "Unassign admiral"
+    assert rendered =~ "Already assigned to another fleet."
+    assert rendered =~ "disabled"
   end
 end

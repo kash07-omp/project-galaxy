@@ -61,10 +61,6 @@ defmodule NexusDownfallWeb.FleetLive do
             </div>
           </section>
 
-          <%= if @fleet_notice do %>
-            <div class="mb-4 rounded-xl border border-emerald-700 bg-emerald-950/50 px-4 py-3 text-sm text-emerald-300"><%= @fleet_notice %></div>
-          <% end %>
-
           <div class="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
             <aside class="space-y-4 xl:sticky xl:top-4 xl:self-start">
               <section class="overflow-hidden rounded-2xl border border-cyan-500/25 bg-[#0a1528]/95 shadow-[0_18px_44px_rgba(2,8,22,0.62)]">
@@ -251,22 +247,50 @@ defmodule NexusDownfallWeb.FleetLive do
                               >✕</button>
                             </div>
                             <div class="flex flex-1 flex-wrap items-start gap-3 overflow-y-auto p-3">
+                              <% assigned_card_ids = assigned_card_ids_for_other_fleets(@fleets, fleet.id) %>
+                              <button
+                                type="button"
+                                phx-click="unassign_admiral_card"
+                                phx-value-fleet_id={fleet.id}
+                                class="group flex w-[110px] flex-col overflow-hidden rounded-xl border border-amber-400/50 bg-[#0f1218] transition hover:border-amber-300 hover:shadow-[0_0_16px_rgba(250,204,21,0.2)]"
+                              >
+                                <div class="flex h-28 w-full items-center justify-center bg-[#090c12]">
+                                  <span class="text-5xl font-black leading-none text-amber-300">✕</span>
+                                </div>
+                                <div class="p-2">
+                                  <p class="text-center text-[10px] font-bold text-amber-100"><%= gettext("Unassign admiral") %></p>
+                                </div>
+                              </button>
+
                               <%= if @user_admiral_cards == [] do %>
                                 <p class="text-sm text-gray-500"><%= gettext("No admiral cards in your deck.") %></p>
                               <% else %>
                                 <%= for uc <- @user_admiral_cards do %>
+                                  <% assigned_elsewhere = MapSet.member?(assigned_card_ids, uc.card_id) %>
                                   <button
                                     type="button"
-                                    phx-click="assign_admiral_card"
+                                    disabled={assigned_elsewhere}
+                                    title={if assigned_elsewhere, do: gettext("Already assigned to another fleet."), else: nil}
+                                    phx-click={if assigned_elsewhere, do: nil, else: "assign_admiral_card"}
                                     phx-value-fleet_id={fleet.id}
                                     phx-value-card_id={uc.card_id}
-                                    class="group flex w-[110px] flex-col overflow-hidden rounded-xl border border-cyan-500/20 bg-[#050f1d] transition hover:border-cyan-400/60 hover:shadow-[0_0_16px_rgba(34,211,238,0.2)]"
+                                    class={[
+                                      "group flex w-[110px] flex-col overflow-hidden rounded-xl border bg-[#050f1d] transition",
+                                      if(assigned_elsewhere,
+                                        do: "cursor-not-allowed border-gray-600/40 opacity-45 grayscale",
+                                        else:
+                                          "border-cyan-500/20 hover:border-cyan-400/60 hover:shadow-[0_0_16px_rgba(34,211,238,0.2)]"
+                                      )
+                                    ]}
                                   >
                                     <div class="relative h-28 w-full overflow-hidden">
                                       <img
                                         src={"/images/#{uc.card.image_path}"}
                                         alt={uc.card.name}
-                                        class="h-full w-full object-cover object-top transition group-hover:scale-105"
+                                        class={[
+                                          "h-full w-full object-cover object-top transition",
+                                          if(assigned_elsewhere, do: "", else: "group-hover:scale-105")
+                                        ]}
                                         draggable="false"
                                       />
                                     </div>
@@ -352,7 +376,7 @@ defmodule NexusDownfallWeb.FleetLive do
          |> assign_fleet_page()
          |> assign(:fleet_form, %{name: "", planet_id: "", admiral_card_id: ""})
          |> assign(:show_create_modal, false)
-         |> assign(:fleet_notice, gettext("Fleet created successfully."))
+         |> put_flash(:success, gettext("Fleet created successfully."))
          |> assign(:fleet_error, nil)}
 
       {:error, :invalid_fleet} ->
@@ -360,32 +384,35 @@ defmodule NexusDownfallWeb.FleetLive do
          socket
          |> assign(:fleet_form, fleet_form_from_params(params))
          |> assign(:show_create_modal, true)
-         |> assign(:fleet_error, gettext("Invalid fleet data."))
-         |> assign(:fleet_notice, nil)}
+         |> assign(:fleet_error, gettext("Invalid fleet data."))}
 
       {:error, :not_found} ->
         {:noreply,
          socket
          |> assign(:fleet_form, fleet_form_from_params(params))
          |> assign(:show_create_modal, true)
-         |> assign(:fleet_error, gettext("Home planet not found."))
-         |> assign(:fleet_notice, nil)}
+         |> assign(:fleet_error, gettext("Home planet not found."))}
 
       {:error, :card_not_owned} ->
         {:noreply,
          socket
          |> assign(:fleet_form, fleet_form_from_params(params))
          |> assign(:show_create_modal, true)
-         |> assign(:fleet_error, gettext("You do not own that card."))
-         |> assign(:fleet_notice, nil)}
+         |> assign(:fleet_error, gettext("You do not own that card."))}
+
+      {:error, :card_already_assigned} ->
+        {:noreply,
+         socket
+         |> assign(:fleet_form, fleet_form_from_params(params))
+         |> assign(:show_create_modal, true)
+         |> assign(:fleet_error, gettext("That admiral card is already assigned to another fleet."))}
 
       {:error, _reason} ->
         {:noreply,
          socket
          |> assign(:fleet_form, fleet_form_from_params(params))
          |> assign(:show_create_modal, true)
-         |> assign(:fleet_error, gettext("Could not create the fleet."))
-         |> assign(:fleet_notice, nil)}
+         |> assign(:fleet_error, gettext("Could not create the fleet."))}
     end
   end
 
@@ -426,13 +453,34 @@ defmodule NexusDownfallWeb.FleetLive do
         {:noreply,
          socket
          |> assign_fleet_page()
+         |> put_flash(:success, gettext("Admiral assigned successfully."))
          |> assign(:assign_admiral_fleet_id, nil)}
 
       {:error, :card_not_owned} ->
-        {:noreply, assign(socket, :fleet_notice, gettext("You do not own that card."))}
+        {:noreply, put_flash(socket, :error, gettext("You do not own that card."))}
+
+      {:error, :card_already_assigned} ->
+        {:noreply,
+         put_flash(socket, :warning, gettext("That admiral card is already assigned to another fleet."))}
 
       {:error, _} ->
-        {:noreply, assign(socket, :fleet_notice, gettext("Could not assign admiral."))}
+        {:noreply, put_flash(socket, :error, gettext("Could not assign admiral."))}
+    end
+  end
+
+  def handle_event("unassign_admiral_card", %{"fleet_id" => fleet_id}, socket) do
+    user_id = socket.assigns.current_user.id
+
+    case Fleets.unassign_admiral_from_fleet(String.to_integer(fleet_id), user_id) do
+      {:ok, _fleet} ->
+        {:noreply,
+         socket
+         |> assign_fleet_page()
+         |> put_flash(:warning, gettext("Admiral unassigned."))
+         |> assign(:assign_admiral_fleet_id, nil)}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, gettext("Could not unassign admiral."))}
     end
   end
 
@@ -454,10 +502,17 @@ defmodule NexusDownfallWeb.FleetLive do
     |> assign(:user_admiral_cards, Cards.list_admiral_cards_for_user(user_id))
     |> assign_new(:fleet_form, fn -> %{name: "", planet_id: "", admiral_card_id: ""} end)
     |> assign_new(:fleet_error, fn -> nil end)
-    |> assign_new(:fleet_notice, fn -> nil end)
     |> assign_new(:show_create_modal, fn -> false end)
       |> assign_new(:assign_admiral_fleet_id, fn -> nil end)
     |> assign(:show_user_menu, socket.assigns[:show_user_menu] || false)
+  end
+
+  defp assigned_card_ids_for_other_fleets(fleets, current_fleet_id) do
+    fleets
+    |> Enum.reject(&(&1.id == current_fleet_id))
+    |> Enum.map(& &1.admiral_card_id)
+    |> Enum.reject(&is_nil/1)
+    |> MapSet.new()
   end
 
   defp fleet_form_from_params(params) do

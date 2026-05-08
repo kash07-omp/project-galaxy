@@ -18,7 +18,8 @@ defmodule NexusDownfallWeb.CoreComponents do
   attr :id, :string, default: nil
   attr :flash, :map, default: %{}, doc: "the map of flash messages"
   attr :title, :string, default: nil
-  attr :kind, :atom, values: [:info, :error], doc: "used for styling and flash key lookup"
+  attr :kind, :atom, values: [:info, :success, :warning, :error], doc: "used for styling and flash key lookup"
+  attr :duration, :integer, default: 4500, doc: "auto-dismiss timeout in milliseconds"
   attr :rest, :global
 
   slot :inner_block
@@ -31,10 +32,15 @@ defmodule NexusDownfallWeb.CoreComponents do
       :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> JS.hide(to: "##{@id}")}
+      phx-hook="AutoDismissFlash"
+      data-flash-key={@kind}
+      data-duration={@duration}
       role="alert"
       class={[
         "fixed top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1 shadow-md",
         @kind == :info && "bg-emerald-950 text-emerald-300 ring-emerald-500",
+        @kind == :success && "bg-emerald-950 text-emerald-300 ring-emerald-500",
+        @kind == :warning && "bg-amber-950 text-amber-200 ring-amber-500",
         @kind == :error && "bg-rose-950 text-rose-300 ring-rose-500"
       ]}
       {@rest}
@@ -59,6 +65,8 @@ defmodule NexusDownfallWeb.CoreComponents do
   def flash_group(assigns) do
     ~H"""
     <div id="flash-group" aria-live="assertive">
+      <.flash kind={:success} flash={@flash} />
+      <.flash kind={:warning} flash={@flash} />
       <.flash kind={:info} flash={@flash} />
       <.flash kind={:error} flash={@flash} />
       <.flash

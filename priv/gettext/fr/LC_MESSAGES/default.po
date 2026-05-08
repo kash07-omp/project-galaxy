@@ -564,6 +564,30 @@ msgstr "Planète d'attache introuvable."
 msgid "Could not create the fleet."
 msgstr "Impossible de créer la flotte."
 
+msgid "You do not own that card."
+msgstr "Vous ne possédez pas cette carte."
+
+msgid "Could not assign admiral."
+msgstr "Impossible d'assigner l'amiral."
+
+msgid "That admiral card is already assigned to another fleet."
+msgstr "Cette carte d'amiral est déjà assignée à une autre flotte."
+
+msgid "Already assigned to another fleet."
+msgstr "Déjà assignée à une flotte."
+
+msgid "Unassign admiral"
+msgstr "Désassigner l'amiral"
+
+msgid "Admiral assigned successfully."
+msgstr "Amiral assigné avec succès."
+
+msgid "Admiral unassigned."
+msgstr "Amiral désassigné."
+
+msgid "Could not unassign admiral."
+msgstr "Impossible de désassigner l'amiral."
+
 msgid "Shipyard"
 msgstr "Chantier spatial"
 
