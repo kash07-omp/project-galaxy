@@ -1580,3 +1580,107 @@ msgstr ""
 
 msgid "This mission type is visible as a placeholder for now. Only Colonization and Transport are currently playable."
 msgstr ""
+
+## Planetary defense UI
+msgid "Add defenses from the list."
+msgstr ""
+
+msgid "Add defenses to the order first."
+msgstr ""
+
+msgid "Build Defenses"
+msgstr ""
+
+msgid "Could not schedule defense construction. Please try again."
+msgstr ""
+
+msgid "Defense Center level 1 is required to build defenses."
+msgstr ""
+
+msgid "Defense Queue"
+msgstr ""
+
+msgid "Defense Summary"
+msgstr ""
+
+msgid "Defense limit reached for this planet."
+msgstr ""
+
+msgid "Defenses queued successfully!"
+msgstr ""
+
+msgid "Insufficient resources to queue defenses."
+msgstr ""
+
+msgid "Invalid defense request."
+msgstr ""
+
+msgid "Limit"
+msgstr ""
+
+msgid "No defenses staged yet."
+msgstr ""
+
+msgid "Owned"
+msgstr ""
+
+## Planetary defense catalog
+msgid "Missile Platform"
+msgstr ""
+
+msgid "Cheap mass defense that punishes light fighters, corvettes and unescorted freighters."
+msgstr ""
+
+msgid "Light Laser Tower"
+msgstr ""
+
+msgid "Accurate turret built to stop agile raiders and fast early fleets."
+msgstr ""
+
+msgid "Heavy Laser Tower"
+msgstr ""
+
+msgid "The natural counter to frigates, heavy fighters and missile corvettes."
+msgstr ""
+
+msgid "Gauss Cannon"
+msgstr ""
+
+msgid "High-impact defense for cruisers, bombers, blockers and expensive heavy ships."
+msgstr ""
+
+msgid "Ion Cannon"
+msgstr ""
+
+msgid "Support defense that weakens enemy shields so Gauss and Plasma batteries can finish the target."
+msgstr ""
+
+msgid "Plasma Turret"
+msgstr ""
+
+msgid "Expensive, slow and lethal battery against capital ships and hardened orbital targets."
+msgstr ""
+
+msgid "Planetary Shield Dome"
+msgstr ""
+
+msgid "Strategic shield infrastructure that absorbs damage before other defenses collapse."
+msgstr ""
+
+msgid "Anti-siege Matrix"
+msgstr ""
+
+msgid "Specialized orbital interception grid that reduces bombardment pressure from bombers and Aphelion platforms."
+msgstr ""
+
+msgid "Orbital Interdiction Platform"
+msgstr ""
+
+msgid "Planetary countermeasure against blockers, slow support craft and heavy logistical ships."
+msgstr ""
+
+msgid "Planetary Defense Bastion"
+msgstr ""
+
+msgid "Critical hardpoint that raises planetary conquest resistance against Exodus-class operations."
+msgstr ""

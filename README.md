@@ -135,6 +135,12 @@ Para hacer este viaje la flota consumirá el recurso Hidrógeno. El cálculo de 
 - **Misión de ataque**: combate contra flotas/defensas del objetivo, con resultado de victoria, empate o derrota y notificación de reporte.
 - Futuro: bombardeo orbital y bloqueo planetario.
 
+### Defensas planetarias
+
+Las defensas se construyen desde el Centro de Defensa y quedan fijas en el planeta. No pueden moverse, atacar ni saquear, por lo que sus valores de combate son más eficientes que los de una nave equivalente. El MVP incluye Plataforma de Misiles, Láser Ligero, Láser Pesado, Gauss, Iónico, Plasma, Cúpula de Escudo Planetario, Matriz Antiasedio, Plataforma de Interdicción Orbital y Bastión de Defensa Planetaria. Las infraestructuras críticas tienen límites por planeta para evitar una defensa universal: por ejemplo, la Cúpula y el Bastión son únicos y la Matriz Antiasedio está limitada.
+
+La construcción usa una cola persistente por planeta con Oban. El backend descuenta recursos y completa cada unidad de forma transaccional; LiveView solo muestra el estado y no participa en la resolución lógica.
+
 ### Configuración parametrizable
 
 Los valores de gameplay de alto impacto para el MVP se cargan desde `priv/settings/gameplay.json` y se cachean en memoria al arrancar la aplicación para reducir overhead en runtime.

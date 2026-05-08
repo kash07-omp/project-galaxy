@@ -101,7 +101,7 @@ Permitir creación de flotas y viajes entre sistemas conectados.
 Introducir PvP base con misión de ataque simplificada y reportes.
 
 ### Tareas
-- [ ] Creación de defensas (funcionará de forma similar a la creación de naves desde el espaciopuerto pero creando defensas desde el centro de defensa. Hay que procurar reutilizar todo el código posible.).
+- [x] Creación de defensas (funcionará de forma similar a la creación de naves desde el espaciopuerto pero creando defensas desde el centro de defensa. Hay que procurar reutilizar todo el código posible.).
 - [ ] Resolver combate por rondas (atacante/defensor).
 - [ ] Resultado de combate: victoria/empate/derrota.
 - [ ] Saqueo según capacidad de carga restante.

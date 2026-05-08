@@ -1743,3 +1743,107 @@ msgstr "Las cantidades de carga deben ser cero o superiores."
 
 msgid "This mission type is visible as a placeholder for now. Only Colonization and Transport are currently playable."
 msgstr "Este tipo de misión es solo un placeholder por ahora. Actualmente solo se pueden jugar Colonización y Transporte."
+
+## Planetary defense UI
+msgid "Add defenses from the list."
+msgstr "Anade defensas desde la lista."
+
+msgid "Add defenses to the order first."
+msgstr "Anade defensas al pedido primero."
+
+msgid "Build Defenses"
+msgstr "Construir Defensas"
+
+msgid "Could not schedule defense construction. Please try again."
+msgstr "No se pudo programar la construccion de defensas. Intentalo de nuevo."
+
+msgid "Defense Center level 1 is required to build defenses."
+msgstr "Se requiere Centro de Defensa nivel 1 para construir defensas."
+
+msgid "Defense Queue"
+msgstr "Cola de Defensas"
+
+msgid "Defense Summary"
+msgstr "Resumen de Defensas"
+
+msgid "Defense limit reached for this planet."
+msgstr "Limite de defensa alcanzado para este planeta."
+
+msgid "Defenses queued successfully!"
+msgstr "Defensas anadidas a la cola correctamente."
+
+msgid "Insufficient resources to queue defenses."
+msgstr "Recursos insuficientes para poner defensas en cola."
+
+msgid "Invalid defense request."
+msgstr "Solicitud de defensa invalida."
+
+msgid "Limit"
+msgstr "Limite"
+
+msgid "No defenses staged yet."
+msgstr "Todavia no hay defensas preparadas."
+
+msgid "Owned"
+msgstr "Propias"
+
+## Planetary defense catalog
+msgid "Missile Platform"
+msgstr "Plataforma de Misiles"
+
+msgid "Cheap mass defense that punishes light fighters, corvettes and unescorted freighters."
+msgstr "Defensa barata y masiva que castiga cazas ligeros, corbetas y cargueros sin escolta."
+
+msgid "Light Laser Tower"
+msgstr "Torre Laser Ligera"
+
+msgid "Accurate turret built to stop agile raiders and fast early fleets."
+msgstr "Torreta precisa para frenar saqueadores agiles y flotas tempranas rapidas."
+
+msgid "Heavy Laser Tower"
+msgstr "Torre Laser Pesada"
+
+msgid "The natural counter to frigates, heavy fighters and missile corvettes."
+msgstr "Counter natural contra fragatas, cazas pesados y corbetas misileras."
+
+msgid "Gauss Cannon"
+msgstr "Canon Gauss"
+
+msgid "High-impact defense for cruisers, bombers, blockers and expensive heavy ships."
+msgstr "Defensa de alto impacto contra cruceros, bombarderos, bloqueadores y naves pesadas caras."
+
+msgid "Ion Cannon"
+msgstr "Canon Ionico"
+
+msgid "Support defense that weakens enemy shields so Gauss and Plasma batteries can finish the target."
+msgstr "Defensa de soporte que debilita escudos enemigos para que Gauss y Plasma rematen el objetivo."
+
+msgid "Plasma Turret"
+msgstr "Torreta de Plasma"
+
+msgid "Expensive, slow and lethal battery against capital ships and hardened orbital targets."
+msgstr "Bateria cara, lenta y letal contra capitales y objetivos orbitales reforzados."
+
+msgid "Planetary Shield Dome"
+msgstr "Cupula de Escudo Planetario"
+
+msgid "Strategic shield infrastructure that absorbs damage before other defenses collapse."
+msgstr "Infraestructura estrategica de escudo que absorbe dano antes de que caigan otras defensas."
+
+msgid "Anti-siege Matrix"
+msgstr "Matriz Antiasedio"
+
+msgid "Specialized orbital interception grid that reduces bombardment pressure from bombers and Aphelion platforms."
+msgstr "Red especializada de intercepcion orbital que reduce la presion de bombardeo de Bombarderos y Aphelion."
+
+msgid "Orbital Interdiction Platform"
+msgstr "Plataforma de Interdiccion Orbital"
+
+msgid "Planetary countermeasure against blockers, slow support craft and heavy logistical ships."
+msgstr "Contramedida planetaria contra bloqueadores, soporte lento y naves logisticas pesadas."
+
+msgid "Planetary Defense Bastion"
+msgstr "Bastion de Defensa Planetaria"
+
+msgid "Critical hardpoint that raises planetary conquest resistance against Exodus-class operations."
+msgstr "Punto critico fortificado que aumenta la resistencia de conquista contra operaciones clase Exodus."

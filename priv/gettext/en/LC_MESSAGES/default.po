@@ -1720,3 +1720,107 @@ msgstr ""
 
 msgid "This mission type is visible as a placeholder for now. Only Colonization and Transport are currently playable."
 msgstr ""
+
+## Planetary defense UI
+msgid "Add defenses from the list."
+msgstr "Add defenses from the list."
+
+msgid "Add defenses to the order first."
+msgstr "Add defenses to the order first."
+
+msgid "Build Defenses"
+msgstr "Build Defenses"
+
+msgid "Could not schedule defense construction. Please try again."
+msgstr "Could not schedule defense construction. Please try again."
+
+msgid "Defense Center level 1 is required to build defenses."
+msgstr "Defense Center level 1 is required to build defenses."
+
+msgid "Defense Queue"
+msgstr "Defense Queue"
+
+msgid "Defense Summary"
+msgstr "Defense Summary"
+
+msgid "Defense limit reached for this planet."
+msgstr "Defense limit reached for this planet."
+
+msgid "Defenses queued successfully!"
+msgstr "Defenses queued successfully!"
+
+msgid "Insufficient resources to queue defenses."
+msgstr "Insufficient resources to queue defenses."
+
+msgid "Invalid defense request."
+msgstr "Invalid defense request."
+
+msgid "Limit"
+msgstr "Limit"
+
+msgid "No defenses staged yet."
+msgstr "No defenses staged yet."
+
+msgid "Owned"
+msgstr "Owned"
+
+## Planetary defense catalog
+msgid "Missile Platform"
+msgstr "Missile Platform"
+
+msgid "Cheap mass defense that punishes light fighters, corvettes and unescorted freighters."
+msgstr "Cheap mass defense that punishes light fighters, corvettes and unescorted freighters."
+
+msgid "Light Laser Tower"
+msgstr "Light Laser Tower"
+
+msgid "Accurate turret built to stop agile raiders and fast early fleets."
+msgstr "Accurate turret built to stop agile raiders and fast early fleets."
+
+msgid "Heavy Laser Tower"
+msgstr "Heavy Laser Tower"
+
+msgid "The natural counter to frigates, heavy fighters and missile corvettes."
+msgstr "The natural counter to frigates, heavy fighters and missile corvettes."
+
+msgid "Gauss Cannon"
+msgstr "Gauss Cannon"
+
+msgid "High-impact defense for cruisers, bombers, blockers and expensive heavy ships."
+msgstr "High-impact defense for cruisers, bombers, blockers and expensive heavy ships."
+
+msgid "Ion Cannon"
+msgstr "Ion Cannon"
+
+msgid "Support defense that weakens enemy shields so Gauss and Plasma batteries can finish the target."
+msgstr "Support defense that weakens enemy shields so Gauss and Plasma batteries can finish the target."
+
+msgid "Plasma Turret"
+msgstr "Plasma Turret"
+
+msgid "Expensive, slow and lethal battery against capital ships and hardened orbital targets."
+msgstr "Expensive, slow and lethal battery against capital ships and hardened orbital targets."
+
+msgid "Planetary Shield Dome"
+msgstr "Planetary Shield Dome"
+
+msgid "Strategic shield infrastructure that absorbs damage before other defenses collapse."
+msgstr "Strategic shield infrastructure that absorbs damage before other defenses collapse."
+
+msgid "Anti-siege Matrix"
+msgstr "Anti-siege Matrix"
+
+msgid "Specialized orbital interception grid that reduces bombardment pressure from bombers and Aphelion platforms."
+msgstr "Specialized orbital interception grid that reduces bombardment pressure from bombers and Aphelion platforms."
+
+msgid "Orbital Interdiction Platform"
+msgstr "Orbital Interdiction Platform"
+
+msgid "Planetary countermeasure against blockers, slow support craft and heavy logistical ships."
+msgstr "Planetary countermeasure against blockers, slow support craft and heavy logistical ships."
+
+msgid "Planetary Defense Bastion"
+msgstr "Planetary Defense Bastion"
+
+msgid "Critical hardpoint that raises planetary conquest resistance against Exodus-class operations."
+msgstr "Critical hardpoint that raises planetary conquest resistance against Exodus-class operations."

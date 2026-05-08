@@ -1743,3 +1743,107 @@ msgstr "Les quantités de cargaison doivent être égales ou supérieures à zé
 
 msgid "This mission type is visible as a placeholder for now. Only Colonization and Transport are currently playable."
 msgstr "Ce type de mission est affiché en placeholder pour le moment. Seules la Colonisation et le Transport sont jouables actuellement."
+
+## Planetary defense UI
+msgid "Add defenses from the list."
+msgstr "Ajoutez des defenses depuis la liste."
+
+msgid "Add defenses to the order first."
+msgstr "Ajoutez d'abord des defenses a la commande."
+
+msgid "Build Defenses"
+msgstr "Construire Defenses"
+
+msgid "Could not schedule defense construction. Please try again."
+msgstr "Impossible de planifier la construction de defenses. Reessayez."
+
+msgid "Defense Center level 1 is required to build defenses."
+msgstr "Le Centre de Defense niveau 1 est requis pour construire des defenses."
+
+msgid "Defense Queue"
+msgstr "File de Defenses"
+
+msgid "Defense Summary"
+msgstr "Resume des Defenses"
+
+msgid "Defense limit reached for this planet."
+msgstr "Limite de defense atteinte pour cette planete."
+
+msgid "Defenses queued successfully!"
+msgstr "Defenses ajoutees a la file avec succes."
+
+msgid "Insufficient resources to queue defenses."
+msgstr "Ressources insuffisantes pour mettre des defenses en file."
+
+msgid "Invalid defense request."
+msgstr "Demande de defense invalide."
+
+msgid "Limit"
+msgstr "Limite"
+
+msgid "No defenses staged yet."
+msgstr "Aucune defense preparee pour le moment."
+
+msgid "Owned"
+msgstr "Possedees"
+
+## Planetary defense catalog
+msgid "Missile Platform"
+msgstr "Plateforme de missiles"
+
+msgid "Cheap mass defense that punishes light fighters, corvettes and unescorted freighters."
+msgstr "Defense de masse peu couteuse qui punit chasseurs legers, corvettes et cargos sans escorte."
+
+msgid "Light Laser Tower"
+msgstr "Tour laser legere"
+
+msgid "Accurate turret built to stop agile raiders and fast early fleets."
+msgstr "Tourelle precise concue pour stopper les raids agiles et les premieres flottes rapides."
+
+msgid "Heavy Laser Tower"
+msgstr "Tour laser lourde"
+
+msgid "The natural counter to frigates, heavy fighters and missile corvettes."
+msgstr "Contre naturel aux fregates, chasseurs lourds et corvettes lance-missiles."
+
+msgid "Gauss Cannon"
+msgstr "Canon Gauss"
+
+msgid "High-impact defense for cruisers, bombers, blockers and expensive heavy ships."
+msgstr "Defense a fort impact contre croiseurs, bombardiers, bloqueurs et vaisseaux lourds couteux."
+
+msgid "Ion Cannon"
+msgstr "Canon ionique"
+
+msgid "Support defense that weakens enemy shields so Gauss and Plasma batteries can finish the target."
+msgstr "Defense de soutien qui affaiblit les boucliers ennemis pour que Gauss et Plasma terminent la cible."
+
+msgid "Plasma Turret"
+msgstr "Tourelle plasma"
+
+msgid "Expensive, slow and lethal battery against capital ships and hardened orbital targets."
+msgstr "Batterie couteuse, lente et letale contre les vaisseaux capitaux et les cibles orbitales durcies."
+
+msgid "Planetary Shield Dome"
+msgstr "Dome de bouclier planetaire"
+
+msgid "Strategic shield infrastructure that absorbs damage before other defenses collapse."
+msgstr "Infrastructure de bouclier strategique qui absorbe les degats avant la chute des autres defenses."
+
+msgid "Anti-siege Matrix"
+msgstr "Matrice anti-siege"
+
+msgid "Specialized orbital interception grid that reduces bombardment pressure from bombers and Aphelion platforms."
+msgstr "Reseau specialise d'interception orbitale qui reduit la pression de bombardement des bombardiers et plateformes Aphelion."
+
+msgid "Orbital Interdiction Platform"
+msgstr "Plateforme d'interdiction orbitale"
+
+msgid "Planetary countermeasure against blockers, slow support craft and heavy logistical ships."
+msgstr "Contremesure planetaire contre bloqueurs, soutien lent et vaisseaux logistiques lourds."
+
+msgid "Planetary Defense Bastion"
+msgstr "Bastion de defense planetaire"
+
+msgid "Critical hardpoint that raises planetary conquest resistance against Exodus-class operations."
+msgstr "Point fortifie critique qui augmente la resistance a la conquete contre les operations de classe Exodus."

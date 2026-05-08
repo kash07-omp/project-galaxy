@@ -5,6 +5,7 @@ defmodule NexusDownfallWeb.PlanetLive do
 
   alias NexusDownfall.Fleets
   alias NexusDownfall.Planets
+  alias NexusDownfall.Planets.Defenses
   alias NexusDownfall.Planets.ProductionEngine
   alias NexusDownfall.Repo
   alias NexusDownfall.Universe.SolarSystem
@@ -35,9 +36,11 @@ defmodule NexusDownfallWeb.PlanetLive do
 
   def mount(%{"id" => planet_id}, _session, socket) do
     current_user_id = socket.assigns.current_user.id
+
     case safe_load_planet_state(planet_id, current_user_id) do
       {:ok, {planet, buildings, rates, display, now}} ->
         shipyard = Fleets.shipyard_panel_for_user_planet(planet_id, current_user_id)
+        defense_panel = Defenses.defense_panel_for_user_planet(planet_id, current_user_id)
 
         # Load galaxy_id for nav link
         system = Repo.get!(SolarSystem, planet.solar_system_id)
@@ -55,6 +58,9 @@ defmodule NexusDownfallWeb.PlanetLive do
          |> assign(:spaceport_fleets, shipyard.fleets)
          |> assign(:shipyard_queue_items, shipyard.queue_items)
          |> assign(:ship_catalog, shipyard.ship_catalog)
+         |> assign(:planet_defenses, defense_panel.defenses)
+         |> assign(:defense_queue_items, defense_panel.queue_items)
+         |> assign(:defense_catalog, defense_panel.defense_catalog)
          |> assign(:selected, nil)
          |> assign(:selected_tab, "info")
          |> assign(:show_user_menu, false)
@@ -64,6 +70,9 @@ defmodule NexusDownfallWeb.PlanetLive do
          |> assign(:shipyard_error, nil)
          |> assign(:shipyard_notice, nil)
          |> assign(:build_order, %{})
+         |> assign(:defense_error, nil)
+         |> assign(:defense_notice, nil)
+         |> assign(:defense_order, %{})
          |> assign(
            :selected_fleet_id,
            case shipyard.fleets do
@@ -235,7 +244,7 @@ defmodule NexusDownfallWeb.PlanetLive do
           <div
             class={[
               "relative z-10 w-full bg-gray-900 rounded-2xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col",
-              if(@selected == "spaceport" and @selected_tab == "specific",
+              if(@selected in ["spaceport", "defense_center"] and @selected_tab == "specific",
                 do: "max-w-5xl",
                 else: "max-w-2xl"
               )
@@ -307,7 +316,7 @@ defmodule NexusDownfallWeb.PlanetLive do
             <!-- Tab Content -->
             <div class={[
               "overflow-y-auto flex-1",
-              if(@selected == "spaceport" and @selected_tab == "specific",
+              if(@selected in ["spaceport", "defense_center"] and @selected_tab == "specific",
                 do: "overflow-hidden flex flex-col",
                 else: "p-5"
               )
@@ -404,13 +413,15 @@ defmodule NexusDownfallWeb.PlanetLive do
                       <div>
                         <span class="text-emerald-400 font-semibold">
                           +{round(@rates.energy_produce)}
-                        </span> <span class="text-gray-500 ml-1">{gettext("produced")}</span>
+                        </span>
+                        <span class="text-gray-500 ml-1">{gettext("produced")}</span>
                       </div>
 
                       <div>
                         <span class="text-red-400 font-semibold">
                           -{round(@rates.energy_consume)}
-                        </span> <span class="text-gray-500 ml-1">{gettext("consumed")}</span>
+                        </span>
+                        <span class="text-gray-500 ml-1">{gettext("consumed")}</span>
                       </div>
                     </div>
                   </div>
@@ -549,7 +560,8 @@ defmodule NexusDownfallWeb.PlanetLive do
                                   <div class="flex items-center justify-between text-[10px] mb-1">
                                     <span class="text-emerald-400 font-mono font-semibold">
                                       {format_duration(rem_s)}
-                                    </span> <span class="text-gray-500">{pct}%</span>
+                                    </span>
+                                    <span class="text-gray-500">{pct}%</span>
                                   </div>
 
                                   <div class="h-1.5 rounded-full bg-gray-700 overflow-hidden">
@@ -720,10 +732,10 @@ defmodule NexusDownfallWeb.PlanetLive do
                           </div>
                         <% else %>
                           <%= for ship <- @ship_catalog, Map.get(@build_order, ship.type, 0) > 0 do %>
-                            <% qty = Map.get(@build_order, ship.type, 0) %>
-                            <% row_raw_materials = ship.cost.raw_materials * qty * 1.0 %>
-                            <% row_microchips = ship.cost.microchips * qty * 1.0 %>
-                            <% row_hydrogen = ship.cost.hydrogen * qty * 1.0 %>
+                            <% qty = Map.get(@build_order, ship.type, 0) %> <% row_raw_materials =
+                              ship.cost.raw_materials * qty * 1.0 %> <% row_microchips =
+                              ship.cost.microchips * qty * 1.0 %> <% row_hydrogen =
+                              ship.cost.hydrogen * qty * 1.0 %>
                             <div class="rounded-lg border border-gray-700 bg-gray-800/40 p-2">
                               <div class="flex items-center justify-between gap-1">
                                 <span class="text-[11px] font-semibold text-white leading-tight flex-1 pr-1 truncate">
@@ -751,11 +763,13 @@ defmodule NexusDownfallWeb.PlanetLive do
                                   </button>
                                 </div>
                               </div>
+
                               <div class="flex items-center justify-between mt-1 text-[10px]">
                                 <span class="text-gray-500">
                                   ⏱ {format_duration(ship.build_time_seconds * qty)}
                                 </span>
                               </div>
+
                               <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px]">
                                 <span class="text-amber-500">
                                   ⛏ {format_resource(row_raw_materials)}
@@ -850,12 +864,300 @@ defmodule NexusDownfallWeb.PlanetLive do
                     </div>
                   </div>
                 <% else %>
-                  <div class="flex flex-col items-center justify-center h-36 text-center gap-2">
-                    <span class="text-4xl">🔧</span>
-                    <p class="text-gray-500 text-sm">
-                      {gettext("Specific structure information coming soon.")}
-                    </p>
-                  </div>
+                  <%= if @selected == "defense_center" do %>
+                    <% center_ready = sel_level >= 1 %>
+                    <div class="flex flex-1 overflow-hidden">
+                      <div class="w-56 shrink-0 flex flex-col border-r border-gray-800 overflow-hidden bg-gray-950/30">
+                        <div class="px-3 pt-3 pb-2 border-b border-gray-800 shrink-0">
+                          <h3 class="text-[11px] font-bold uppercase tracking-widest text-gray-500">
+                            {gettext("Defense Queue")}
+                          </h3>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto flex flex-col gap-2 px-2 py-2">
+                          <%= if @defense_queue_items == [] do %>
+                            <div class="flex flex-col items-center justify-center h-full text-center gap-2 py-8">
+                              <span class="text-2xl font-bold opacity-20">DEF</span>
+                              <p class="text-xs text-gray-600">{gettext("Queue is empty")}</p>
+                            </div>
+                          <% else %>
+                            <%= for {item, idx} <- Enum.with_index(@defense_queue_items) do %>
+                              <% is_building = item.status == "building" and item.finish_at != nil %> <% rem_s =
+                                if is_building,
+                                  do: max(0, DateTime.diff(item.finish_at, @now, :second)),
+                                  else: 0 %> <% total_s =
+                                if is_building, do: max(1, item.build_seconds), else: 1 %> <% pct =
+                                if is_building, do: trunc((1 - rem_s / total_s) * 100), else: 0 %>
+                              <div class={[
+                                "rounded-xl p-2.5 border overflow-hidden",
+                                if(is_building,
+                                  do: "border-cyan-800/60 bg-cyan-950/30",
+                                  else: "border-gray-700 bg-gray-800/40"
+                                )
+                              ]}>
+                                <div class="flex items-start gap-2">
+                                  <div class={[
+                                    "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5",
+                                    if(is_building, do: "bg-cyan-600", else: "bg-indigo-600")
+                                  ]}>
+                                    {idx + 1}
+                                  </div>
+                                  <div class="min-w-0 flex-1">
+                                    <p class="text-[12px] font-semibold text-white leading-tight truncate">
+                                      {defense_name(item.defense_type)}
+                                    </p>
+                                    <p class="text-[11px] text-gray-400">x{item.quantity}</p>
+                                  </div>
+                                </div>
+
+                                <%= if is_building do %>
+                                  <div class="mt-2">
+                                    <div class="flex items-center justify-between text-[10px] mb-1">
+                                      <span class="text-cyan-400 font-mono font-semibold">
+                                        {format_duration(rem_s)}
+                                      </span>
+                                      <span class="text-gray-500">{pct}%</span>
+                                    </div>
+                                    <div class="h-1.5 rounded-full bg-gray-700 overflow-hidden">
+                                      <div
+                                        class="h-full bg-cyan-500 rounded-full transition-all duration-1000"
+                                        style={"width: #{pct}%"}
+                                      />
+                                    </div>
+                                  </div>
+                                <% else %>
+                                  <p class="text-[10px] text-gray-600 italic mt-1">
+                                    {gettext("Position")} #{item.queue_position}
+                                  </p>
+                                <% end %>
+                              </div>
+                            <% end %>
+                          <% end %>
+                        </div>
+                      </div>
+
+                      <div class="flex-1 overflow-y-auto flex flex-col">
+                        <%= if not center_ready do %>
+                          <div class="px-4 py-3 border-b border-amber-900/40 bg-amber-950/20 shrink-0">
+                            <p class="text-amber-400 text-xs font-medium">
+                              {gettext("Defense Center level 1 is required to build defenses.")}
+                            </p>
+                          </div>
+                        <% end %>
+
+                        <%= if @defense_error do %>
+                          <div class="mx-3 mt-2 mb-1 rounded-lg border border-red-700 bg-red-950/40 px-3 py-2 text-xs text-red-300 shrink-0">
+                            {@defense_error}
+                          </div>
+                        <% end %>
+
+                        <%= if @defense_notice do %>
+                          <div class="mx-3 mt-2 mb-1 rounded-lg border border-emerald-700 bg-emerald-950/40 px-3 py-2 text-xs text-emerald-300 shrink-0">
+                            {@defense_notice}
+                          </div>
+                        <% end %>
+
+                        <div class="flex flex-col divide-y divide-gray-800/60">
+                          <%= for defense <- @defense_catalog do %>
+                            <% qty_in_order = Map.get(@defense_order, defense.type, 0) %>
+                            <% owned_qty = defense_quantity(@planet_defenses, defense.type) %>
+                            <form
+                              phx-submit="add_to_defense_order"
+                              class="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-800/30 transition"
+                            >
+                              <input type="hidden" name="defense_type" value={defense.type} />
+                              <div class="relative w-9 h-9 shrink-0 rounded-lg bg-gray-900/80 border border-gray-700/60 flex items-center justify-center text-[11px] font-bold text-cyan-300">
+                                T{defense.tier}
+                                <%= if qty_in_order > 0 do %>
+                                  <div class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 rounded-full bg-cyan-600 flex items-center justify-center text-[9px] font-bold text-white px-0.5">
+                                    {qty_in_order}
+                                  </div>
+                                <% end %>
+                              </div>
+
+                              <div class="flex-1 min-w-0">
+                                <div class="flex items-baseline gap-2 flex-wrap">
+                                  <span class="text-[12px] font-semibold text-white">
+                                    {translate_dynamic(defense.name)}
+                                  </span>
+                                  <span class="text-[10px] text-gray-500 shrink-0">
+                                    {gettext("Owned")}: {owned_qty}
+                                  </span>
+                                  <%= if Map.has_key?(defense, :max_per_planet) do %>
+                                    <span class="text-[10px] text-amber-400 shrink-0">
+                                      {gettext("Limit")}: {defense.max_per_planet}
+                                    </span>
+                                  <% end %>
+                                </div>
+
+                                <p class="text-[10px] text-gray-500 mt-0.5 truncate">
+                                  {translate_dynamic(defense.description)}
+                                </p>
+
+                                <div class="flex items-center gap-3 mt-0.5 flex-wrap">
+                                  <span class="text-[10px] text-amber-400">
+                                    Mat. {format_resource(defense.cost.raw_materials * 1.0)}
+                                  </span>
+                                  <span class="text-[10px] text-blue-400">
+                                    {gettext("Chips")} {format_resource(defense.cost.microchips * 1.0)}
+                                  </span>
+                                  <span class="text-[10px] text-cyan-400">
+                                    H2 {format_resource(defense.cost.hydrogen * 1.0)}
+                                  </span>
+                                  <span class="text-[10px] text-gray-500">
+                                    ATK {defense.attack} / HP {defense.hull}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div class="flex items-center gap-1.5 shrink-0">
+                                <input
+                                  type="number"
+                                  name="quantity"
+                                  min="1"
+                                  value="1"
+                                  disabled={not center_ready}
+                                  class="w-12 rounded-lg border border-gray-700 bg-gray-900 px-2 py-1 text-xs text-white text-center focus:border-cyan-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <button
+                                  type="submit"
+                                  disabled={not center_ready}
+                                  class={[
+                                    "rounded-lg px-2.5 py-1 text-xs font-semibold transition",
+                                    if(center_ready,
+                                      do: "bg-cyan-600 hover:bg-cyan-500 text-white cursor-pointer",
+                                      else: "bg-gray-800 text-gray-600 cursor-not-allowed"
+                                    )
+                                  ]}
+                                >
+                                  {gettext("Add")}
+                                </button>
+                              </div>
+                            </form>
+                          <% end %>
+                        </div>
+                      </div>
+
+                      <div class="w-64 shrink-0 flex flex-col border-l border-gray-800 overflow-hidden bg-gray-950/30">
+                        <div class="px-3 pt-3 pb-2 border-b border-gray-800 shrink-0">
+                          <h3 class="text-[11px] font-bold uppercase tracking-widest text-gray-500">
+                            {gettext("Defense Summary")}
+                          </h3>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5">
+                          <%= if Enum.all?(@defense_order, fn {_, q} -> q == 0 end) or map_size(@defense_order) == 0 do %>
+                            <div class="flex flex-col items-center justify-center h-full text-center gap-2 py-8">
+                              <p class="text-xs text-gray-600">
+                                {gettext("No defenses staged yet.")}
+                              </p>
+                              <p class="text-[10px] text-gray-700">
+                                {gettext("Add defenses from the list.")}
+                              </p>
+                            </div>
+                          <% else %>
+                            <%= for defense <- @defense_catalog, Map.get(@defense_order, defense.type, 0) > 0 do %>
+                              <% qty = Map.get(@defense_order, defense.type, 0) %>
+                              <div class="rounded-lg border border-gray-700 bg-gray-800/40 p-2">
+                                <div class="flex items-center justify-between gap-1">
+                                  <span class="text-[11px] font-semibold text-white leading-tight flex-1 pr-1 truncate">
+                                    {translate_dynamic(defense.name)}
+                                  </span>
+                                  <div class="flex items-center gap-0.5 shrink-0">
+                                    <button
+                                      phx-click="adjust_defense_order"
+                                      phx-value-defense_type={defense.type}
+                                      phx-value-delta="-1"
+                                      class="w-5 h-5 rounded bg-gray-700 hover:bg-gray-600 text-white text-xs flex items-center justify-center leading-none"
+                                    >
+                                      -
+                                    </button>
+                                    <span class="w-6 text-center text-[11px] font-mono text-white">
+                                      {qty}
+                                    </span>
+                                    <button
+                                      phx-click="adjust_defense_order"
+                                      phx-value-defense_type={defense.type}
+                                      phx-value-delta="1"
+                                      class="w-5 h-5 rounded bg-gray-700 hover:bg-gray-600 text-white text-xs flex items-center justify-center leading-none"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </div>
+                                <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px]">
+                                  <span class="text-gray-500">
+                                    {format_duration(defense.build_time_seconds * qty)}
+                                  </span>
+                                  <span class="text-amber-500">
+                                    Mat. {format_resource(defense.cost.raw_materials * qty * 1.0)}
+                                  </span>
+                                  <span class="text-blue-400">
+                                    {gettext("Chips")} {format_resource(
+                                      defense.cost.microchips * qty * 1.0
+                                    )}
+                                  </span>
+                                  <span class="text-cyan-400">
+                                    H2 {format_resource(defense.cost.hydrogen * qty * 1.0)}
+                                  </span>
+                                </div>
+                              </div>
+                            <% end %>
+                          <% end %>
+                        </div>
+
+                        <% total_defense_items =
+                          Enum.reduce(@defense_order, 0, fn {_, q}, acc -> acc + q end)
+
+                        total_defense_time_s =
+                          Enum.reduce(@defense_order, 0, fn {type, qty}, acc ->
+                            defense = Enum.find(@defense_catalog, &(&1.type == type))
+                            if defense, do: acc + defense.build_time_seconds * qty, else: acc
+                          end) %>
+                        <div class="border-t border-gray-800 p-3 shrink-0 flex flex-col gap-2">
+                          <div class="grid grid-cols-2 gap-y-1 text-[10px]">
+                            <div class="text-gray-500">{gettext("Total Items:")}</div>
+                            <div class="text-white font-semibold text-right">
+                              {total_defense_items}
+                            </div>
+                            <div class="text-gray-500">{gettext("Total Time:")}</div>
+                            <div class="text-white font-semibold text-right">
+                              {format_duration(total_defense_time_s)}
+                            </div>
+                          </div>
+
+                          <button
+                            phx-click="submit_defense_order"
+                            disabled={not center_ready or total_defense_items == 0}
+                            class={[
+                              "w-full rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition",
+                              if(center_ready and total_defense_items > 0,
+                                do: "bg-cyan-600 hover:bg-cyan-500 text-white cursor-pointer",
+                                else: "bg-gray-800 text-gray-600 cursor-not-allowed"
+                              )
+                            ]}
+                          >
+                            {gettext("Build Defenses")}
+                          </button>
+                          <%= if @dev_tools_enabled do %>
+                            <button
+                              phx-click="grant_test_resources"
+                              class="w-full rounded-lg py-2 text-[11px] font-semibold uppercase tracking-wider transition bg-cyan-700/80 hover:bg-cyan-600 text-white"
+                            >
+                              {gettext("Add Test Resources")}
+                            </button>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  <% else %>
+                    <div class="flex flex-col items-center justify-center h-36 text-center gap-2">
+                      <span class="text-4xl">🔧</span>
+                      <p class="text-gray-500 text-sm">
+                        {gettext("Specific structure information coming soon.")}
+                      </p>
+                    </div>
+                  <% end %>
                 <% end %>
               <% end %>
               <!-- ── TAB: Especialización ── -->
@@ -937,6 +1239,9 @@ defmodule NexusDownfallWeb.PlanetLive do
        shipyard_error: nil,
        shipyard_notice: nil,
        build_order: %{},
+       defense_error: nil,
+       defense_notice: nil,
+       defense_order: %{},
        selected_fleet_id: first_fleet_id
      )}
   end
@@ -948,7 +1253,10 @@ defmodule NexusDownfallWeb.PlanetLive do
        error: nil,
        shipyard_error: nil,
        shipyard_notice: nil,
-       build_order: %{}
+       build_order: %{},
+       defense_error: nil,
+       defense_notice: nil,
+       defense_order: %{}
      )}
   end
 
@@ -968,6 +1276,7 @@ defmodule NexusDownfallWeb.PlanetLive do
       {:ok, _building} ->
         {planet, buildings, rates, display, now} = load_planet_state(planet_id, current_user_id)
         shipyard = Fleets.shipyard_panel_for_user_planet(planet_id, current_user_id)
+        defense_panel = Defenses.defense_panel_for_user_planet(planet_id, current_user_id)
 
         {:noreply,
          socket
@@ -979,6 +1288,9 @@ defmodule NexusDownfallWeb.PlanetLive do
          |> assign(:spaceport_fleets, shipyard.fleets)
          |> assign(:shipyard_queue_items, shipyard.queue_items)
          |> assign(:ship_catalog, shipyard.ship_catalog)
+         |> assign(:planet_defenses, defense_panel.defenses)
+         |> assign(:defense_queue_items, defense_panel.queue_items)
+         |> assign(:defense_catalog, defense_panel.defense_catalog)
          |> assign(:error, nil)}
 
       {:error, :already_constructing} ->
@@ -1009,6 +1321,7 @@ defmodule NexusDownfallWeb.PlanetLive do
       {:ok, _item} ->
         {planet, buildings, rates, display, now} = load_planet_state(planet_id, current_user_id)
         shipyard = Fleets.shipyard_panel_for_user_planet(planet_id, current_user_id)
+        defense_panel = Defenses.defense_panel_for_user_planet(planet_id, current_user_id)
 
         {:noreply,
          socket
@@ -1020,6 +1333,9 @@ defmodule NexusDownfallWeb.PlanetLive do
          |> assign(:spaceport_fleets, shipyard.fleets)
          |> assign(:shipyard_queue_items, shipyard.queue_items)
          |> assign(:ship_catalog, shipyard.ship_catalog)
+         |> assign(:planet_defenses, defense_panel.defenses)
+         |> assign(:defense_queue_items, defense_panel.queue_items)
+         |> assign(:defense_catalog, defense_panel.defense_catalog)
          |> assign(:shipyard_notice, gettext("Ship construction queued."))
          |> assign(:shipyard_error, nil)}
 
@@ -1163,6 +1479,7 @@ defmodule NexusDownfallWeb.PlanetLive do
           load_planet_state(planet.id, current_user.id)
 
         shipyard = Fleets.shipyard_panel_for_user_planet(planet.id, current_user.id)
+        defense_panel = Defenses.defense_panel_for_user_planet(planet.id, current_user.id)
 
         base =
           socket
@@ -1175,6 +1492,9 @@ defmodule NexusDownfallWeb.PlanetLive do
           |> assign(:spaceport_fleets, shipyard.fleets)
           |> assign(:shipyard_queue_items, shipyard.queue_items)
           |> assign(:ship_catalog, shipyard.ship_catalog)
+          |> assign(:planet_defenses, defense_panel.defenses)
+          |> assign(:defense_queue_items, defense_panel.queue_items)
+          |> assign(:defense_catalog, defense_panel.defense_catalog)
 
         if err_list == [] do
           {:noreply,
@@ -1197,6 +1517,121 @@ defmodule NexusDownfallWeb.PlanetLive do
     end
   end
 
+  def handle_event(
+        "add_to_defense_order",
+        %{"defense_type" => defense_type, "quantity" => qty_str},
+        socket
+      ) do
+    qty =
+      case Integer.parse(qty_str) do
+        {n, _} when n > 0 -> n
+        _ -> 1
+      end
+
+    current = Map.get(socket.assigns.defense_order, defense_type, 0)
+    new_order = Map.put(socket.assigns.defense_order, defense_type, current + qty)
+    {:noreply, assign(socket, :defense_order, new_order)}
+  end
+
+  def handle_event(
+        "adjust_defense_order",
+        %{"defense_type" => defense_type, "delta" => delta_str},
+        socket
+      ) do
+    delta =
+      case Integer.parse(delta_str) do
+        {n, _} -> n
+        :error -> 0
+      end
+
+    current = Map.get(socket.assigns.defense_order, defense_type, 0)
+    new_qty = max(0, current + delta)
+
+    new_order =
+      if new_qty == 0,
+        do: Map.delete(socket.assigns.defense_order, defense_type),
+        else: Map.put(socket.assigns.defense_order, defense_type, new_qty)
+
+    {:noreply, assign(socket, :defense_order, new_order)}
+  end
+
+  def handle_event("submit_defense_order", _params, socket) do
+    %{
+      defense_order: defense_order,
+      planet: planet,
+      current_user: current_user,
+      defense_catalog: defense_catalog
+    } = socket.assigns
+
+    if Enum.all?(defense_order, fn {_, q} -> q == 0 end) or map_size(defense_order) == 0 do
+      {:noreply,
+       assign(socket,
+         defense_error: gettext("Add defenses to the order first."),
+         defense_notice: nil
+       )}
+    else
+      ordered =
+        defense_order
+        |> Enum.filter(fn {_, qty} -> qty > 0 end)
+        |> Enum.sort_by(fn {type, _} ->
+          defense = Enum.find(defense_catalog, &(&1.type == type))
+          if defense, do: {defense.tier, defense.name}, else: {999, type}
+        end)
+
+      {ok_count, err_list} =
+        Enum.reduce(ordered, {0, []}, fn {defense_type, qty}, {ok_acc, err_acc} ->
+          case Defenses.enqueue_defense_construction_for_user(
+                 planet.id,
+                 current_user.id,
+                 %{"defense_type" => defense_type, "quantity" => to_string(qty)}
+               ) do
+            {:ok, _} -> {ok_acc + 1, err_acc}
+            {:error, reason} -> {ok_acc, [reason | err_acc]}
+          end
+        end)
+
+      {new_planet, buildings, rates, display, now} =
+        load_planet_state(planet.id, current_user.id)
+
+      shipyard = Fleets.shipyard_panel_for_user_planet(planet.id, current_user.id)
+      defense_panel = Defenses.defense_panel_for_user_planet(planet.id, current_user.id)
+
+      base =
+        socket
+        |> assign(:defense_order, %{})
+        |> assign(:planet, new_planet)
+        |> assign(:buildings, buildings)
+        |> assign(:rates, rates)
+        |> assign(:display, display)
+        |> assign(:now, now)
+        |> assign(:spaceport_fleets, shipyard.fleets)
+        |> assign(:shipyard_queue_items, shipyard.queue_items)
+        |> assign(:ship_catalog, shipyard.ship_catalog)
+        |> assign(:planet_defenses, defense_panel.defenses)
+        |> assign(:defense_queue_items, defense_panel.queue_items)
+        |> assign(:defense_catalog, defense_panel.defense_catalog)
+
+      if err_list == [] do
+        {:noreply,
+         assign(base,
+           defense_notice: gettext("Defenses queued successfully!"),
+           defense_error: nil
+         )}
+      else
+        failed_reasons =
+          err_list
+          |> Enum.reverse()
+          |> Enum.map(&defense_error_reason_label/1)
+          |> Enum.join(", ")
+
+        msg =
+          "#{ok_count} #{gettext("batch(es) queued")}. #{length(err_list)} #{gettext("failed")}: #{failed_reasons}"
+
+        {:noreply, assign(base, defense_error: msg, defense_notice: nil)}
+      end
+    end
+  end
+
   def handle_event("grant_test_resources", _params, socket) do
     planet_id = socket.assigns.planet.id
     current_user_id = socket.assigns.current_user.id
@@ -1204,6 +1639,7 @@ defmodule NexusDownfallWeb.PlanetLive do
     case Planets.grant_test_resources_for_user(planet_id, current_user_id) do
       {:ok, _} ->
         {planet, buildings, rates, display, now} = load_planet_state(planet_id, current_user_id)
+        defense_panel = Defenses.defense_panel_for_user_planet(planet_id, current_user_id)
 
         {:noreply,
          socket
@@ -1212,7 +1648,12 @@ defmodule NexusDownfallWeb.PlanetLive do
          |> assign(:rates, rates)
          |> assign(:display, display)
          |> assign(:now, now)
+         |> assign(:planet_defenses, defense_panel.defenses)
+         |> assign(:defense_queue_items, defense_panel.queue_items)
+         |> assign(:defense_catalog, defense_panel.defense_catalog)
          |> assign(:shipyard_notice, gettext("Test resources added to this planet."))
+         |> assign(:defense_notice, gettext("Test resources added to this planet."))
+         |> assign(:defense_error, nil)
          |> assign(:shipyard_error, nil)}
 
       {:error, :not_found} ->
@@ -1242,6 +1683,7 @@ defmodule NexusDownfallWeb.PlanetLive do
       load_planet_state(planet_id, current_user_id)
 
     shipyard = Fleets.shipyard_panel_for_user_planet(planet_id, current_user_id)
+    defense_panel = Defenses.defense_panel_for_user_planet(planet_id, current_user_id)
 
     {:noreply,
      socket
@@ -1252,7 +1694,10 @@ defmodule NexusDownfallWeb.PlanetLive do
      |> assign(:display, display)
      |> assign(:spaceport_fleets, shipyard.fleets)
      |> assign(:shipyard_queue_items, shipyard.queue_items)
-     |> assign(:ship_catalog, shipyard.ship_catalog)}
+     |> assign(:ship_catalog, shipyard.ship_catalog)
+     |> assign(:planet_defenses, defense_panel.defenses)
+     |> assign(:defense_queue_items, defense_panel.queue_items)
+     |> assign(:defense_catalog, defense_panel.defense_catalog)}
   end
 
   defp shipyard_error_reason_label(reason) do
@@ -1274,6 +1719,28 @@ defmodule NexusDownfallWeb.PlanetLive do
 
       :invalid_queue_request ->
         gettext("Invalid shipyard request.")
+
+      other ->
+        to_string(other)
+    end
+  end
+
+  defp defense_error_reason_label(reason) do
+    case reason do
+      :defense_center_required ->
+        gettext("Defense Center level 1 is required to build defenses.")
+
+      :insufficient_resources ->
+        gettext("Insufficient resources to queue defenses.")
+
+      :defense_limit_reached ->
+        gettext("Defense limit reached for this planet.")
+
+      :queue_scheduling_failed ->
+        gettext("Could not schedule defense construction. Please try again.")
+
+      :invalid_queue_request ->
+        gettext("Invalid defense request.")
 
       other ->
         to_string(other)
@@ -1348,10 +1815,20 @@ defmodule NexusDownfallWeb.PlanetLive do
     end
   end
 
-  defp queue_status_label("building"), do: gettext("In progress")
-  defp queue_status_label("queued"), do: gettext("Queued")
-  defp queue_status_label("completed"), do: gettext("Completed")
-  defp queue_status_label(other), do: other |> to_string() |> String.capitalize()
+  defp defense_name(type) do
+    case Defenses.defense_definition(type) do
+      %{name: name} -> translate_dynamic(name)
+      _ -> type |> String.replace("_", " ") |> String.capitalize()
+    end
+  end
+
+  defp defense_quantity(defenses, defense_type) do
+    defenses
+    |> List.wrap()
+    |> Enum.find_value(0, fn defense ->
+      if defense.defense_type == defense_type, do: defense.quantity
+    end)
+  end
 
   defp translate_dynamic(msgid), do: Gettext.gettext(NexusDownfallWeb.Gettext, msgid)
 
