@@ -152,8 +152,14 @@ defmodule NexusDownfallWeb.NotificationsLive do
             </div>
           </section>
 
-          <section class="grid gap-4 lg:grid-cols-[380px_minmax(0,1fr)]">
-            <aside class="overflow-hidden rounded-2xl border border-cyan-500/25 bg-[#0a1528]/95 shadow-[0_18px_44px_rgba(2,8,22,0.62)]">
+          <section
+            class="flex min-w-0 flex-row items-start gap-4"
+            style="display: flex; flex-direction: row; align-items: flex-start; gap: 1rem;"
+          >
+            <aside
+              class="min-w-0 overflow-hidden rounded-2xl border border-cyan-500/25 bg-[#0a1528]/95 shadow-[0_18px_44px_rgba(2,8,22,0.62)]"
+              style="flex: 0 0 380px; width: 380px;"
+            >
               <div class="border-b border-cyan-500/15 bg-[linear-gradient(170deg,rgba(8,145,178,0.22),rgba(8,145,178,0.03))] px-4 py-3">
                 <h2 class="text-lg font-bold text-white">{gettext("Recent Notifications")}</h2>
                 <p class="mt-1 text-xs text-cyan-100/80">
@@ -216,7 +222,10 @@ defmodule NexusDownfallWeb.NotificationsLive do
               </div>
             </aside>
 
-            <article class="min-h-[36rem] rounded-2xl border border-cyan-500/25 bg-[#0a1528]/95 p-4 shadow-[0_18px_44px_rgba(2,8,22,0.62)] md:p-5">
+            <article
+              class="min-h-[36rem] min-w-0 rounded-2xl border border-cyan-500/25 bg-[#0a1528]/95 p-4 shadow-[0_18px_44px_rgba(2,8,22,0.62)] md:p-5"
+              style="flex: 1 1 auto;"
+            >
               <%= if @selected_notification do %>
                 <.notification_detail
                   notification={@selected_notification}
