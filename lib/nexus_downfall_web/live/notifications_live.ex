@@ -460,12 +460,14 @@ defmodule NexusDownfallWeb.NotificationsLive do
             <tbody class="divide-y divide-cyan-500/10">
               <%= for row <- @rows do %>
                 <tr class="text-gray-200">
-                  <td class="px-3 py-2">
-                    <div class="flex items-center gap-2">
+                  <td class="px-3 py-1.5">
+                    <div class="flex items-center gap-3">
                       <img
-                        src={payload_get(row, "icon_path", "/images/ships/ship-a.svg")}
+                        src={unit_thumbnail_path(row)}
                         alt=""
-                        class="h-8 w-8 rounded border border-cyan-500/20 bg-[#020817] object-cover"
+                        class="h-11 w-11 shrink-0 border border-white/10 bg-black object-cover"
+                        style="filter: none;"
+                        draggable="false"
                       />
                       <div class="min-w-0">
                         <p class="truncate font-semibold text-white">
@@ -477,13 +479,13 @@ defmodule NexusDownfallWeb.NotificationsLive do
                       </div>
                     </div>
                   </td>
-                  <td class="px-2 py-2 text-right font-semibold text-cyan-100">
+                  <td class="px-2 py-1.5 text-right font-semibold text-cyan-100">
                     {format_number(payload_get(row, "before", 0), @locale)}
                   </td>
-                  <td class="px-2 py-2 text-right font-semibold text-emerald-200">
+                  <td class="px-2 py-1.5 text-right font-semibold text-emerald-200">
                     {format_number(payload_get(row, "after", 0), @locale)}
                   </td>
-                  <td class="px-3 py-2 text-right font-semibold text-red-200">
+                  <td class="px-3 py-1.5 text-right font-semibold text-red-200">
                     {format_number(payload_get(row, "lost", 0), @locale)}
                   </td>
                 </tr>
@@ -695,6 +697,14 @@ defmodule NexusDownfallWeb.NotificationsLive do
   end
 
   defp resource_value(_resources, _key), do: 0
+
+  defp unit_thumbnail_path(row) do
+    payload_get(
+      row,
+      "thumbnail_path",
+      payload_get(row, "icon_path", "/images/ships/light_fighter.jpg")
+    )
+  end
 
   defp current_locale(%{locale: locale}) when locale in ["en", "es", "fr"], do: locale
   defp current_locale(_user), do: "en"

@@ -372,11 +372,16 @@ defmodule NexusDownfall.Fleets do
   def ship_definition(type), do: Map.get(@ship_catalog, type)
 
   def ship_image_path(type) when is_binary(type) do
-    slug = Map.get(@ship_image_slug_by_type, type, type)
-    "/images/ships/#{slug}.svg"
+    "/images/ships/#{ship_image_slug(type)}.svg"
   end
 
   def ship_image_path(_type), do: "/images/ships/light_fighter.svg"
+
+  def ship_thumbnail_path(type) when is_binary(type) do
+    "/images/ships/#{ship_image_slug(type)}.jpg"
+  end
+
+  def ship_thumbnail_path(_type), do: "/images/ships/light_fighter.jpg"
 
   def ship_build_time_seconds(type, quantity \\ 1) do
     case ship_definition(type) do
@@ -2260,6 +2265,7 @@ defmodule NexusDownfall.Fleets do
             "class" => group.class,
             "name" => group_unit_name(group),
             "icon_path" => unit_icon_path(group),
+            "thumbnail_path" => unit_thumbnail_path(group),
             "before" => before_quantity,
             "after" => after_quantity,
             "lost" => lost,
@@ -2306,6 +2312,7 @@ defmodule NexusDownfall.Fleets do
                 "class" => group.class,
                 "name" => group_unit_name(group),
                 "icon_path" => unit_icon_path(group),
+                "thumbnail_path" => unit_thumbnail_path(group),
                 "lost" => lost,
                 "resource_cost" => multiply_cost(unit_cost, lost)
               }
@@ -2344,6 +2351,15 @@ defmodule NexusDownfall.Fleets do
 
   defp unit_icon_path(%{kind: :ship, unit_type: ship_type}), do: ship_image_path(ship_type)
   defp unit_icon_path(_), do: ship_image_path("light_fighter")
+
+  defp unit_thumbnail_path(%{kind: :defense}), do: "/images/planet-images/defense-center.png"
+
+  defp unit_thumbnail_path(%{kind: :ship, unit_type: ship_type}),
+    do: ship_thumbnail_path(ship_type)
+
+  defp unit_thumbnail_path(_), do: ship_thumbnail_path("light_fighter")
+
+  defp ship_image_slug(type), do: Map.get(@ship_image_slug_by_type, type, type)
 
   defp unit_cost_for_group(%{kind: :ship, unit_type: ship_type}) do
     ship_definition(ship_type)

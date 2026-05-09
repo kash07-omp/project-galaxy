@@ -57,6 +57,7 @@ defmodule NexusDownfallWeb.NotificationsLiveTest do
               "class" => "Medium",
               "name" => "Corvette",
               "icon_path" => "/images/ships/ship-a.svg",
+              "thumbnail_path" => "/images/ships/valkyr.jpg",
               "before" => 18_700,
               "after" => 18_699,
               "lost" => 1
@@ -104,6 +105,7 @@ defmodule NexusDownfallWeb.NotificationsLiveTest do
     assert html =~ ~s(href="/fleet")
     assert html =~ "Corvette"
     assert html =~ "Missile Platform"
+    assert html =~ "valkyr.jpg"
     assert html =~ "18.700"
   end
 

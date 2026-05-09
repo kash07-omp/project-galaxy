@@ -39,7 +39,6 @@ defmodule NexusDownfallWeb.PlanetsListLive do
         notifications_unread_count={@topbar_notifications_unread_count}
         show_notifications_menu={@show_notifications_menu}
       />
-
       <main class="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_16%_12%,#12385f_0%,#071426_28%,#050912_55%,#03060d_100%)] p-3 md:p-5">
         <div class="mx-auto max-w-[1600px]">
           <!-- ══════ HEADER ══════ -->
@@ -47,45 +46,61 @@ defmodule NexusDownfallWeb.PlanetsListLive do
             <div class="absolute inset-0 bg-[linear-gradient(115deg,rgba(56,189,248,0.12),transparent_35%,rgba(34,197,94,0.08)_62%,transparent_78%)]" />
             <div class="relative flex flex-wrap items-end justify-between gap-4 px-4 py-4 md:px-5">
               <div>
-                <p class="text-[10px] uppercase tracking-[0.22em] text-cyan-300/80"><%= gettext("Planetary Management") %></p>
-                <h1 class="mt-1 text-xl font-bold text-white md:text-2xl"><%= gettext("Your Worlds") %></h1>
+                <p class="text-[10px] uppercase tracking-[0.22em] text-cyan-300/80">
+                  {gettext("Planetary Management")}
+                </p>
+                
+                <h1 class="mt-1 text-xl font-bold text-white md:text-2xl">
+                  {gettext("Your Worlds")}
+                </h1>
+                
                 <p class="mt-1 text-xs text-cyan-100/80 md:text-sm">
-                  <%= gettext("Monitor your planets, view resources and active constructions.") %>
+                  {gettext("Monitor your planets, view resources and active constructions.")}
                 </p>
               </div>
-
+              
               <div class="grid grid-cols-2 gap-2 text-right md:grid-cols-3">
                 <div class="rounded-lg border border-cyan-500/30 bg-[#04101d]/80 px-3 py-2">
-                  <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Planets") %></p>
-                  <p class="text-lg font-bold text-cyan-200"><%= length(@planets) %></p>
+                  <p class="text-[10px] uppercase tracking-wide text-gray-500">
+                    {gettext("Planets")}
+                  </p>
+                  
+                  <p class="text-lg font-bold text-cyan-200">{length(@planets)}</p>
                 </div>
+                
                 <div class="rounded-lg border border-cyan-500/30 bg-[#04101d]/80 px-3 py-2">
-                  <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Building") %></p>
+                  <p class="text-[10px] uppercase tracking-wide text-gray-500">
+                    {gettext("Building")}
+                  </p>
+                  
                   <p class="text-lg font-bold text-amber-300">
-                    <%= Enum.count(@planets, &(&1.any_constructing == true)) %>
+                    {Enum.count(@planets, &(&1.any_constructing == true))}
                   </p>
                 </div>
+                
                 <div class="rounded-lg border border-cyan-500/30 bg-[#04101d]/80 px-3 py-2">
-                  <p class="text-[10px] uppercase tracking-wide text-gray-500"><%= gettext("Population") %></p>
+                  <p class="text-[10px] uppercase tracking-wide text-gray-500">
+                    {gettext("Population")}
+                  </p>
+                  
                   <p class="text-lg font-bold text-emerald-300">
-                    <%= @planets |> Enum.map(& &1.population) |> Enum.sum() |> format_number() %>
+                    {@planets |> Enum.map(& &1.population) |> Enum.sum() |> format_number()}
                   </p>
                 </div>
               </div>
             </div>
           </section>
-
           <!-- ══════ FILTERS (PREMIUM ONLY) ══════ -->
           <%= if @premium_access do %>
             <section class="mb-6 overflow-hidden rounded-2xl border border-cyan-500/25 bg-[#071325]/70 p-4">
               <h3 class="mb-3 text-sm font-bold uppercase text-cyan-200 tracking-wide">
-                <%= gettext("Advanced Filters") %>
+                {gettext("Advanced Filters")}
               </h3>
-
+              
               <div class="grid gap-3 md:grid-cols-4">
                 <div>
                   <label class="mb-1 block text-[11px] uppercase tracking-wide text-gray-500">
-                    <%= gettext("Planet Name") %>
+                    {gettext("Planet Name")}
                   </label>
                   <input
                     type="text"
@@ -95,59 +110,62 @@ defmodule NexusDownfallWeb.PlanetsListLive do
                     class="w-full rounded-lg border border-cyan-500/20 bg-[#060d18] px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none"
                   />
                 </div>
-
+                
                 <div>
                   <label class="mb-1 block text-[11px] uppercase tracking-wide text-gray-500">
-                    <%= gettext("Status") %>
+                    {gettext("Status")}
                   </label>
                   <select
                     phx-change="update_filter_construction"
                     class="w-full rounded-lg border border-cyan-500/20 bg-[#060d18] px-3 py-2 text-sm text-white focus:border-cyan-400 focus:outline-none"
                   >
-                    <option value="all"><%= gettext("All") %></option>
+                    <option value="all">{gettext("All")}</option>
+                    
                     <option value="building" selected={@filter_has_construction}>
-                      <%= gettext("Building") %>
+                      {gettext("Building")}
                     </option>
-                    <option value="idle"><%= gettext("Idle") %></option>
+                    
+                    <option value="idle">{gettext("Idle")}</option>
                   </select>
                 </div>
-
+                
                 <div>
                   <label class="mb-1 block text-[11px] uppercase tracking-wide text-gray-500">
-                    <%= gettext("Sort By") %>
+                    {gettext("Sort By")}
                   </label>
                   <select
                     phx-change="update_sort_by"
                     class="w-full rounded-lg border border-cyan-500/20 bg-[#060d18] px-3 py-2 text-sm text-white focus:border-cyan-400 focus:outline-none"
                   >
-                    <option value="name"><%= gettext("Name") %></option>
-                    <option value="population"><%= gettext("Population") %></option>
-                    <option value="resources"><%= gettext("Total Resources") %></option>
+                    <option value="name">{gettext("Name")}</option>
+                    
+                    <option value="population">{gettext("Population")}</option>
+                    
+                    <option value="resources">{gettext("Total Resources")}</option>
                   </select>
                 </div>
-
+                
                 <div class="flex items-end">
                   <button
                     phx-click="reset_filters"
                     class="w-full rounded-lg bg-gray-700/50 px-3 py-2 text-sm font-semibold text-gray-300 transition hover:bg-gray-700"
                   >
-                    <%= gettext("Reset") %>
+                    {gettext("Reset")}
                   </button>
                 </div>
               </div>
             </section>
           <% end %>
-
           <!-- ══════ PLANETS GRID ══════ -->
           <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <%= for planet <- @filtered_planets do %>
               <.planet_card planet={planet} premium_access={@premium_access} />
             <% end %>
-
+            
             <%= if Enum.empty?(@filtered_planets) do %>
               <div class="col-span-full flex items-center justify-center rounded-xl border border-cyan-500/20 bg-[#060d18]/50 py-12">
                 <div class="text-center">
-                  <p class="text-sm text-gray-400"><%= gettext("No planets match your filters.") %></p>
+                  <p class="text-sm text-gray-400">{gettext("No planets match your filters.")}</p>
                 </div>
               </div>
             <% end %>
@@ -192,67 +210,75 @@ defmodule NexusDownfallWeb.PlanetsListLive do
         />
         <div class="absolute inset-0 bg-gradient-to-t from-[#050912] via-transparent to-transparent" />
       </div>
-
+      
       <div class="relative p-4">
         <div class="mb-3">
-          <h3 class="text-base font-bold text-white group-hover:text-cyan-200">
-            <%= @planet.name %>
-          </h3>
+          <h3 class="text-base font-bold text-white group-hover:text-cyan-200">{@planet.name}</h3>
+          
           <p class="mt-1 text-[11px] text-gray-400">
-            <%= gettext("System") %>: [<%= @planet.galaxy_number %>:<%= @planet.system_name %>:<%= @planet.orbit_position %>:<%= @planet.region %>]
+            {gettext("System")}: [{@planet.galaxy_number}:{@planet.system_name}:{@planet.orbit_position}:{@planet.region}]
           </p>
         </div>
-
+        
         <div class="grid grid-cols-2 gap-2 mb-3 text-[11px]">
           <div class="rounded bg-[#060d18]/60 px-2 py-1.5">
-            <p class="text-gray-500"><%= gettext("Population") %></p>
-            <p class="font-bold text-emerald-300"><%= format_number(@planet.population) %></p>
+            <p class="text-gray-500">{gettext("Population")}</p>
+            
+            <p class="font-bold text-emerald-300">{format_number(@planet.population)}</p>
           </div>
+          
           <div class="rounded bg-[#060d18]/60 px-2 py-1.5">
-            <p class="text-gray-500"><%= gettext("Status") %></p>
+            <p class="text-gray-500">{gettext("Status")}</p>
+            
             <p class={[
               "font-bold",
               if(@planet.any_constructing, do: "text-amber-300", else: "text-green-300")
             ]}>
-              <%= if @planet.any_constructing, do: gettext("Building"), else: gettext("Idle") %>
+              {if @planet.any_constructing, do: gettext("Building"), else: gettext("Idle")}
             </p>
           </div>
         </div>
-
+        
         <%= if @planet.any_constructing and @planet.active_construction_label do %>
           <p class="mb-3 text-[11px] text-amber-200">
-            <span class="font-semibold"><%= gettext("Building") %>:</span> <%= @planet.active_construction_label %>
+            <span class="font-semibold">{gettext("Building")}:</span> {@planet.active_construction_label}
           </p>
         <% end %>
-
+        
         <%= if @premium_access do %>
           <div class="mb-2 border-t border-cyan-500/10 pt-2">
             <div class="grid grid-cols-3 gap-1 text-[10px]">
               <div class="text-center">
-                <p class="text-gray-500"><%= gettext("Raw") %></p>
-                <p class="font-semibold text-blue-300"><%= format_number(@planet.raw_materials, 0) %></p>
+                <p class="text-gray-500">{gettext("Raw")}</p>
+                
+                <p class="font-semibold text-blue-300">{format_number(@planet.raw_materials, 0)}</p>
               </div>
+              
               <div class="text-center">
-                <p class="text-gray-500"><%= gettext("Chips") %></p>
-                <p class="font-semibold text-purple-300"><%= format_number(@planet.microchips, 0) %></p>
+                <p class="text-gray-500">{gettext("Chips")}</p>
+                
+                <p class="font-semibold text-purple-300">{format_number(@planet.microchips, 0)}</p>
               </div>
+              
               <div class="text-center">
-                <p class="text-gray-500"><%= gettext("H₂") %></p>
-                <p class="font-semibold text-cyan-300"><%= format_number(@planet.hydrogen, 0) %></p>
+                <p class="text-gray-500">{gettext("H₂")}</p>
+                
+                <p class="font-semibold text-cyan-300">{format_number(@planet.hydrogen, 0)}</p>
               </div>
             </div>
           </div>
-
+          
           <%= if @planet.fleet_count > 0 do %>
             <p class="text-[10px] text-gray-400">
-              <span class="font-semibold text-yellow-300"><%= @planet.fleet_count %></span>
-              <%= gettext("fleets stationed") %>
+              <span class="font-semibold text-yellow-300">{@planet.fleet_count}</span> {gettext(
+                "fleets stationed"
+              )}
             </p>
           <% end %>
         <% end %>
-
+        
         <div class="absolute top-2 right-2 rounded-lg bg-cyan-500/20 px-2 py-1 text-[10px] font-semibold text-cyan-200 opacity-0 transition group-hover:opacity-100">
-          <%= gettext("View Details") %>
+          {gettext("View Details")}
         </div>
       </div>
     </.link>
@@ -338,12 +364,40 @@ defmodule NexusDownfallWeb.PlanetsListLive do
     "/images/Planets/#{image_id}.png"
   end
 
-  defp format_number(num, digits \\ 1) when is_integer(num) do
+  defp format_number(num, digits \\ 1)
+
+  defp format_number(nil, _digits), do: "0"
+
+  defp format_number(num, digits) when is_integer(num) or is_float(num) do
     cond do
-      num >= 1_000_000 -> Float.round(num / 1_000_000, digits) |> Kernel.<>("M")
-      num >= 1_000 -> Float.round(num / 1_000, digits) |> Kernel.<>("K")
-      true -> Integer.to_string(num)
+      num >= 1_000_000 -> compact_number(num / 1_000_000, digits) <> "M"
+      num >= 1_000 -> compact_number(num / 1_000, digits) <> "K"
+      is_integer(num) -> Integer.to_string(num)
+      true -> compact_number(num, digits)
     end
+  end
+
+  defp format_number(%Decimal{} = num, digits) do
+    num
+    |> Decimal.to_float()
+    |> format_number(digits)
+  end
+
+  defp format_number(num, digits) when is_binary(num) do
+    case Float.parse(num) do
+      {value, _rest} -> format_number(value, digits)
+      :error -> num
+    end
+  end
+
+  defp format_number(_num, _digits), do: "0"
+
+  defp compact_number(value, digits) do
+    value
+    |> Float.round(digits)
+    |> :erlang.float_to_binary(decimals: digits)
+    |> String.trim_trailing("0")
+    |> String.trim_trailing(".")
   end
 
   defp premium_access?(user) do

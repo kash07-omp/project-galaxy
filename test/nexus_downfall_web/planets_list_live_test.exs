@@ -122,6 +122,19 @@ defmodule NexusDownfallWeb.PlanetsListLiveTest do
     assert html =~ "/images/Planets/#{planet_b.planet_image_id}.png"
   end
 
+  test "renders compact population numbers without crashing", %{
+    conn: conn,
+    planet_a: planet_a
+  } do
+    planet_a
+    |> Ecto.Changeset.change(population: 1_200)
+    |> Repo.update!()
+
+    {:ok, _lv, html} = live(conn, ~p"/planets")
+
+    assert html =~ "1.2K"
+  end
+
   test "keeps premium-only filters hidden for standard users", %{conn: conn} do
     {:ok, _lv, html} = live(conn, ~p"/planets")
 
@@ -138,7 +151,9 @@ defmodule NexusDownfallWeb.PlanetsListLiveTest do
     {:ok, _user} = user |> Ecto.Changeset.change(premium: true) |> Repo.update()
 
     token = Accounts.generate_user_session_token(user)
-    premium_conn = Phoenix.ConnTest.init_test_session(conn, %{"_nexus_downfall_user_token" => token})
+
+    premium_conn =
+      Phoenix.ConnTest.init_test_session(conn, %{"_nexus_downfall_user_token" => token})
 
     {:ok, _lv, html} = live(premium_conn, ~p"/planets")
 

@@ -207,7 +207,7 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     {:ok, live_view, html} = live(conn, ~p"/fleet")
     assert html =~ "Realtime Fleet"
     assert html =~ "No ships assigned yet."
-    refute html =~ "light_fighter.svg"
+    refute html =~ "light_fighter.jpg"
 
     # Simulate the persisted state that FleetLive reloads after receiving the event.
     Repo.update_all(
@@ -232,7 +232,7 @@ defmodule NexusDownfallWeb.FleetLiveTest do
     refreshed = render(live_view)
     assert refreshed =~ "Realtime Fleet"
     assert refreshed =~ ">1<"
-    assert refreshed =~ "light_fighter.svg"
+    assert refreshed =~ "light_fighter.jpg"
   end
 
   test "fleet live tolerates notification pubsub events from the topbar hook", %{

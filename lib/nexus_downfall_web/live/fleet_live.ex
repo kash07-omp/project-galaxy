@@ -382,10 +382,11 @@ defmodule NexusDownfallWeb.FleetLive do
                               <%= for %{ship: ship, quantity: quantity} <- visible_ships do %>
                                 <div class="flex min-w-[90px] items-center gap-1.5 rounded-lg border border-cyan-500/15 bg-[#030914]/85 px-2 py-1">
                                   <img
-                                    src={Fleets.ship_image_path(ship.type)}
+                                    src={Fleets.ship_thumbnail_path(ship.type)}
                                     onerror="this.style.display='none'"
                                     alt={translate_dynamic(ship.name)}
-                                    class="h-6 w-6 rounded bg-black/30 p-0.5 object-contain"
+                                    class="h-8 w-8 shrink-0 border border-white/10 bg-black object-cover"
+                                    style="filter: none;"
                                     draggable="false"
                                   />
                                   <div class="min-w-0">
