@@ -246,6 +246,7 @@ defmodule NexusDownfall.Fleets.AttackMissionTest do
     assert [%{"name" => "Corvette", "before" => 20} = attacker_corvettes] =
              attacker_notification.payload["attacker_units"]
 
+    assert attacker_corvettes["icon_path"] == "/images/ships/valkyr.svg"
     assert attacker_corvettes["after"] >= 0
 
     assert attacker_corvettes["lost"] ==

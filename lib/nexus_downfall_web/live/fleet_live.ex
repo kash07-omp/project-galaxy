@@ -378,10 +378,11 @@ defmodule NexusDownfallWeb.FleetLive do
                             </p>
 
                             <div class="flex flex-wrap gap-1.5">
-                              <%= for ship <- @ship_catalog do %>
+                              <% visible_ships = visible_fleet_ships(fleet, @ship_catalog) %>
+                              <%= for %{ship: ship, quantity: quantity} <- visible_ships do %>
                                 <div class="flex min-w-[90px] items-center gap-1.5 rounded-lg border border-cyan-500/15 bg-[#030914]/85 px-2 py-1">
                                   <img
-                                    src={"/images/ships/#{ship.type}.svg"}
+                                    src={Fleets.ship_image_path(ship.type)}
                                     onerror="this.style.display='none'"
                                     alt={translate_dynamic(ship.name)}
                                     class="h-6 w-6 rounded bg-black/30 p-0.5 object-contain"
@@ -393,11 +394,18 @@ defmodule NexusDownfallWeb.FleetLive do
                                     </p>
 
                                     <p class="text-xs font-bold leading-none text-white">
-                                      {Fleets.ship_quantity(fleet, ship.type)}
+                                      {quantity}
                                     </p>
                                   </div>
                                 </div>
                               <% end %>
+
+                              <p
+                                :if={visible_ships == []}
+                                class="rounded-lg border border-dashed border-cyan-600/20 bg-[#030914]/70 px-3 py-2 text-xs text-gray-500"
+                              >
+                                {gettext("No ships staged yet.")}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -1671,6 +1679,19 @@ defmodule NexusDownfallWeb.FleetLive do
     |> Enum.reduce(0, fn ship, acc ->
       quantity = Fleets.ship_quantity(fleet, ship.type)
       acc + quantity * ship.attack + quantity * ship.hull
+    end)
+  end
+
+  defp visible_fleet_ships(fleet, ship_catalog) do
+    ship_catalog
+    |> Enum.flat_map(fn ship ->
+      quantity = Fleets.ship_quantity(fleet, ship.type)
+
+      if quantity > 0 do
+        [%{ship: ship, quantity: quantity}]
+      else
+        []
+      end
     end)
   end
 

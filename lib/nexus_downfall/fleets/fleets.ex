@@ -338,6 +338,27 @@ defmodule NexusDownfall.Fleets do
     }
   }
 
+  @ship_image_slug_by_type %{
+    "aphelion" => "bomber",
+    "battleship" => "battleship",
+    "blocker" => "carrier",
+    "bomber" => "bomber",
+    "carrier" => "carrier",
+    "colonizer" => "heavy_freighter",
+    "corvette" => "valkyr",
+    "cruiser" => "cruiser",
+    "ew_cruiser" => "cruiser",
+    "exodus" => "carrier",
+    "frigate" => "cruiser",
+    "heavy_fighter" => "heavy_fighter",
+    "heavy_freighter" => "heavy_freighter",
+    "leviathan" => "battleship",
+    "light_destroyer" => "cruiser",
+    "light_fighter" => "light_fighter",
+    "light_freighter" => "light_freighter",
+    "missile_corvette" => "valkyr"
+  }
+
   @admiral_options ["", "Admiral Alpha Card", "Admiral Beta Card"]
 
   def admiral_options, do: @admiral_options
@@ -349,6 +370,13 @@ defmodule NexusDownfall.Fleets do
   end
 
   def ship_definition(type), do: Map.get(@ship_catalog, type)
+
+  def ship_image_path(type) when is_binary(type) do
+    slug = Map.get(@ship_image_slug_by_type, type, type)
+    "/images/ships/#{slug}.svg"
+  end
+
+  def ship_image_path(_type), do: "/images/ships/light_fighter.svg"
 
   def ship_build_time_seconds(type, quantity \\ 1) do
     case ship_definition(type) do
@@ -2314,12 +2342,8 @@ defmodule NexusDownfall.Fleets do
 
   defp unit_icon_path(%{kind: :defense}), do: "/images/planet-images/defense-center.png"
 
-  defp unit_icon_path(%{kind: :ship, class: ship_class})
-       when ship_class in ["Civil", "Support", "Capital", "Conquest"],
-       do: "/images/ships/ship-b.svg"
-
-  defp unit_icon_path(%{kind: :ship}), do: "/images/ships/ship-a.svg"
-  defp unit_icon_path(_), do: "/images/ships/ship-a.svg"
+  defp unit_icon_path(%{kind: :ship, unit_type: ship_type}), do: ship_image_path(ship_type)
+  defp unit_icon_path(_), do: ship_image_path("light_fighter")
 
   defp unit_cost_for_group(%{kind: :ship, unit_type: ship_type}) do
     ship_definition(ship_type)
