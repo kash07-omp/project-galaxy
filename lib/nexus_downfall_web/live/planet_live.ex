@@ -2052,8 +2052,8 @@ defmodule NexusDownfallWeb.PlanetLive do
       ship ->
         %{
           kind: :ship,
-          name: ship.name,
-          description: ship.description,
+          name: translate_dynamic(ship.name),
+          description: translate_dynamic(ship.description),
           image_path: ship_image_path(ship),
           stats: [
             {gettext("Tier"), ship.tier},
@@ -2104,8 +2104,8 @@ defmodule NexusDownfallWeb.PlanetLive do
 
         %{
           kind: :defense,
-          name: defense.name,
-          description: defense.description,
+          name: translate_dynamic(defense.name),
+          description: translate_dynamic(defense.description),
           image_path: defense_image_path(defense),
           stats: stats
         }

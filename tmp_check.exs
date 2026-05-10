@@ -1,16 +1,9 @@
-alias NexusDownfall.Repo
-alias NexusDownfall.Universe.SolarSystem
-alias NexusDownfall.Universe.Hyperlink
-alias NexusDownfall.Planets.Planet
-
 import Ecto.Query
+alias NexusDownfall.Repo
+alias NexusDownfall.Fleets.FleetMission
+alias Oban.Job
 
-systems = Repo.all(from s in SolarSystem, order_by: s.number)
-
-Enum.each(systems, fn s ->
-  IO.puts("sys #{s.number} x=#{Float.round(s.x, 1)} y=#{Float.round(s.y, 1)}")
-end)
-
-IO.puts("Total systems: #{length(systems)}")
-IO.puts("Total planets: #{Repo.aggregate(Planet, :count)}")
-IO.puts("Total hyperlinks: #{Repo.aggregate(Hyperlink, :count)}")
+active = Repo.aggregate(from(m in FleetMission, where: m.phase in ["outbound","colonizing","returning"]), :count, :id)
+discarded_arrive = Repo.aggregate(from(j in Job, where: j.worker == "NexusDownfall.Workers.FleetMissionWorker" and j.state == "discarded" and fragment("(?->>'action') = 'arrive'", j.args)), :count, :id)
+IO.puts("active_missions=#{active}")
+IO.puts("discarded_arrive_jobs=#{discarded_arrive}")

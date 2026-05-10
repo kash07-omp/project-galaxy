@@ -26,6 +26,8 @@ defmodule NexusDownfallWeb.FleetLive do
   end
 
   def render(assigns) do
+    assigns = assign(assigns, :unit_detail, selected_unit_detail(assigns.selected_unit_details))
+
     ~H"""
     <div class="flex min-h-screen flex-col overflow-hidden bg-[#050912] font-sans select-none">
       <.topbar
@@ -216,10 +218,17 @@ defmodule NexusDownfallWeb.FleetLive do
               <% else %>
                 <div class="space-y-2">
                   <%= for fleet <- @fleets do %>
-                    <article class="rounded-xl border border-cyan-500/20 bg-[linear-gradient(145deg,#081423,#050d18)] p-3 shadow-[0_10px_28px_rgba(8,145,178,0.1)] transition hover:border-cyan-400/45">
+                    <article
+                      class={[
+                        "rounded-xl border border-cyan-500/20 bg-[linear-gradient(145deg,#081423,#050d18)] p-3 shadow-[0_10px_28px_rgba(8,145,178,0.1)] transition hover:border-cyan-400/45"
+                      ]}
+                    >
                       <div class="relative flex gap-3">
                         <%!-- Admiral card - spans both rows height --%>
-                        <div class="relative w-[110px] shrink-0 self-stretch overflow-hidden rounded-xl border border-cyan-500/20 bg-[#030a15]">
+                        <div
+                          class="relative shrink-0 overflow-hidden rounded-xl border border-cyan-500/15 bg-[#030a15]/80"
+                          style="width: 92px; min-width: 92px; min-height: 132px;"
+                        >
                           <%= if fleet.admiral_card do %>
                             <%!-- Assigned admiral card - show full art --%>
                             <img
@@ -228,7 +237,7 @@ defmodule NexusDownfallWeb.FleetLive do
                               class="absolute inset-0 h-full w-full object-cover object-top"
                               draggable="false"
                             />
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
+                            <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
                             <div class="absolute bottom-0 left-0 right-0 p-2">
                               <p class="text-center text-[9px] font-bold leading-tight text-white drop-shadow">
                                 {fleet.admiral_card.name}
@@ -245,24 +254,24 @@ defmodule NexusDownfallWeb.FleetLive do
                             </div>
                           <% else %>
                             <%!-- No admiral - show placeholder and assign button --%>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 p-2">
-                              <div class="flex h-10 w-10 items-center justify-center rounded-full border border-gray-700/50 bg-gray-900/50">
-                                <span class="text-2xl opacity-20">★</span>
+                            <button
+                              type="button"
+                              phx-click="open_assign_admiral"
+                              phx-value-fleet_id={fleet.id}
+                              class="flex h-full w-full flex-col items-center justify-center gap-2 p-2 text-center transition hover:bg-cyan-950/25"
+                            >
+                              <div class="flex h-11 w-11 items-center justify-center rounded-full border border-cyan-500/25 bg-cyan-950/45 text-cyan-200">
+                                <span class="text-xl leading-none">★</span>
                               </div>
 
-                              <p class="text-center text-[8px] text-gray-600">
+                              <p class="text-[9px] font-semibold uppercase tracking-[0.14em] text-cyan-200">
                                 {gettext("No admiral")}
                               </p>
 
-                              <button
-                                type="button"
-                                phx-click="open_assign_admiral"
-                                phx-value-fleet_id={fleet.id}
-                                class="w-full rounded border border-cyan-600/50 bg-cyan-900/30 px-1 py-1 text-[8px] font-semibold uppercase tracking-wide text-cyan-300 transition hover:bg-cyan-800/40"
-                              >
-                                {gettext("Assign")}
-                              </button>
-                            </div>
+                              <span class="rounded-md border border-cyan-500/30 bg-cyan-900/35 px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-cyan-100">
+                                {gettext("Assign admiral")}
+                              </span>
+                            </button>
                           <% end %>
                         </div>
                         <%!-- Right side: row 1 (info) + row 2 (ships) --%>
@@ -380,15 +389,22 @@ defmodule NexusDownfallWeb.FleetLive do
                             <div class="flex flex-wrap gap-1.5">
                               <% visible_ships = visible_fleet_ships(fleet, @ship_catalog) %>
                               <%= for %{ship: ship, quantity: quantity} <- visible_ships do %>
-                                <div class="flex min-w-[90px] items-center gap-1.5 rounded-lg border border-cyan-500/15 bg-[#030914]/85 px-2 py-1">
-                                  <img
-                                    src={Fleets.ship_thumbnail_path(ship.type)}
-                                    onerror="this.style.display='none'"
-                                    alt={translate_dynamic(ship.name)}
-                                    class="h-8 w-8 shrink-0 border border-white/10 bg-black object-cover"
-                                    style="filter: none;"
-                                    draggable="false"
-                                  />
+                                <button
+                                  type="button"
+                                  phx-click="show_ship_details"
+                                  phx-value-ship_type={ship.type}
+                                  class="group flex min-w-[90px] items-center gap-1.5 rounded-lg border border-cyan-500/15 bg-[#030914]/85 px-2 py-1 text-left transition duration-200 hover:-translate-y-0.5 hover:border-cyan-400/60 hover:bg-[#061121]"
+                                >
+                                  <div class="flex h-[45px] w-[45px] shrink-0 items-center justify-center overflow-hidden rounded border border-cyan-500/10 bg-black/60 transition duration-200 group-hover:border-cyan-300/30">
+                                    <img
+                                      src={Fleets.ship_thumbnail_path(ship.type)}
+                                      onerror="this.style.display='none'"
+                                      alt={translate_dynamic(ship.name)}
+                                      class="block h-auto max-h-full w-auto max-w-full object-contain transition duration-200 group-hover:scale-105 group-hover:brightness-110"
+                                      style="max-width: 45px; max-height: 45px; filter: none;"
+                                      draggable="false"
+                                    />
+                                  </div>
                                   <div class="min-w-0">
                                     <p class="truncate text-[9px] text-gray-400">
                                       {translate_dynamic(ship.name)}
@@ -398,7 +414,7 @@ defmodule NexusDownfallWeb.FleetLive do
                                       {quantity}
                                     </p>
                                   </div>
-                                </div>
+                                </button>
                               <% end %>
 
                               <p
@@ -411,106 +427,109 @@ defmodule NexusDownfallWeb.FleetLive do
                           </div>
                         </div>
 
-                        <%!-- Inline admiral picker - shown when assign_admiral_fleet_id == fleet.id --%>
-                        <%= if @assign_admiral_fleet_id == fleet.id do %>
-                          <div class="absolute inset-0 z-10 flex flex-col overflow-hidden rounded-xl bg-[#07111f]/95 backdrop-blur-sm">
-                            <div class="flex items-center justify-between border-b border-cyan-500/15 px-4 py-2.5">
-                              <p class="text-xs font-semibold uppercase tracking-wider text-cyan-300">
-                                {gettext("Choose an admiral from your deck")}
-                              </p>
-
-                              <button
-                                type="button"
-                                phx-click="cancel_assign_admiral"
-                                class="rounded p-0.5 text-gray-500 transition hover:text-gray-300"
-                              >
-                                ✕
-                              </button>
-                            </div>
-
-                            <div class="flex flex-1 flex-wrap items-start gap-3 overflow-y-auto p-3">
-                              <% assigned_card_ids =
-                                assigned_card_ids_for_other_fleets(@fleets, fleet.id) %>
-                              <button
-                                type="button"
-                                phx-click="unassign_admiral_card"
-                                phx-value-fleet_id={fleet.id}
-                                class="group flex w-[110px] flex-col overflow-hidden rounded-xl border border-amber-400/50 bg-[#0f1218] transition hover:border-amber-300 hover:shadow-[0_0_16px_rgba(250,204,21,0.2)]"
-                              >
-                                <div class="flex h-28 w-full items-center justify-center bg-[#090c12]">
-                                  <span class="text-5xl font-black leading-none text-amber-300">
-                                    ✕
-                                  </span>
-                                </div>
-
-                                <div class="p-2">
-                                  <p class="text-center text-[10px] font-bold text-amber-100">
-                                    {gettext("Unassign admiral")}
-                                  </p>
-                                </div>
-                              </button>
-                              <%= if @user_admiral_cards == [] do %>
-                                <p class="text-sm text-gray-500">
-                                  {gettext("No admiral cards in your deck.")}
-                                </p>
-                              <% else %>
-                                <%= for uc <- @user_admiral_cards do %>
-                                  <% assigned_elsewhere =
-                                    MapSet.member?(assigned_card_ids, uc.card_id) %>
-                                  <button
-                                    type="button"
-                                    disabled={assigned_elsewhere}
-                                    title={
-                                      if assigned_elsewhere,
-                                        do: gettext("Already assigned to another fleet."),
-                                        else: nil
-                                    }
-                                    phx-click={
-                                      if assigned_elsewhere, do: nil, else: "assign_admiral_card"
-                                    }
-                                    phx-value-fleet_id={fleet.id}
-                                    phx-value-card_id={uc.card_id}
-                                    class={[
-                                      "group flex w-[110px] flex-col overflow-hidden rounded-xl border bg-[#050f1d] transition",
-                                      if(assigned_elsewhere,
-                                        do:
-                                          "cursor-not-allowed border-gray-600/40 opacity-45 grayscale",
-                                        else:
-                                          "border-cyan-500/20 hover:border-cyan-400/60 hover:shadow-[0_0_16px_rgba(34,211,238,0.2)]"
-                                      )
-                                    ]}
-                                  >
-                                    <div class="relative h-28 w-full overflow-hidden">
-                                      <img
-                                        src={"/images/#{uc.card.image_path}"}
-                                        alt={uc.card.name}
-                                        class={[
-                                          "h-full w-full object-cover object-top transition",
-                                          if(assigned_elsewhere,
-                                            do: "",
-                                            else: "group-hover:scale-105"
-                                          )
-                                        ]}
-                                        draggable="false"
-                                      />
-                                    </div>
-
-                                    <div class="p-2">
-                                      <p class="text-center text-[10px] font-bold text-white">
-                                        {uc.card.name}
-                                      </p>
-
-                                      <p class="text-center text-[8px] capitalize text-cyan-300/70">
-                                        {uc.card.rarity}
-                                      </p>
-                                    </div>
-                                  </button>
-                                <% end %>
-                              <% end %>
-                            </div>
-                          </div>
-                        <% end %>
                       </div>
+
+                      <%!-- Inline admiral picker - shown when assign_admiral_fleet_id == fleet.id --%>
+                      <%= if @assign_admiral_fleet_id == fleet.id do %>
+                        <div class="mt-3 overflow-hidden rounded-xl border border-cyan-500/15 bg-[#07111f]/95 backdrop-blur-sm">
+                          <div class="flex items-center justify-between border-b border-cyan-500/15 px-4 py-2.5">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-cyan-300">
+                              {gettext("Choose an admiral from your deck")}
+                            </p>
+
+                            <button
+                              type="button"
+                              phx-click="cancel_assign_admiral"
+                              class="rounded p-0.5 text-gray-500 transition hover:text-gray-300"
+                            >
+                              ✕
+                            </button>
+                          </div>
+
+                          <div class="flex flex-wrap content-start items-start gap-4 p-3">
+                            <% assigned_card_ids =
+                              assigned_card_ids_for_other_fleets(@fleets, fleet.id) %>
+                            <button
+                              type="button"
+                              phx-click="unassign_admiral_card"
+                              phx-value-fleet_id={fleet.id}
+                              class="group flex w-[156px] shrink-0 flex-col overflow-hidden rounded-xl border border-amber-400/35 bg-[#0f1218] transition hover:border-amber-300 hover:shadow-[0_0_12px_rgba(250,204,21,0.18)]"
+                              style="width: 188px; min-width: 188px;"
+                            >
+                              <div class="flex h-28 w-full items-center justify-center bg-[#090c12]">
+                                <span class="text-4xl font-black leading-none text-amber-300">
+                                  ✕
+                                </span>
+                              </div>
+
+                              <div class="p-2">
+                                <p class="text-center text-[10px] font-bold text-amber-100">
+                                  {gettext("Unassign admiral")}
+                                </p>
+                              </div>
+                            </button>
+                            <%= if @user_admiral_cards == [] do %>
+                              <p class="text-sm text-gray-500">
+                                {gettext("No admiral cards in your deck.")}
+                              </p>
+                            <% else %>
+                              <%= for uc <- @user_admiral_cards do %>
+                                <% assigned_elsewhere =
+                                  MapSet.member?(assigned_card_ids, uc.card_id) %>
+                                <button
+                                  type="button"
+                                  disabled={assigned_elsewhere}
+                                  title={
+                                    if assigned_elsewhere,
+                                      do: gettext("Already assigned to another fleet."),
+                                      else: nil
+                                  }
+                                  phx-click={
+                                    if assigned_elsewhere, do: nil, else: "assign_admiral_card"
+                                  }
+                                  phx-value-fleet_id={fleet.id}
+                                  phx-value-card_id={uc.card_id}
+                                  class={[
+                                    "group flex w-[156px] shrink-0 flex-col overflow-hidden rounded-xl border bg-[#050f1d] transition",
+                                    if(assigned_elsewhere,
+                                      do:
+                                        "cursor-not-allowed border-gray-600/40 opacity-45 grayscale",
+                                      else:
+                                        "border-cyan-500/20 hover:border-cyan-400/60 hover:shadow-[0_0_16px_rgba(34,211,238,0.2)]"
+                                    )
+                                  ]}
+                                  style="width: 188px; min-width: 188px;"
+                                >
+                                  <div class="relative h-28 w-full overflow-hidden">
+                                    <img
+                                      src={"/images/#{uc.card.image_path}"}
+                                      alt={uc.card.name}
+                                      class={[
+                                        "h-full w-full object-cover object-top transition",
+                                        if(assigned_elsewhere,
+                                          do: "",
+                                          else: "group-hover:scale-105"
+                                        )
+                                      ]}
+                                      draggable="false"
+                                    />
+                                  </div>
+
+                                  <div class="p-2">
+                                    <p class="text-center text-[10px] font-bold text-white">
+                                      {uc.card.name}
+                                    </p>
+
+                                    <p class="text-center text-[8px] capitalize text-cyan-300/70">
+                                      {uc.card.rarity}
+                                    </p>
+                                  </div>
+                                </button>
+                              <% end %>
+                            <% end %>
+                          </div>
+                        </div>
+                      <% end %>
                     </article>
                   <% end %>
                 </div>
@@ -890,6 +909,13 @@ defmodule NexusDownfallWeb.FleetLive do
           </div>
         </div>
       </.modal>
+
+      <.unit_detail_modal
+        :if={@unit_detail}
+        id="fleet-unit-detail-modal"
+        unit_detail={@unit_detail}
+        close_event="close_unit_details"
+      />
     </div>
     """
   end
@@ -1007,6 +1033,14 @@ defmodule NexusDownfallWeb.FleetLive do
      |> assign(:mission_systems, [])
      |> assign(:mission_targets, [])
      |> assign(:mission_form, empty_mission_form())}
+  end
+
+  def handle_event("show_ship_details", %{"ship_type" => ship_type}, socket) do
+    {:noreply, assign(socket, :selected_unit_details, %{kind: "ship", type: ship_type})}
+  end
+
+  def handle_event("close_unit_details", _, socket) do
+    {:noreply, assign(socket, :selected_unit_details, nil)}
   end
 
   def handle_event("mission_form_changed", params, socket) do
@@ -1264,6 +1298,7 @@ defmodule NexusDownfallWeb.FleetLive do
     |> assign_new(:mission_targets, fn -> [] end)
     |> assign_new(:mission_form, fn -> empty_mission_form() end)
     |> assign_new(:assign_admiral_fleet_id, fn -> nil end)
+    |> assign_new(:selected_unit_details, fn -> nil end)
     |> assign(:show_user_menu, socket.assigns[:show_user_menu] || false)
   end
 
@@ -1859,6 +1894,45 @@ defmodule NexusDownfallWeb.FleetLive do
       :io_lib.format("~2..0B:~2..0B", [minutes, seconds]) |> to_string()
     end
   end
+
+  defp format_resource(value) when value >= 1_000_000, do: "#{Float.round(value / 1_000_000.0, 1)}M"
+  defp format_resource(value) when value >= 10_000, do: "#{round(value / 1_000)}k"
+  defp format_resource(value) when value >= 100, do: "#{round(value * 1.0)}"
+  defp format_resource(value), do: "#{Float.round(value * 1.0, 1)}"
+
+  defp selected_unit_detail(nil), do: nil
+
+  defp selected_unit_detail(%{kind: "ship", type: type}) do
+    case Fleets.ship_definition(type) do
+      nil ->
+        nil
+
+      ship ->
+        %{
+          kind: :ship,
+          name: translate_dynamic(ship.name),
+          description: translate_dynamic(ship.description),
+          image_path: Fleets.ship_image_path(ship.type),
+          stats: [
+            {gettext("Tier"), ship.tier},
+            {gettext("Hull"), ship.hull},
+            {gettext("Shield"), ship.shield},
+            {gettext("Attack"), ship.attack},
+            {gettext("Accuracy"), ship.accuracy},
+            {gettext("Agility"), ship.agility},
+            {gettext("Speed"), ship.speed},
+            {gettext("Fuel/s"), ship.fuel_per_s},
+            {gettext("Cargo"), ship.cargo},
+            {gettext("Build time"), format_duration(ship.build_time_seconds)},
+            {gettext("Raw Materials"), format_resource(ship.cost.raw_materials * 1.0)},
+            {gettext("Chips"), format_resource(ship.cost.microchips * 1.0)},
+            {gettext("Hydrogen"), format_resource(ship.cost.hydrogen * 1.0)}
+          ]
+        }
+    end
+  end
+
+  defp selected_unit_detail(_), do: nil
 
   defp premium_access?(user) do
     cond do

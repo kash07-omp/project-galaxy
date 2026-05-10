@@ -102,7 +102,12 @@ defmodule NexusDownfall.GameplaySettings do
 
   @spec combat_settings() :: map()
   def combat_settings do
-    all() |> Map.fetch!("combat")
+    all()
+    |> Map.get("combat", %{"max_rounds" => 6})
+    |> case do
+      %{} = settings -> settings
+      _ -> %{"max_rounds" => 6}
+    end
   end
 
   defp settings_path do

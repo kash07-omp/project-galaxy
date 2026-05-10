@@ -43,6 +43,7 @@ defmodule NexusDownfall.Fleets do
       tier: 1,
       name: "Light Freighter",
       description: "Cheap and fast transport. Ideal for early raids and first logistics routes.",
+      image_name: "light_freighter",
       hull: 120,
       shield: 15,
       attack: 5,
@@ -59,6 +60,7 @@ defmodule NexusDownfall.Fleets do
       tier: 1,
       name: "Heavy Freighter",
       description: "Moves large resource loads, but slows the fleet and needs an escort.",
+      image_name: "heavy_freighter",
       hull: 420,
       shield: 60,
       attack: 20,
@@ -76,6 +78,7 @@ defmodule NexusDownfall.Fleets do
       name: "Light Fighter",
       description:
         "Fast and cheap attack craft. Excellent for hunting freighters and exposed bombers.",
+      image_name: "light_fighter",
       hull: 90,
       shield: 20,
       attack: 35,
@@ -93,6 +96,7 @@ defmodule NexusDownfall.Fleets do
       name: "Corvette",
       description:
         "First stable military ship. Protects freighters and gives early fleets consistency.",
+      image_name: "valkyr",
       hull: 220,
       shield: 45,
       attack: 80,
@@ -110,6 +114,7 @@ defmodule NexusDownfall.Fleets do
       name: "Missile Corvette",
       description:
         "Opening burst damage ship. Strong against shields and light defenses, weak in long battles.",
+      image_name: "valkyr",
       hull: 180,
       shield: 25,
       attack: 145,
@@ -127,6 +132,7 @@ defmodule NexusDownfall.Fleets do
       name: "Heavy Fighter",
       description:
         "Fast ship for serious raids. Carries its own cargo and hits vulnerable targets hard.",
+      image_name: "heavy_fighter",
       hull: 320,
       shield: 70,
       attack: 130,
@@ -143,6 +149,7 @@ defmodule NexusDownfall.Fleets do
       tier: 2,
       name: "Frigate",
       description: "Mid-game military core. Useful for attack, defense and escort duties.",
+      image_name: "cruiser",
       hull: 550,
       shield: 120,
       attack: 190,
@@ -159,6 +166,7 @@ defmodule NexusDownfall.Fleets do
       tier: 2,
       name: "Light Destroyer",
       description: "Direct counter to fighter swarms, corvettes and raiding fleets.",
+      image_name: "cruiser",
       hull: 680,
       shield: 160,
       attack: 150,
@@ -175,6 +183,7 @@ defmodule NexusDownfall.Fleets do
       tier: 2,
       name: "Bomber",
       description: "Specialized ship for destroying defenses. It needs an escort.",
+      image_name: "bomber",
       hull: 900,
       shield: 160,
       attack: 520,
@@ -192,6 +201,7 @@ defmodule NexusDownfall.Fleets do
       name: "Blocker",
       description:
         "Designed for planetary blockade missions. It wins through strategic control, not raw damage.",
+      image_name: "carrier",
       hull: 1500,
       shield: 450,
       attack: 120,
@@ -208,6 +218,7 @@ defmodule NexusDownfall.Fleets do
       tier: 2,
       name: "Colonizer",
       description: "Enables new colonies. Strategic, expensive and worth protecting.",
+      image_name: "heavy_freighter",
       hull: 1800,
       shield: 500,
       attack: 20,
@@ -224,6 +235,7 @@ defmodule NexusDownfall.Fleets do
       tier: 3,
       name: "Cruiser",
       description: "Reliable heavy ship. Protects bombers, blockers and strategic craft.",
+      image_name: "cruiser",
       hull: 1200,
       shield: 300,
       attack: 380,
@@ -241,6 +253,7 @@ defmodule NexusDownfall.Fleets do
       name: "Drone Carrier",
       description:
         "Enhances allied fighters and light ships. Should not be deployed without escort.",
+      image_name: "carrier",
       hull: 2500,
       shield: 700,
       attack: 220,
@@ -258,6 +271,7 @@ defmodule NexusDownfall.Fleets do
       name: "Electronic Warfare Cruiser",
       description:
         "Technical support ship. Weakens enemy shields and improves attacks against hardened targets.",
+      image_name: "cruiser",
       hull: 800,
       shield: 1000,
       attack: 60,
@@ -275,6 +289,7 @@ defmodule NexusDownfall.Fleets do
       name: "Battleship",
       description:
         "Large-ship hunter. Excellent against blockers, cruisers, carriers and top-tier hulls.",
+      image_name: "battleship",
       hull: 4200,
       shield: 1100,
       attack: 1250,
@@ -291,6 +306,7 @@ defmodule NexusDownfall.Fleets do
       tier: 4,
       name: "Leviathan",
       description: "Top-tier direct combat ship. Built to decide fleet wars.",
+      image_name: "battleship",
       hull: 22000,
       shield: 6500,
       attack: 5500,
@@ -308,6 +324,7 @@ defmodule NexusDownfall.Fleets do
       name: "Aphelion",
       description:
         "Strategic bombardment platform. Destroys defenses and planetary infrastructure.",
+      image_name: "bomber",
       hull: 16000,
       shield: 4500,
       attack: 2200,
@@ -325,6 +342,7 @@ defmodule NexusDownfall.Fleets do
       name: "Exodus",
       description:
         "Conquest ark. Takes planets and sustains occupations, but is not a main combat ship.",
+      image_name: "carrier",
       hull: 28000,
       shield: 8000,
       attack: 900,
@@ -336,27 +354,6 @@ defmodule NexusDownfall.Fleets do
       cost: %{raw_materials: 2_000_000, microchips: 1_500_000, hydrogen: 1_300_000},
       build_time_seconds: 25000
     }
-  }
-
-  @ship_image_slug_by_type %{
-    "aphelion" => "bomber",
-    "battleship" => "battleship",
-    "blocker" => "carrier",
-    "bomber" => "bomber",
-    "carrier" => "carrier",
-    "colonizer" => "heavy_freighter",
-    "corvette" => "valkyr",
-    "cruiser" => "cruiser",
-    "ew_cruiser" => "cruiser",
-    "exodus" => "carrier",
-    "frigate" => "cruiser",
-    "heavy_fighter" => "heavy_fighter",
-    "heavy_freighter" => "heavy_freighter",
-    "leviathan" => "battleship",
-    "light_destroyer" => "cruiser",
-    "light_fighter" => "light_fighter",
-    "light_freighter" => "light_freighter",
-    "missile_corvette" => "valkyr"
   }
 
   @admiral_options ["", "Admiral Alpha Card", "Admiral Beta Card"]
@@ -372,13 +369,13 @@ defmodule NexusDownfall.Fleets do
   def ship_definition(type), do: Map.get(@ship_catalog, type)
 
   def ship_image_path(type) when is_binary(type) do
-    "/images/ships/#{ship_image_slug(type)}.svg"
+    "/images/ships/#{ship_image_basename(type)}.svg"
   end
 
   def ship_image_path(_type), do: "/images/ships/light_fighter.svg"
 
   def ship_thumbnail_path(type) when is_binary(type) do
-    "/images/ships/#{ship_image_slug(type)}.jpg"
+    "/images/ships/#{ship_image_basename(type)}.jpg"
   end
 
   def ship_thumbnail_path(_type), do: "/images/ships/light_fighter.jpg"
@@ -2359,7 +2356,12 @@ defmodule NexusDownfall.Fleets do
 
   defp unit_thumbnail_path(_), do: ship_thumbnail_path("light_fighter")
 
-  defp ship_image_slug(type), do: Map.get(@ship_image_slug_by_type, type, type)
+  defp ship_image_basename(type) do
+    case ship_definition(type) do
+      %{image_name: image_name} when is_binary(image_name) and image_name != "" -> image_name
+      _ -> type
+    end
+  end
 
   defp unit_cost_for_group(%{kind: :ship, unit_type: ship_type}) do
     ship_definition(ship_type)

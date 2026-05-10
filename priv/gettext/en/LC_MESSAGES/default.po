@@ -380,6 +380,11 @@ msgstr ""
 msgid "Change"
 msgstr ""
 
+#: lib/nexus_downfall_web/live/fleet_live.ex:267
+#, elixir-autogen, elixir-format
+msgid "Assign admiral"
+msgstr "Assign admiral"
+
 #: lib/nexus_downfall_web/live/planet_live.ex:2275
 #, elixir-autogen, elixir-format
 msgid "Chip Factory"
